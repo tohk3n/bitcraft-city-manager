@@ -20,6 +20,10 @@ const API = {
     return this.fetch(`/claims/${claimId}/citizens`);
   },
 
+  getClaimBuildings(claimId) {
+    return this.fetch(`/claims/${claimId}/buildings`);
+  },
+
   getItems() {
     return this.fetch('/items');
   },

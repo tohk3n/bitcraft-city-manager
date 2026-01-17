@@ -182,7 +182,7 @@ const UI = {
         const val = matrix[cat][t] || 0;
         const intensity = globalMax > 0 ? val / globalMax : 0;
         const bgStyle = val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
-        const displayVal = val > 0 ? val.toLocaleString() : '—';
+        const displayVal = val > 0 ? val.toLocaleString() : 'â€”';
         html += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
       }
       html += `<td class="row-total">${rowTotals[cat].toLocaleString()}</td>`;
@@ -193,7 +193,7 @@ const UI = {
     html += '<tr class="col-totals"><td class="cat-label">Total</td>';
     for (let t = 1; t <= 7; t++) {
       const val = colTotals[t];
-      const displayVal = val > 0 ? val.toLocaleString() : '—';
+      const displayVal = val > 0 ? val.toLocaleString() : 'â€”';
       html += `<td class="matrix-cell">${displayVal}</td>`;
     }
     html += `<td class="row-total grand-total">${grandTotal.toLocaleString()}</td>`;
@@ -219,7 +219,7 @@ const UI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">●</span>
+      <span class="icon">â—</span>
       <h4>Food</h4>
       <span class="total">${foodTotal.toLocaleString()}</span>
       </div>
@@ -244,7 +244,7 @@ const UI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">●</span>
+      <span class="icon">â—</span>
       <h4>Scholar</h4>
       <span class="total">${scholarTotal.toLocaleString()}</span>
       </div>
@@ -264,7 +264,65 @@ const UI = {
     container.innerHTML = html;
   },
 
-  // Detailed inventory cards
+  // Crafting stations summary
+  renderCraftingStations(data) {
+    const container = document.getElementById('crafting-stations');
+    if (!container) return;
+
+    const { active, passive } = data;
+
+    const activeNames = Object.keys(active).sort();
+    const passiveNames = Object.keys(passive).sort();
+
+    if (activeNames.length === 0 && passiveNames.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+
+    // Helper to render a station matrix
+    const renderMatrix = (stations, names, title) => {
+      if (names.length === 0) return '';
+
+      let total = 0;
+      for (const name of names) {
+        total += stations[name].total;
+      }
+
+      let out = `<div class="stations-section">`;
+      out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
+      out += '<table class="material-matrix"><thead><tr>';
+      out += '<th></th>';
+      for (let t = 1; t <= 7; t++) {
+        out += `<th>T${t}</th>`;
+      }
+      out += '<th class="row-total">Total</th>';
+      out += '</tr></thead><tbody>';
+
+      for (const name of names) {
+        const station = stations[name];
+        out += `<tr><td class="cat-label">${name}</td>`;
+        for (let t = 1; t <= 7; t++) {
+          const val = station.tiers[t] || 0;
+          const displayVal = val > 0 ? val : '–';
+          const bgStyle = val > 0 ? 'background: rgba(88, 166, 255, 0.2);' : '';
+          out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
+        }
+        out += `<td class="row-total">${station.total}</td>`;
+        out += '</tr>';
+      }
+
+      out += '</tbody></table></div>';
+      return out;
+    };
+
+    html += renderMatrix(active, activeNames, 'Active Crafting Stations');
+    html += renderMatrix(passive, passiveNames, 'Passive Crafting Stations');
+
+    container.innerHTML = html;
+    this.show('crafting-stations');
+  },
   renderInventory(inventory) {
     const grid = document.getElementById('inventory-grid');
     if (!grid) return;
@@ -300,7 +358,7 @@ const UI = {
       header.innerHTML = `
       <h4>${category}</h4>
       <span class="total">${categoryTotal.toLocaleString()}</span>
-      <span class="chevron">▼</span>
+      <span class="chevron">â–¼</span>
       `;
       header.addEventListener('click', () => card.classList.toggle('expanded'));
 

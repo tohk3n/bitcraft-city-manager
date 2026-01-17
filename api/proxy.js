@@ -3,6 +3,7 @@ const ALLOWED_PATHS = [
   /^\/claims\/\d+$/,
 /^\/claims\/\d+\/citizens$/,
 /^\/claims\/\d+\/inventories$/,
+/^\/claims\/\d+\/buildings$/,
 /^\/players\/\d+\/equipment$/,
 /^\/players\/\d+\/inventories$/,
 /^\/players\/\d+\/vault$/,

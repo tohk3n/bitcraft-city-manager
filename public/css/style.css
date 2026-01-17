@@ -350,6 +350,20 @@ margin-bottom: 16px;
 display: grid;
 grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 gap: 16px;
+margin-bottom: 16px;
+}
+
+/* Crafting stations */
+#crafting-stations {
+margin-top: 16px;
+}
+
+.stations-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
 }
 
 .quick-card {

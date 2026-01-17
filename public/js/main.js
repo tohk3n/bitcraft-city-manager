@@ -55,6 +55,16 @@
       const result = processInventory(data);
       UI.renderDashboard(result);
 
+      // Load and render crafting stations
+      try {
+        const buildingsData = await API.getClaimBuildings(claimId);
+        claimData.buildings = buildingsData;
+        const stations = processCraftingStations(buildingsData);
+        UI.renderCraftingStations(stations);
+      } catch (e) {
+        console.log('Could not fetch buildings:', e);
+      }
+
       // Save to URL for sharing
       history.replaceState(null, '', `?claim=${claimId}`);
 
