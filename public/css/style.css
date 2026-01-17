@@ -657,52 +657,52 @@ color: var(--text-secondary);
 .citizens-table .rarity-legendary { background: #a02820; color: #fff; }
 .citizens-table .rarity-mythic { background: #6a00a0; color: #fff; }
 
-/* Citizens controls */
-.citizens-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+/* Per-row vault button */
+.vault-btn-cell {
+  width: 32px;
+  text-align: center;
 }
 
-.action-btn {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  background: var(--accent);
-  color: var(--bg-primary);
-  border: none;
-  border-radius: 6px;
+.vault-btn {
+  min-width: 28px;
+  height: 24px;
+  padding: 0 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 24px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s;
 }
 
-.action-btn:hover:not(:disabled) {
-  background: var(--accent-hover);
+.vault-btn:hover:not(:disabled) {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
 }
 
-.action-btn:disabled {
-  background: var(--bg-tertiary);
-  color: var(--text-muted);
+.vault-btn:disabled {
   cursor: default;
 }
 
-#vault-status {
-font-size: 0.85rem;
-color: var(--text-secondary);
+.vault-btn.loaded {
+  background: var(--success);
+  color: var(--bg-primary);
+  border-color: var(--success);
 }
 
-.section-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin: 24px 0 12px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+.vault-btn.error {
+  background: #f85149;
+  color: #fff;
+  border-color: #f85149;
 }
 
-.section-title:first-of-type {
-  margin-top: 0;
+/* Vault gear indicator - dashed border to show it's from vault not equipped */
+.citizens-table .gear-cell.from-vault {
+  border: 2px dashed currentColor;
 }
 
 /* ID Lookup view */
