@@ -360,7 +360,7 @@ const UI = {
   },
 
   // Citizens view - show members with equipment summary
-  renderCitizens(data) {
+  renderCitizens(data, vaultData = null) {
     const grid = document.getElementById('citizens-grid');
     if (!grid) return;
 
@@ -377,65 +377,23 @@ const UI = {
     const gearTypes = ['Cloth Clothing', 'Leather Clothing', 'Metal Clothing'];
     const gearTypeShort = ['Cloth', 'Leather', 'Metal'];
 
-    let html = '<table class="citizens-table"><thead><tr>';
-    html += '<th></th><th>Name</th><th>ID</th>';
-    gearTypeShort.forEach(type => {
-      html += `<th colspan="6">${type}</th>`;
-    });
-    html += '</tr><tr><th></th><th></th><th></th>';
-    for (let i = 0; i < 3; i++) {
-      slotNames.forEach(name => {
-        html += `<th class="slot-header">${name.charAt(0)}</th>`;
-      });
-    }
-    html += '</tr></thead><tbody>';
+    // Load vault button
+    let html = '<div class="citizens-controls">';
+    html += '<button id="load-vault-btn" class="action-btn">Load Vault Gear</button>';
+    html += '<span id="vault-status"></span>';
+    html += '</div>';
 
-    for (const citizen of citizens) {
-      const odataId = citizen.entityId;
+    // Equipped gear table
+    html += '<h3 class="section-title">Equipped Gear</h3>';
+    html += this._buildGearTable(citizens, slots, slotNames, gearTypes, gearTypeShort, 'equipped');
 
-      // Main row
-      html += `<tr class="citizen-row" data-player-id="${odataId}">`;
-      html += `<td class="expand-cell"><button class="expand-btn" data-player-id="${odataId}">+</button></td>`;
-      html += `<td class="citizen-name">${citizen.userName || 'Unknown'}</td>`;
-      html += `<td class="citizen-id"><button class="copy-btn" data-id="${odataId}" title="Copy ID">${odataId}</button></td>`;
-
-      // For each gear type
-      for (const gearType of gearTypes) {
-        // For each slot
-        for (const slot of slots) {
-          const equipped = citizen.equipment.find(e =>
-          e.primary === slot && e.item?.tags === gearType
-          );
-
-          if (equipped && equipped.item) {
-            const tier = equipped.item.tier || 0;
-            const rarity = (equipped.item.rarityString || '').toLowerCase();
-            const rarityClass = rarity ? `rarity-${rarity}` : '';
-            html += `<td class="gear-cell ${rarityClass}" title="${equipped.item.name}">T${tier}</td>`;
-          } else {
-            html += `<td class="gear-cell empty">-</td>`;
-          }
-        }
-      }
-
-      html += '</tr>';
-
-      // Expandable vault row (hidden by default)
-      html += `<tr class="vault-row hidden" data-player-id="${odataId}">`;
-      html += `<td colspan="21" class="vault-cell"><div class="vault-content" id="vault-${odataId}">Loading vault...</div></td>`;
-      html += '</tr>';
+    // Vault gear table (if data loaded)
+    if (vaultData) {
+      html += '<h3 class="section-title">Best Vault Gear</h3>';
+      html += this._buildGearTable(citizens, slots, slotNames, gearTypes, gearTypeShort, 'vault', vaultData);
     }
 
-    html += '</tbody></table>';
     grid.innerHTML = html;
-
-    // Add expand handlers
-    grid.querySelectorAll('.expand-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.toggleVault(btn.dataset.playerId);
-      });
-    });
 
     // Add copy handlers
     grid.querySelectorAll('.copy-btn').forEach(btn => {
@@ -444,115 +402,165 @@ const UI = {
         this.copyToClipboard(btn.dataset.id, btn);
       });
     });
+
+    // Add vault load handler
+    const loadBtn = document.getElementById('load-vault-btn');
+    if (loadBtn && !vaultData) {
+      loadBtn.addEventListener('click', () => this._loadAllVaults(citizens));
+    } else if (loadBtn && vaultData) {
+      loadBtn.textContent = 'Vault Loaded';
+      loadBtn.disabled = true;
+    }
   },
 
-  // Track loaded vaults to avoid refetching
-  _vaultCache: {},
+  _buildGearTable(citizens, slots, slotNames, gearTypes, gearTypeShort, mode, vaultData = null) {
+    let html = '<table class="citizens-table"><thead><tr>';
+    html += '<th>Name</th><th>ID</th>';
+    gearTypeShort.forEach(type => {
+      html += `<th colspan="6">${type}</th>`;
+    });
+    html += '</tr><tr><th></th><th></th>';
+    for (let i = 0; i < 3; i++) {
+      slotNames.forEach(name => {
+        html += `<th class="slot-header">${name.charAt(0)}</th>`;
+      });
+    }
+    html += '</tr></thead><tbody>';
 
-  async toggleVault(playerId) {
-    const vaultRow = document.querySelector(`.vault-row[data-player-id="${playerId}"]`);
-    const expandBtn = document.querySelector(`.expand-btn[data-player-id="${playerId}"]`);
+    for (const citizen of citizens) {
+      html += `<tr>`;
+      html += `<td class="citizen-name">${citizen.userName || 'Unknown'}</td>`;
+      html += `<td class="citizen-id"><button class="copy-btn" data-id="${citizen.entityId}" title="Copy ID">${citizen.entityId}</button></td>`;
 
-    if (!vaultRow) return;
+      // For each gear type
+      for (const gearType of gearTypes) {
+        // For each slot
+        for (const slot of slots) {
+          let item = null;
 
-    const isHidden = vaultRow.classList.contains('hidden');
+          if (mode === 'equipped') {
+            const equipped = citizen.equipment.find(e =>
+            e.primary === slot && e.item?.tags === gearType
+            );
+            item = equipped?.item;
+          } else if (mode === 'vault' && vaultData) {
+            const playerVault = vaultData[citizen.entityId];
+            if (playerVault) {
+              item = this._getBestVaultItem(playerVault, slot, gearType);
+            }
+          }
 
-    if (isHidden) {
-      vaultRow.classList.remove('hidden');
-      expandBtn.textContent = '-';
-
-      // Load vault data if not cached
-      if (!this._vaultCache[playerId]) {
-        try {
-          const data = await API.getPlayerInventories(playerId);
-          this._vaultCache[playerId] = data;
-          this.renderVault(playerId, data);
-        } catch (err) {
-          document.getElementById(`vault-${playerId}`).innerHTML =
-          '<p class="vault-error">Failed to load vault data</p>';
+          if (item) {
+            const tier = item.tier || 0;
+            const rarity = (item.rarityString || item.rarityStr || '').toLowerCase();
+            const rarityClass = rarity ? `rarity-${rarity}` : '';
+            html += `<td class="gear-cell ${rarityClass}" title="${item.name}">T${tier}</td>`;
+          } else {
+            html += `<td class="gear-cell empty">-</td>`;
+          }
         }
-      } else {
-        this.renderVault(playerId, this._vaultCache[playerId]);
       }
-    } else {
-      vaultRow.classList.add('hidden');
-      expandBtn.textContent = '+';
+
+      html += '</tr>';
     }
+
+    html += '</tbody></table>';
+    return html;
   },
 
-  renderVault(playerId, data) {
-    const container = document.getElementById(`vault-${playerId}`);
-    if (!container) return;
-
-    const items = data.items || {};
-    const itemList = Object.values(items);
-
-    if (itemList.length === 0) {
-      container.innerHTML = '<p class="vault-empty">Vault is empty</p>';
-      return;
-    }
-
-    // Group items by category
-    const categories = {
-      'Combat Gear': [],
-      'Tools': [],
-      'Clothing': [],
-      'Materials': [],
-      'Other': []
+  _getBestVaultItem(vaultItems, slot, gearType) {
+    // Map slot names to what might appear in vault item data
+    const slotMapping = {
+      'head_clothing': ['head', 'helmet', 'hat', 'hood'],
+      'torso_clothing': ['torso', 'chest', 'shirt', 'robe'],
+      'hand_clothing': ['hand', 'glove', 'gauntlet'],
+      'belt_clothing': ['belt', 'waist'],
+      'leg_clothing': ['leg', 'pants', 'leggings'],
+      'feet_clothing': ['feet', 'boot', 'shoe']
     };
 
-    for (const item of itemList) {
-      // Categorize based on item properties
-      if (item.toolType) {
-        categories['Tools'].push(item);
-      } else if (item.equipmentSlot && item.equipmentSlot.includes('weapon')) {
-        categories['Combat Gear'].push(item);
-      } else if (item.equipmentSlot && item.equipmentSlot.includes('clothing')) {
-        categories['Clothing'].push(item);
-      } else if (item.tags && (item.tags.includes('Armor') || item.tags.includes('Weapon') || item.tags.includes('Shield'))) {
-        categories['Combat Gear'].push(item);
-      } else if (item.stackSize && item.stackSize > 1) {
-        categories['Materials'].push(item);
-      } else {
-        categories['Other'].push(item);
+    const gearTagMapping = {
+      'Cloth Clothing': 'Cloth Clothing',
+      'Leather Clothing': 'Leather Clothing',
+      'Metal Clothing': 'Metal Clothing'
+    };
+
+    const targetTag = gearTagMapping[gearType];
+    const slotKeywords = slotMapping[slot] || [];
+
+    // Filter items that match the gear type and slot
+    const matches = vaultItems.filter(item => {
+      // Check if item has matching tag
+      if (item.tags !== targetTag) return false;
+
+      // Check if item matches slot via equipmentSlot or name
+      if (item.equipmentSlot) {
+        return slotKeywords.some(kw => item.equipmentSlot.toLowerCase().includes(kw));
+      }
+
+      // Fallback: check item name
+      const nameLower = (item.name || '').toLowerCase();
+      return slotKeywords.some(kw => nameLower.includes(kw));
+    });
+
+    if (matches.length === 0) return null;
+
+    // Sort by tier desc, then rarity
+    const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
+    matches.sort((a, b) => {
+      const tierDiff = (b.tier || 0) - (a.tier || 0);
+      if (tierDiff !== 0) return tierDiff;
+      const aRarity = rarityOrder.indexOf((a.rarityStr || '').toLowerCase());
+      const bRarity = rarityOrder.indexOf((b.rarityStr || '').toLowerCase());
+      return bRarity - aRarity;
+    });
+
+    return {
+      name: matches[0].name,
+      tier: matches[0].tier,
+      rarityString: matches[0].rarityStr
+    };
+  },
+
+  _vaultData: null,
+
+  async _loadAllVaults(citizens) {
+    const statusEl = document.getElementById('vault-status');
+    const loadBtn = document.getElementById('load-vault-btn');
+
+    if (loadBtn) {
+      loadBtn.disabled = true;
+      loadBtn.textContent = 'Loading...';
+    }
+
+    const vaultData = {};
+    let loaded = 0;
+    const total = citizens.length;
+
+    for (const citizen of citizens) {
+      try {
+        if (statusEl) {
+          statusEl.textContent = `Loading ${loaded + 1}/${total}...`;
+        }
+
+        const data = await API.getPlayerInventories(citizen.entityId);
+        vaultData[citizen.entityId] = Object.values(data.items || {});
+        loaded++;
+      } catch (err) {
+        console.error(`Failed to load vault for ${citizen.userName}:`, err);
+        vaultData[citizen.entityId] = [];
+        loaded++;
       }
     }
 
-    let html = '<div class="vault-grid">';
+    this._vaultData = vaultData;
 
-    for (const [category, items] of Object.entries(categories)) {
-      if (items.length === 0) continue;
-
-      html += `<div class="vault-category">`;
-      html += `<h4>${category}</h4>`;
-      html += '<div class="vault-items">';
-
-      // Sort by tier descending, then rarity
-      items.sort((a, b) => {
-        const tierDiff = (b.tier || 0) - (a.tier || 0);
-        if (tierDiff !== 0) return tierDiff;
-        const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
-        const aRarity = rarityOrder.indexOf((a.rarityStr || '').toLowerCase());
-        const bRarity = rarityOrder.indexOf((b.rarityStr || '').toLowerCase());
-        return bRarity - aRarity;
-      });
-
-      for (const item of items) {
-        const rarity = (item.rarityStr || '').toLowerCase();
-        const rarityClass = rarity ? `rarity-${rarity}` : '';
-        const tierBadge = item.tier ? `<span class="tier-badge">T${item.tier}</span>` : '';
-        const qty = item.quantity && item.quantity > 1 ? ` x${item.quantity}` : '';
-
-        html += `<div class="vault-item ${rarityClass}" title="${item.name}">`;
-        html += `${tierBadge} ${item.name}${qty}`;
-        html += `</div>`;
-      }
-
-      html += '</div></div>';
+    if (statusEl) {
+      statusEl.textContent = '';
     }
 
-    html += '</div>';
-    container.innerHTML = html;
+    // Re-render with vault data
+    this.renderCitizens({ citizens }, vaultData);
   },
 
   // ID Lookup view
