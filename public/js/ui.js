@@ -182,7 +182,7 @@ const UI = {
         const val = matrix[cat][t] || 0;
         const intensity = globalMax > 0 ? val / globalMax : 0;
         const bgStyle = val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
-        const displayVal = val > 0 ? val.toLocaleString() : 'â€”';
+        const displayVal = val > 0 ? val.toLocaleString() : '"”';
         html += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
       }
       html += `<td class="row-total">${rowTotals[cat].toLocaleString()}</td>`;
@@ -193,7 +193,7 @@ const UI = {
     html += '<tr class="col-totals"><td class="cat-label">Total</td>';
     for (let t = 1; t <= 7; t++) {
       const val = colTotals[t];
-      const displayVal = val > 0 ? val.toLocaleString() : 'â€”';
+      const displayVal = val > 0 ? val.toLocaleString() : '"”';
       html += `<td class="matrix-cell">${displayVal}</td>`;
     }
     html += `<td class="row-total grand-total">${grandTotal.toLocaleString()}</td>`;
@@ -219,7 +219,7 @@ const UI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">â—</span>
+      <span class="icon">🍖</span>
       <h4>Food</h4>
       <span class="total">${foodTotal.toLocaleString()}</span>
       </div>
@@ -244,7 +244,7 @@ const UI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">â—</span>
+      <span class="icon">📜</span>
       <h4>Scholar</h4>
       <span class="total">${scholarTotal.toLocaleString()}</span>
       </div>
@@ -358,7 +358,7 @@ const UI = {
       header.innerHTML = `
       <h4>${category}</h4>
       <span class="total">${categoryTotal.toLocaleString()}</span>
-      <span class="chevron">â–¼</span>
+      <span class="chevron">▼</span>
       `;
       header.addEventListener('click', () => card.classList.toggle('expanded'));
 
