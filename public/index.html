@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitcraft City Manager</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Bitcraft City Manager</h1>
+    <section id="claim-input">
+      <label for="claim-id">Claim ID</label>
+      <input type="text" id="claim-id" placeholder="504403158284115406">
+      <button id="load-btn">Load</button>
+    </section>
+  </header>
+
+  <main>
+    <section id="error" class="hidden">
+      <p id="error-message"></p>
+    </section>
+
+    <section id="claim-info" class="hidden">
+      <h2 id="claim-name">-</h2>
+    </section>
+
+    <nav id="view-tabs" class="hidden">
+      <button class="tab-btn active" data-view="inventory">Inventory</button>
+      <button class="tab-btn" data-view="citizens">Citizens</button>
+      <button class="tab-btn" data-view="ids">ID Lookup</button>
+    </nav>
+
+    <!-- Inventory View -->
+    <section id="view-inventory" class="view-section">
+      <div id="dashboard" class="hidden">
+        <div id="tier-bar"></div>
+        <div id="quick-stats"></div>
+      </div>
+      <div id="inventory" class="hidden">
+        <div id="inventory-grid"></div>
+      </div>
+    </section>
+
+    <!-- Citizens View -->
+    <section id="view-citizens" class="view-section hidden">
+      <div id="citizens-loading" class="hidden">Loading citizens...</div>
+      <div id="citizens-grid"></div>
+    </section>
+
+    <!-- ID Lookup View -->
+    <section id="view-ids" class="view-section hidden">
+      <div id="ids-search">
+        <input type="text" id="ids-filter" placeholder="Filter by name...">
+      </div>
+      <div id="ids-tabs">
+        <button class="ids-tab-btn active" data-type="citizens">Citizens</button>
+        <button class="ids-tab-btn" data-type="items">Items</button>
+      </div>
+      <div id="ids-list"></div>
+    </section>
+  </main>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/inventory.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/main.js"></script>
+</body>
+</html>

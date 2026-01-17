@@ -1,0 +1,20 @@
+{
+  "name": "bitcraft-city-manager",
+  "version": "0.2.0",
+  "description": "Dashboard for viewing Bitcraft claim inventory, citizens, and equipment",
+  "private": true,
+  "scripts": {
+    "deploy": "vercel --prod"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YOUR_USERNAME/bitcraft-city-manager"
+  },
+  "keywords": [
+    "bitcraft",
+    "game",
+    "dashboard",
+    "inventory"
+  ],
+  "license": "MIT"
+}
