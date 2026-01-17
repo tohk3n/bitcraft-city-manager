@@ -1,45 +1,18 @@
 # Bitcraft City Manager
 
-A lightweight dashboard for viewing your Bitcraft settlement's inventory, citizens, and equipment status.
-
-Built with vanilla JS - no frameworks, no build step.
+A basic dashboard for viewing a Bitcraft settlement's inventory, citizens, and equipment status.
 
 ## Features
 
-- **Inventory View**: Material matrix showing quantities by category and tier with heatmap visualization
-- **Citizens View**: Overview of all settlement members with their equipment across cloth/leather/metal gear types
-- **ID Lookup**: Quick search and copy-to-clipboard for player and item IDs (useful for bitcraftmap and other tools)
-
-## Quick Start
-
-### Option 1: Deploy to Vercel (Recommended)
-
-1. Fork this repository
-2. Go to [vercel.com](https://vercel.com) and sign in with GitHub
-3. Click "New Project" and import your forked repo
-4. Deploy - no configuration needed
-
-### Option 2: Run Locally
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Clone and run
-git clone https://github.com/YOUR_USERNAME/bitcraft-city-manager.git
-cd bitcraft-city-manager
-vercel dev
-```
-
-Opens at http://localhost:3000
+- **Inventory View**: Using a matrix table to show quantities by category and tier
+- **Citizens View**: Check your citizen's gear at a glance
+- **ID Lookup**: Quick search and copy-to-clipboard for player and item IDs
 
 ## Usage
 
-1. Enter a Claim ID (e.g., `504403158284115406`)
+1. Enter a Claim ID, this can be retrieved from bitjita if you're not sure
 2. Click Load
 3. Switch between Inventory/Citizens/IDs tabs
-
-You can share URLs with claim IDs: `https://your-site.vercel.app/?claim=504403158284115406`
 
 ## Project Structure
 
@@ -84,6 +57,7 @@ Pull requests welcome. Keep it simple:
 
 - Data provided by [bitjita.com](https://bitjita.com)
 - Inspired by the Bitcraft community tools ecosystem
+- Player Lomacil for the original work and idea
 
 ## License
 
