@@ -657,6 +657,116 @@ color: var(--text-secondary);
 .citizens-table .rarity-legendary { background: #a02820; color: #fff; }
 .citizens-table .rarity-mythic { background: #6a00a0; color: #fff; }
 
+/* Expandable rows */
+.citizens-table .expand-cell {
+  width: 30px;
+  text-align: center;
+}
+
+.expand-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.expand-btn:hover {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
+}
+
+.citizen-row {
+  cursor: pointer;
+}
+
+.citizen-row:hover {
+  background: var(--bg-tertiary);
+}
+
+.vault-row {
+  background: var(--bg-primary);
+}
+
+.vault-row.hidden {
+  display: none;
+}
+
+.vault-cell {
+  padding: 16px !important;
+  border-bottom: 2px solid var(--border) !important;
+}
+
+.vault-content {
+  min-height: 60px;
+}
+
+.vault-empty, .vault-error {
+  color: var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+.vault-error {
+  color: #f85149;
+}
+
+.vault-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.vault-category h4 {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+
+.vault-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.vault-item {
+  font-size: 0.8rem;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vault-item.rarity-common { border-left: 3px solid #888; }
+.vault-item.rarity-uncommon { border-left: 3px solid #9ccb00; }
+.vault-item.rarity-rare { border-left: 3px solid #3399ff; }
+.vault-item.rarity-epic { border-left: 3px solid #ffe100; }
+.vault-item.rarity-legendary { border-left: 3px solid #f03b32; }
+.vault-item.rarity-mythic { border-left: 3px solid #a700ff; }
+
+.vault-item .tier-badge {
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  color: var(--text-muted);
+}
+
 /* ID Lookup view */
 #ids-search {
 margin-bottom: 12px;

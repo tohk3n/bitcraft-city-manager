@@ -378,11 +378,11 @@ const UI = {
     const gearTypeShort = ['Cloth', 'Leather', 'Metal'];
 
     let html = '<table class="citizens-table"><thead><tr>';
-    html += '<th>Name</th><th>ID</th>';
+    html += '<th></th><th>Name</th><th>ID</th>';
     gearTypeShort.forEach(type => {
       html += `<th colspan="6">${type}</th>`;
     });
-    html += '</tr><tr><th></th><th></th>';
+    html += '</tr><tr><th></th><th></th><th></th>';
     for (let i = 0; i < 3; i++) {
       slotNames.forEach(name => {
         html += `<th class="slot-header">${name.charAt(0)}</th>`;
@@ -391,9 +391,13 @@ const UI = {
     html += '</tr></thead><tbody>';
 
     for (const citizen of citizens) {
-      html += `<tr>`;
+      const odataId = citizen.entityId;
+
+      // Main row
+      html += `<tr class="citizen-row" data-player-id="${odataId}">`;
+      html += `<td class="expand-cell"><button class="expand-btn" data-player-id="${odataId}">+</button></td>`;
       html += `<td class="citizen-name">${citizen.userName || 'Unknown'}</td>`;
-      html += `<td class="citizen-id"><button class="copy-btn" data-id="${citizen.entityId}" title="Copy ID">${citizen.entityId}</button></td>`;
+      html += `<td class="citizen-id"><button class="copy-btn" data-id="${odataId}" title="Copy ID">${odataId}</button></td>`;
 
       // For each gear type
       for (const gearType of gearTypes) {
@@ -415,15 +419,140 @@ const UI = {
       }
 
       html += '</tr>';
+
+      // Expandable vault row (hidden by default)
+      html += `<tr class="vault-row hidden" data-player-id="${odataId}">`;
+      html += `<td colspan="21" class="vault-cell"><div class="vault-content" id="vault-${odataId}">Loading vault...</div></td>`;
+      html += '</tr>';
     }
 
     html += '</tbody></table>';
     grid.innerHTML = html;
 
+    // Add expand handlers
+    grid.querySelectorAll('.expand-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.toggleVault(btn.dataset.playerId);
+      });
+    });
+
     // Add copy handlers
     grid.querySelectorAll('.copy-btn').forEach(btn => {
-      btn.addEventListener('click', () => this.copyToClipboard(btn.dataset.id, btn));
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.copyToClipboard(btn.dataset.id, btn);
+      });
     });
+  },
+
+  // Track loaded vaults to avoid refetching
+  _vaultCache: {},
+
+  async toggleVault(playerId) {
+    const vaultRow = document.querySelector(`.vault-row[data-player-id="${playerId}"]`);
+    const expandBtn = document.querySelector(`.expand-btn[data-player-id="${playerId}"]`);
+
+    if (!vaultRow) return;
+
+    const isHidden = vaultRow.classList.contains('hidden');
+
+    if (isHidden) {
+      vaultRow.classList.remove('hidden');
+      expandBtn.textContent = '-';
+
+      // Load vault data if not cached
+      if (!this._vaultCache[playerId]) {
+        try {
+          const data = await API.getPlayerInventories(playerId);
+          this._vaultCache[playerId] = data;
+          this.renderVault(playerId, data);
+        } catch (err) {
+          document.getElementById(`vault-${playerId}`).innerHTML =
+          '<p class="vault-error">Failed to load vault data</p>';
+        }
+      } else {
+        this.renderVault(playerId, this._vaultCache[playerId]);
+      }
+    } else {
+      vaultRow.classList.add('hidden');
+      expandBtn.textContent = '+';
+    }
+  },
+
+  renderVault(playerId, data) {
+    const container = document.getElementById(`vault-${playerId}`);
+    if (!container) return;
+
+    const items = data.items || {};
+    const itemList = Object.values(items);
+
+    if (itemList.length === 0) {
+      container.innerHTML = '<p class="vault-empty">Vault is empty</p>';
+      return;
+    }
+
+    // Group items by category
+    const categories = {
+      'Combat Gear': [],
+      'Tools': [],
+      'Clothing': [],
+      'Materials': [],
+      'Other': []
+    };
+
+    for (const item of itemList) {
+      // Categorize based on item properties
+      if (item.toolType) {
+        categories['Tools'].push(item);
+      } else if (item.equipmentSlot && item.equipmentSlot.includes('weapon')) {
+        categories['Combat Gear'].push(item);
+      } else if (item.equipmentSlot && item.equipmentSlot.includes('clothing')) {
+        categories['Clothing'].push(item);
+      } else if (item.tags && (item.tags.includes('Armor') || item.tags.includes('Weapon') || item.tags.includes('Shield'))) {
+        categories['Combat Gear'].push(item);
+      } else if (item.stackSize && item.stackSize > 1) {
+        categories['Materials'].push(item);
+      } else {
+        categories['Other'].push(item);
+      }
+    }
+
+    let html = '<div class="vault-grid">';
+
+    for (const [category, items] of Object.entries(categories)) {
+      if (items.length === 0) continue;
+
+      html += `<div class="vault-category">`;
+      html += `<h4>${category}</h4>`;
+      html += '<div class="vault-items">';
+
+      // Sort by tier descending, then rarity
+      items.sort((a, b) => {
+        const tierDiff = (b.tier || 0) - (a.tier || 0);
+        if (tierDiff !== 0) return tierDiff;
+        const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
+        const aRarity = rarityOrder.indexOf((a.rarityStr || '').toLowerCase());
+        const bRarity = rarityOrder.indexOf((b.rarityStr || '').toLowerCase());
+        return bRarity - aRarity;
+      });
+
+      for (const item of items) {
+        const rarity = (item.rarityStr || '').toLowerCase();
+        const rarityClass = rarity ? `rarity-${rarity}` : '';
+        const tierBadge = item.tier ? `<span class="tier-badge">T${item.tier}</span>` : '';
+        const qty = item.quantity && item.quantity > 1 ? ` x${item.quantity}` : '';
+
+        html += `<div class="vault-item ${rarityClass}" title="${item.name}">`;
+        html += `${tierBadge} ${item.name}${qty}`;
+        html += `</div>`;
+      }
+
+      html += '</div></div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
   },
 
   // ID Lookup view
