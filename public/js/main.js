@@ -29,19 +29,26 @@
       claimData.claimId = claimId;
       claimData.inventories = data;
 
-      // Try to get claim name
+      // Try to get claim name and details
       let claimName = `Claim ${claimId}`;
+      let hasClaimHeader = false;
       try {
         const claimInfo = await API.getClaim(claimId);
         claimData.claimInfo = claimInfo;
-        if (claimInfo.name) {
-          claimName = claimInfo.name;
+        if (claimInfo.claim && claimInfo.claim.name) {
+          claimName = claimInfo.claim.name;
+          UI.renderClaimHeader(claimInfo);
+          hasClaimHeader = true;
         }
       } catch (e) {
         // Claim endpoint might not exist, continue with default name
+        console.log('Could not fetch claim details:', e);
       }
 
-      UI.setClaimName(claimName);
+      // Only show simple name if header failed
+      if (!hasClaimHeader) {
+        UI.setClaimName(claimName);
+      }
       UI.showTabs();
 
       // Process and render inventory view
@@ -62,7 +69,7 @@
   // Load citizens data (lazy loaded when tab clicked)
   async function loadCitizens() {
     if (!claimData.claimId) return;
-    
+
     // Return cached if available
     if (claimData.citizens) {
       UI.renderCitizens(claimData.citizens);
@@ -127,7 +134,7 @@
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const view = tab.dataset.view;
-        
+
         // Update active tab
         tabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
@@ -150,7 +157,7 @@
     idTabs.forEach(tab => {
       tab.addEventListener('click', () => {
         const type = tab.dataset.type;
-        
+
         idTabs.forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
 
@@ -176,13 +183,13 @@
     if (e.key === 'Enter') loadClaim();
   });
 
-  setupTabs();
+    setupTabs();
 
-  // Load from URL param if present
-  const params = new URLSearchParams(window.location.search);
-  const claimParam = params.get('claim');
-  if (claimParam) {
-    input.value = claimParam;
-    loadClaim();
-  }
+    // Load from URL param if present
+    const params = new URLSearchParams(window.location.search);
+    const claimParam = params.get('claim');
+    if (claimParam) {
+      input.value = claimParam;
+      loadClaim();
+    }
 })();
