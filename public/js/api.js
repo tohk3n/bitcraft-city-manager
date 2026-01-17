@@ -34,5 +34,9 @@ const API = {
 
   getPlayerInventories(playerId) {
     return this.fetch(`/players/${playerId}/inventories`);
+  },
+
+  getPlayerVault(playerId) {
+    return this.fetch(`/players/${playerId}/vault`);
   }
 };
