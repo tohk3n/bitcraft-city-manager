@@ -458,7 +458,9 @@ const UI = {
 
     try {
       const data = await API.getPlayerInventories(playerId);
-      const items = Object.values(data.items || {});
+
+      // Parse the inventory structure
+      const items = this._parsePlayerInventory(data);
       this._vaultCache[playerId] = items;
 
       this._fillVaultGear(playerId, items);
@@ -472,9 +474,52 @@ const UI = {
     }
   },
 
+  _parsePlayerInventory(data) {
+    const inventories = data.inventories || [];
+    const itemMeta = data.items || {};
+    const items = [];
+
+    console.log('Parsing inventory, inventories count:', inventories.length);
+    console.log('Item metadata entries:', Object.keys(itemMeta).length);
+
+    // Flatten all pockets from all inventories
+    for (const inv of inventories) {
+      for (const pocket of inv.pockets || []) {
+        const contents = pocket.contents;
+        if (!contents || !contents.itemId) continue;
+
+        // Look up item metadata - itemId might be number, keys are strings
+        const meta = itemMeta[contents.itemId] || itemMeta[String(contents.itemId)];
+        if (!meta) {
+          console.log('No metadata found for itemId:', contents.itemId);
+          continue;
+        }
+
+        items.push({
+          id: contents.itemId,
+          quantity: contents.quantity,
+          name: meta.name,
+          tier: meta.tier,
+          rarityStr: meta.rarityStr,
+          tag: meta.tag,
+          inventoryName: inv.inventoryName
+        });
+      }
+    }
+
+    console.log('Total items parsed:', items.length);
+    return items;
+  },
+
   _fillVaultGear(playerId, vaultItems) {
     const slots = ['head_clothing', 'torso_clothing', 'hand_clothing', 'belt_clothing', 'leg_clothing', 'feet_clothing'];
     const gearTypes = ['Cloth Clothing', 'Leather Clothing', 'Metal Clothing'];
+
+    // Debug: log what clothing items we found
+    const clothingItems = vaultItems.filter(i =>
+    i.tag === 'Cloth Clothing' || i.tag === 'Leather Clothing' || i.tag === 'Metal Clothing'
+    );
+    console.log('Vault clothing items found:', clothingItems);
 
     for (const gearType of gearTypes) {
       const gearKey = gearType.split(' ')[0].toLowerCase();
@@ -487,6 +532,10 @@ const UI = {
 
         const currentTier = parseInt(cell.dataset.tier) || 0;
         const bestVaultItem = this._getBestVaultItem(vaultItems, slot, gearType);
+
+        if (bestVaultItem) {
+          console.log(`Found vault item for ${gearType} ${slot}:`, bestVaultItem.name, 'T' + bestVaultItem.tier);
+        }
 
         if (bestVaultItem && bestVaultItem.tier > currentTier) {
           const rarity = (bestVaultItem.rarityStr || '').toLowerCase();
@@ -503,29 +552,30 @@ const UI = {
   },
 
   _getBestVaultItem(vaultItems, slot, gearType) {
-    // Map slot names to equipment slot values in API
-    const slotMapping = {
-      'head_clothing': 'head_clothing',
-      'torso_clothing': 'torso_clothing',
-      'hand_clothing': 'hand_clothing',
-      'belt_clothing': 'belt_clothing',
-      'leg_clothing': 'leg_clothing',
-      'feet_clothing': 'feet_clothing'
+    // Slot keywords to match in item names (use word stems to match singular/plural)
+    const slotKeywords = {
+      'head_clothing': ['cap', 'hat', 'hood', 'helm', 'coif', 'headband', 'circlet', 'crown'],
+      'torso_clothing': ['shirt', 'robe', 'tunic', 'vest', 'jerkin', 'coat', 'jacket', 'chest', 'doublet'],
+      'hand_clothing': ['glove', 'gauntlet', 'mitt', 'bracer', 'wrap'],
+      'belt_clothing': ['belt', 'sash', 'girdle'],
+      'leg_clothing': ['short', 'pant', 'legging', 'greave', 'trouser', 'skirt', 'legs'],
+      'feet_clothing': ['shoe', 'boot', 'sandal', 'footwrap', 'sabaton']
     };
 
-    const targetSlot = slotMapping[slot];
+    const keywords = slotKeywords[slot] || [];
     const targetTag = gearType;
 
     // Filter items that match the gear type and slot
     const matches = vaultItems.filter(item => {
-      // Check equipment slot matches
-      const itemSlot = item.equipmentSlot || item.primary || '';
-      if (itemSlot !== targetSlot) return false;
+      // Must match gear type tag exactly
+      if (item.tag !== targetTag) return false;
 
-      // Check tag matches (Cloth Clothing, Leather Clothing, Metal Clothing)
-      if (item.tags !== targetTag) return false;
+      // Must have positive tier
+      if (!item.tier || item.tier < 1) return false;
 
-      return true;
+      // Check if item name contains a slot keyword
+      const nameLower = (item.name || '').toLowerCase();
+      return keywords.some(kw => nameLower.includes(kw));
     });
 
     if (matches.length === 0) return null;
