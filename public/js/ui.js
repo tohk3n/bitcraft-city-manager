@@ -171,9 +171,11 @@ const UI = {
     .from(document.querySelectorAll('#checkbox-row input[type="checkbox"]:checked'))
     .map(cb => cb.value);
 
-    const resourceIdInput = document.getElementById("res-ids")?.value || '';
-    const playerIdInput = document.getElementById("player-ids")?.value || '';
-
+    let resourceIdInput = document.getElementById("res-ids")?.value || '';
+    let playerIdInput = document.getElementById("player-ids")?.value || '';
+    //removes possible comma at the end
+    resourceIdInput = UI.finalizeCommaNumberInput(resourceIdInput)
+    playerIdInput = UI.finalizeCommaNumberInput(playerIdInput)
     //use function to build the link
     const generatedLink = UI.generateLink(checkboxes, resourceIdInput, playerIdInput)
     // show link in UI
@@ -223,5 +225,8 @@ const UI = {
 
       field.value = value;
     });
+  },
+  finalizeCommaNumberInput(value) {
+    return value.replace(/,+$/, '');     // no commas at the end
   }
 };
