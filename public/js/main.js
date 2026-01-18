@@ -90,34 +90,44 @@
 
     try {
       const citizensData = await API.getClaimCitizens(claimData.claimId);
-      claimData.citizens = citizensData;
-
-      // Load equipment for each citizen
       const citizens = citizensData.citizens || [];
-      const citizensWithGear = [];
 
-      for (const citizen of citizens) {
-        try {
-          const equipment = await API.getPlayerEquipment(citizen.entityId);
-          citizensWithGear.push({
-            ...citizen,
-            equipment: equipment.equipment || []
-          });
-        } catch (e) {
-          citizensWithGear.push({
-            ...citizen,
-            equipment: []
-          });
-        }
-      }
-
-      claimData.citizens = { citizens: citizensWithGear };
+      // Render skeleton table immediately with empty equipment
+      const citizensWithEmptyGear = citizens.map(c => ({ ...c, equipment: [] }));
+      claimData.citizens = { citizens: citizensWithEmptyGear };
       UI.renderCitizens(claimData.citizens);
+      UI.showCitizensLoading(false);
+
+      // Fetch all equipment in parallel (fast)
+      const equipmentResults = await Promise.all(
+        citizens.map(async (citizen) => {
+          try {
+            const equipment = await API.getPlayerEquipment(citizen.entityId);
+            return { id: citizen.entityId, equipment: equipment.equipment || [] };
+          } catch (e) {
+            console.error(`Failed to load equipment for ${citizen.entityId}:`, e);
+            return { id: citizen.entityId, equipment: [] };
+          }
+        })
+      );
+
+      // Update DOM progressively with staggered timing (smooth)
+      for (let i = 0; i < equipmentResults.length; i++) {
+        const result = equipmentResults[i];
+
+        // Stagger updates ~30ms apart for visual smoothness
+        setTimeout(() => {
+          UI.updateCitizenEquipment(result.id, result.equipment);
+
+          // Update cached data
+          const cached = claimData.citizens.citizens.find(c => c.entityId === result.id);
+          if (cached) cached.equipment = result.equipment;
+        }, i * 30);
+      }
 
     } catch (err) {
       console.error(err);
       UI.showError('Failed to load citizens data.');
-    } finally {
       UI.showCitizensLoading(false);
     }
   }
