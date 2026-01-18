@@ -145,7 +145,6 @@ const UI = {
       return;
     }
     //generate label and checkbox for region selection
-    //TODO read amount of regions from API?
     for(let i = 1; i<=9; i++){
       const label = document.createElement("label");
       const checkbox = document.createElement("input")
@@ -157,28 +156,33 @@ const UI = {
       label.append(` R${i}`);
       checkboxContainer.appendChild(label);
     }
+    //add input validation for resource and player IDs
+    UI.addCommaNumberValidation('res-ids');
+    UI.addCommaNumberValidation('player-ids');
 
     const btn = document.getElementById("lnk-gen-btn");
     btn.addEventListener("click", () => UI.generateLinkEvent());
 
   },
+  //gets values from checkboxes and input fields to pass into function and shows the generated link
   generateLinkEvent(){
 
     const checkboxes = Array
     .from(document.querySelectorAll('#checkbox-row input[type="checkbox"]:checked'))
     .map(cb => cb.value);
 
-    const resourceIdInput = document.getElementById("res-ids")?.value||'';
-    const playerIdInput = document.getElementById("player-ids")?.value||'';
+    const resourceIdInput = document.getElementById("res-ids")?.value || '';
+    const playerIdInput = document.getElementById("player-ids")?.value || '';
 
     //use function to build the link
-    const generatedLink = UI.generateLink(checkboxes,resourceIdInput,playerIdInput)
+    const generatedLink = UI.generateLink(checkboxes, resourceIdInput, playerIdInput)
     // show link in UI
     const linkEl = document.getElementById("map-link");
     linkEl.href = generatedLink;
     linkEl.textContent = generatedLink;
   },
-  generateLink(regions,resourceIds,playerIds){
+  //generates link to bitcraft map from actual data
+  generateLink(regions, resourceIds, playerIds){
 
     const dataMap = {};
     //fill map if values exist
@@ -202,5 +206,22 @@ const UI = {
       first = false;
     }
     return generatedLink;
+  },
+
+  addCommaNumberValidation(inputId) {
+    const field = document.getElementById(inputId);
+    if (!field) return;
+
+    field.addEventListener('input', () => {
+      let value = field.value;
+
+      value = value
+      .replace(/[^0-9,]/g, '')  // only numbers and commas
+      .replace(/^,+/, '')       // no leading commas
+      .replace(/\s*,\s*/g, ',') // no spaces around commas
+      .replace(/,{2,}/g, ',');  // no duplicate commas
+
+      field.value = value;
+    });
   }
 };
