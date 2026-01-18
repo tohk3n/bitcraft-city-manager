@@ -158,6 +158,8 @@
           loadCitizens();
         } else if (view === 'ids') {
           UI.renderIdList('citizens', claimData.items, claimData.citizens);
+        } else if (view === 'mapLinkComposer'){
+          UI.renderMapLinkComposer();
         }
       });
     });

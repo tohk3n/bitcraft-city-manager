@@ -691,7 +691,75 @@ const UI = {
         btn.classList.remove('copied');
       }, 1500);
     }).catch(err => {
-      console.error('Copy failed:', err);
+       console.error('Copy failed:', err);
     });
+  },
+
+  renderMapLinkComposer(){
+    const checkboxContainer = document.getElementById("checkbox-row");
+    if(!checkboxContainer){
+      return;
+    }
+    if(checkboxContainer.querySelectorAll('input[type="checkbox"]').length > 0){
+      return;
+    }
+    //generate label and checkbox for region selection
+    //TODO read amount of regions from API?
+    for(let i = 1; i<=9; i++){
+      const label = document.createElement("label");
+      const checkbox = document.createElement("input")
+
+      checkbox.type = "checkbox";
+      checkbox.value = i;
+
+      label.appendChild(checkbox);
+      label.append(` R${i}`);
+      checkboxContainer.appendChild(label);
+    }
+
+    const btn = document.getElementById("lnk-gen-btn");
+    btn.addEventListener("click", () => UI.generateLinkEvent());
+
+  },
+  generateLinkEvent(){
+
+    const checkboxes = Array
+    .from(document.querySelectorAll('#checkbox-row input[type="checkbox"]:checked'))
+    .map(cb => cb.value);
+
+    const resourceIdInput = document.getElementById("res-ids")?.value||'';
+    const playerIdInput = document.getElementById("player-ids")?.value||'';
+
+    //use function to build the link
+    const generatedLink = UI.generateLink(checkboxes,resourceIdInput,playerIdInput)
+    // show link in UI
+    const linkEl = document.getElementById("map-link");
+    linkEl.href = generatedLink;
+    linkEl.textContent = generatedLink;
+  },
+  generateLink(regions,resourceIds,playerIds){
+
+    const dataMap = {};
+    //fill map if values exist
+    if(regions.length > 0){
+      dataMap.regionId = regions.join(',');
+    }
+    if(resourceIds !== ''){
+      dataMap.resourceId = resourceIds;
+    }
+    if(playerIds !== ''){
+      dataMap.playerId = playerIds;
+    }
+
+    let generatedLink = 'https://bitcraftmap.com/';
+    let first = true;
+
+    //first value has ? as a prefix, following are connected by &
+    for(const [key,value] of Object.entries(dataMap)){
+      const prefix = first ? '?' : '&';
+      generatedLink += `${prefix}${key}=${value}`;
+      first = false;
+    }
+    return generatedLink;
   }
 };
