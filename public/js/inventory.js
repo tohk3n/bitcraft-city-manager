@@ -134,4 +134,4 @@ export function processCraftingStations(buildings) {
   }
 
   return { active, passive };
-// }
+}
