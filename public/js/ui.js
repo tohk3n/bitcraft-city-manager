@@ -1,5 +1,6 @@
 // Core UI utilities - base object that other modules extend
-const UI = {
+import { MAP_LINK } from './maplink.js';
+export const UI = {
   show(id) {
     document.getElementById(id)?.classList.remove('hidden');
   },
@@ -134,5 +135,28 @@ const UI = {
     }).catch(err => {
       console.error('Copy failed:', err);
     });
+  },
+
+  renderMapLinkComposer(){
+    const checkboxContainer = document.getElementById("checkbox-row");
+    if(!checkboxContainer){
+      return;
+    }
+    if(checkboxContainer.querySelectorAll('input[type="checkbox"]').length > 0){
+      return;
+    }
+    //generate label and checkbox for region selection
+    let html = '';
+    for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
+      html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
+    }
+    checkboxContainer.innerHTML = html;
+
+    //add input validation for resource and player IDs
+    MAP_LINK.addCommaNumberValidation('res-ids');
+    MAP_LINK.addCommaNumberValidation('player-ids');
+
+    const btn = document.getElementById("lnk-gen-btn");
+    btn.addEventListener("click", () => MAP_LINK.generateLinkEvent());
   }
 };

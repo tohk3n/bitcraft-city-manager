@@ -73,6 +73,9 @@ const CONFIG = {
         'Bait', 'Lake Fish', 'Lake Fish Filet', 'Ocean Fish', 'Oceanfish Filet', 'Chum',
         'Leather', 'Tanned Pelt', 'Tannin', 'Raw Meat',
     ]),
+    // number of Regions
+    REGION_COUNT : 9,
+    MAP_BASE_URL : 'https://bitcraftmap.com/'
 };
 
 // Build reverse lookup: tag -> category
