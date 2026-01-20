@@ -1,50 +1,57 @@
-export const MAP_LINK = {
-//gets values from checkboxes and input fields to pass into function and shows the generated link
-  generateLinkEvent(){
+// Map link composer functionality
+import { CONFIG } from './config.js';
 
+export const MAP_LINK = {
+  // Gets values from checkboxes and input fields to generate link
+  generateLinkEvent() {
     const checkboxes = Array
     .from(document.querySelectorAll('#checkbox-row input[type="checkbox"]:checked'))
     .map(cb => cb.value);
 
     let resourceIdInput = document.getElementById("res-ids")?.value || '';
     let playerIdInput = document.getElementById("player-ids")?.value || '';
-    //removes possible comma at the end
-    resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput)
-    playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput)
-    //use function to build the link
-    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput)
-    // show link in UI
+
+    // Remove possible trailing comma
+    resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
+    playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
+
+    // Build the link
+    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput);
+
+    // Show link in UI
     const linkEl = document.getElementById("map-link");
     linkEl.href = generatedLink;
     linkEl.textContent = generatedLink;
   },
-  //generates link to bitcraft map from actual data
-  generateLink(regions, resourceIds, playerIds){
 
+  // Generate link to bitcraft map from provided data
+  generateLink(regions, resourceIds, playerIds) {
     const dataMap = {};
-    //fill map if values exist
-    if(regions.length > 0){
+
+    if (regions.length > 0) {
       dataMap.regionId = regions.join(',');
     }
-    if(resourceIds !== ''){
+    if (resourceIds !== '') {
       dataMap.resourceId = encodeURIComponent(resourceIds);
     }
-    if(playerIds !== ''){
-      dataMap.playerId = (playerIds);
+    if (playerIds !== '') {
+      dataMap.playerId = playerIds;
     }
 
     let generatedLink = CONFIG.MAP_BASE_URL;
     let first = true;
 
-    //first value has ? as a prefix, following are connected by &
-    for(const [key,value] of Object.entries(dataMap)){
+    // First value has ? prefix, subsequent use &
+    for (const [key, value] of Object.entries(dataMap)) {
       const prefix = first ? '?' : '&';
       generatedLink += `${prefix}${key}=${value}`;
       first = false;
     }
+
     return generatedLink;
   },
 
+  // Add input validation for comma-separated number fields
   addCommaNumberValidation(inputId) {
     const field = document.getElementById(inputId);
     if (!field) return;
@@ -61,7 +68,9 @@ export const MAP_LINK = {
       field.value = value;
     });
   },
+
+  // Clean up trailing commas from input
   finalizeCommaNumberInput(value) {
-    return value.replace(/,+$/, '');     // no commas at the end
+    return value.replace(/,+$/, '');
   }
 };

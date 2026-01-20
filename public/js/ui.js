@@ -1,6 +1,12 @@
-// Core UI utilities - base object that other modules extend
+// Core UI - combines base utilities with view-specific modules
+import { CONFIG } from './config.js';
 import { MAP_LINK } from './maplink.js';
-export const UI = {
+import { DashboardUI } from './dashboard.js';
+import { CitizensUI } from './citizens.js';
+import { IdsUI } from './ids.js';
+
+// Base UI utilities
+const BaseUI = {
   show(id) {
     document.getElementById(id)?.classList.remove('hidden');
   },
@@ -137,22 +143,23 @@ export const UI = {
     });
   },
 
-  renderMapLinkComposer(){
+  renderMapLinkComposer() {
     const checkboxContainer = document.getElementById("checkbox-row");
-    if(!checkboxContainer){
+    if (!checkboxContainer) {
       return;
     }
-    if(checkboxContainer.querySelectorAll('input[type="checkbox"]').length > 0){
+    if (checkboxContainer.querySelectorAll('input[type="checkbox"]').length > 0) {
       return;
     }
-    //generate label and checkbox for region selection
+
+    // Generate label and checkbox for region selection
     let html = '';
     for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
       html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
     }
     checkboxContainer.innerHTML = html;
 
-    //add input validation for resource and player IDs
+    // Add input validation for resource and player IDs
     MAP_LINK.addCommaNumberValidation('res-ids');
     MAP_LINK.addCommaNumberValidation('player-ids');
 
@@ -160,3 +167,12 @@ export const UI = {
     btn.addEventListener("click", () => MAP_LINK.generateLinkEvent());
   }
 };
+
+// Combine all UI modules into single export
+export const UI = Object.assign(
+  {},
+  BaseUI,
+  DashboardUI,
+  CitizensUI,
+  IdsUI
+);

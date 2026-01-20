@@ -1,4 +1,5 @@
-const CONFIG = {
+// Configuration constants - centralized magic values
+export const CONFIG = {
     // Equipment slot identifiers (API field names)
     EQUIPMENT_SLOTS: [
         'head_clothing',
@@ -73,13 +74,18 @@ const CONFIG = {
         'Bait', 'Lake Fish', 'Lake Fish Filet', 'Ocean Fish', 'Oceanfish Filet', 'Chum',
         'Leather', 'Tanned Pelt', 'Tannin', 'Raw Meat',
     ]),
-    // number of Regions
-    REGION_COUNT : 9,
-    MAP_BASE_URL : 'https://bitcraftmap.com/'
+
+    // Number of regions
+    REGION_COUNT: 9,
+
+    // External URLs
+    MAP_BASE_URL: 'https://bitcraftmap.com/',
+
+    // Build reverse lookup: tag -> category (computed at load time)
+    TAG_TO_CATEGORY: {}
 };
 
-// Build reverse lookup: tag -> category
-CONFIG.TAG_TO_CATEGORY = {};
+// Initialize reverse lookup
 for (const [category, tags] of Object.entries(CONFIG.TAG_CATEGORIES)) {
     for (const tag of tags) {
         CONFIG.TAG_TO_CATEGORY[tag] = category;

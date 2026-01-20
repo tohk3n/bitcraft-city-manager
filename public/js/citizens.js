@@ -1,17 +1,19 @@
-// Citizens view rendering - extends UI object
+// Citizens view rendering
 // Handles: citizen table, equipment display, vault loading
+import { CONFIG } from './config.js';
+import { API } from './api.js';
 
-Object.assign(UI, {
-  // Internal state for citizens module
-  _citizensData: null,
-  _vaultCache: {},
+// Internal state for citizens module
+let _citizensData = null;
+let _vaultCache = {};
 
+export const CitizensUI = {
   // Render citizens table with equipment matrix
   renderCitizens(data) {
     const grid = document.getElementById('citizens-grid');
     if (!grid) return;
 
-    this._citizensData = data;
+    _citizensData = data;
     const citizens = data.citizens || [];
 
     if (citizens.length === 0) {
@@ -127,7 +129,7 @@ Object.assign(UI, {
   // Load vault gear for a player
   async _loadPlayerVault(playerId, btn) {
     // Don't reload if already loaded
-    if (this._vaultCache[playerId]) {
+    if (_vaultCache[playerId]) {
       btn.textContent = 'ok';
       btn.disabled = true;
       return;
@@ -139,7 +141,7 @@ Object.assign(UI, {
     try {
       const data = await API.getPlayerVault(playerId);
       const items = this._parseVaultCollectibles(data);
-      this._vaultCache[playerId] = items;
+      _vaultCache[playerId] = items;
 
       this._fillVaultGear(playerId, items);
       btn.textContent = 'ok';
@@ -226,4 +228,4 @@ Object.assign(UI, {
 
     return matches[0];
   }
-});
+};

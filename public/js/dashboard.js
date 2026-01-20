@@ -1,7 +1,8 @@
-// Dashboard rendering - extends UI object
+// Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
+import { CONFIG } from './config.js';
 
-Object.assign(UI, {
+export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data) {
     const { inventory, materialMatrix, foodItems, scholarByTier } = data;
@@ -97,14 +98,14 @@ Object.assign(UI, {
 
     if (foodTotal > 0) {
       html += `
-        <div class="quick-card">
-          <div class="quick-header">
-            <span class="icon">🍖</span>
-            <h4>Food</h4>
-            <span class="total">${foodTotal.toLocaleString()}</span>
-          </div>
-          <div class="quick-body">
-            <table>
+      <div class="quick-card">
+      <div class="quick-header">
+      <span class="icon">🍖</span>
+      <h4>Food</h4>
+      <span class="total">${foodTotal.toLocaleString()}</span>
+      </div>
+      <div class="quick-body">
+      <table>
       `;
       for (const item of foodList.slice(0, 10)) {
         const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
@@ -122,14 +123,14 @@ Object.assign(UI, {
 
     if (scholarTotal > 0) {
       html += `
-        <div class="quick-card">
-          <div class="quick-header">
-            <span class="icon">📜</span>
-            <h4>Scholar</h4>
-            <span class="total">${scholarTotal.toLocaleString()}</span>
-          </div>
-          <div class="quick-body">
-            <table>
+      <div class="quick-card">
+      <div class="quick-header">
+      <span class="icon">📜</span>
+      <h4>Scholar</h4>
+      <span class="total">${scholarTotal.toLocaleString()}</span>
+      </div>
+      <div class="quick-body">
+      <table>
       `;
       for (let t = 1; t <= 7; t++) {
         const qty = scholarByTier[t] || 0;
@@ -208,17 +209,18 @@ Object.assign(UI, {
   renderInventory(inventory) {
     const grid = document.getElementById('inventory-grid');
     if (!grid) return;
-    grid.innerHTML = '';
 
     // Exclude Food and Scholar from main grid (shown in quick stats)
     const exclude = CONFIG.INVENTORY_GRID_EXCLUDE;
     const sortedCategories = Object.keys(inventory)
-      .filter(c => !exclude.includes(c))
-      .sort((a, b) => {
-        const aIdx = CONFIG.CATEGORY_ORDER.indexOf(a);
-        const bIdx = CONFIG.CATEGORY_ORDER.indexOf(b);
-        return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
-      });
+    .filter(c => !exclude.includes(c))
+    .sort((a, b) => {
+      const aIdx = CONFIG.CATEGORY_ORDER.indexOf(a);
+      const bIdx = CONFIG.CATEGORY_ORDER.indexOf(b);
+      return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+    });
+
+    let html = '';
 
     for (const category of sortedCategories) {
       const tags = inventory[category];
@@ -230,23 +232,7 @@ Object.assign(UI, {
 
       if (categoryTotal === 0) continue;
 
-      const card = document.createElement('div');
-      card.className = 'inventory-card';
-
-      const header = document.createElement('div');
-      header.className = 'card-header';
-      header.innerHTML = `
-        <h4>${category}</h4>
-        <span class="total">${categoryTotal.toLocaleString()}</span>
-        <span class="chevron">▼</span>
-      `;
-      header.addEventListener('click', () => card.classList.toggle('expanded'));
-
-      const body = document.createElement('div');
-      body.className = 'card-body';
-
-      let tableHtml = '<table>';
-
+      let tableHtml = '';
       const sortedTags = Object.keys(tags).sort();
 
       for (const tag of sortedTags) {
@@ -263,37 +249,52 @@ Object.assign(UI, {
           let breakdownHtml = '';
           if (item.buildings.length > 1) {
             const buildingList = item.buildings
-              .sort((a, b) => b.qty - a.qty)
-              .map(b => `<li>${b.name}: ${b.qty.toLocaleString()}</li>`)
-              .join('');
+            .sort((a, b) => b.qty - a.qty)
+            .map(b => `<li>${b.name}: ${b.qty.toLocaleString()}</li>`)
+            .join('');
             breakdownHtml = `
-              <details class="building-breakdown">
-                <summary>${item.buildings.length} locations</summary>
-                <ul>${buildingList}</ul>
-              </details>
+            <details class="building-breakdown">
+            <summary>${item.buildings.length} locations</summary>
+            <ul>${buildingList}</ul>
+            </details>
             `;
           }
 
           tableHtml += `
-            <tr>
-              <td>
-                <div class="item-name">${tierBadge} ${item.name}</div>
-                ${breakdownHtml}
-              </td>
-              <td class="qty">${item.qty.toLocaleString()}</td>
-            </tr>
+          <tr>
+          <td>
+          <div class="item-name">${tierBadge} ${item.name}</div>
+          ${breakdownHtml}
+          </td>
+          <td class="qty">${item.qty.toLocaleString()}</td>
+          </tr>
           `;
         }
       }
 
-      tableHtml += '</table>';
-      body.innerHTML = tableHtml;
-
-      card.appendChild(header);
-      card.appendChild(body);
-      grid.appendChild(card);
+      html += `
+      <div class="inventory-card" data-category="${category}">
+      <div class="card-header">
+      <h4>${category}</h4>
+      <span class="total">${categoryTotal.toLocaleString()}</span>
+      <span class="chevron">▼</span>
+      </div>
+      <div class="card-body">
+      <table>${tableHtml}</table>
+      </div>
+      </div>
+      `;
     }
+
+    grid.innerHTML = html;
+
+    // Attach event listeners after innerHTML assignment
+    grid.querySelectorAll('.card-header').forEach(header => {
+      header.addEventListener('click', () => {
+        header.closest('.inventory-card').classList.toggle('expanded');
+      });
+    });
 
     this.show('inventory');
   }
-});
+};

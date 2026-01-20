@@ -68,18 +68,19 @@
       <div id="ids-list"></div>
     </section>
 
+    <!-- Map Link Composer View -->
     <section id="view-mapLinkComposer" class="view-section hidden">
       <div id="mlc-container">
         <div id="checkbox-row"></div>
         <div id="mlc-res-input">
           <label for="res-ids">Resource IDs</label>
-          <input id ="res-ids" type="text" placeholder="1234,567,12">
+          <input id="res-ids" type="text" placeholder="1234,567,12">
         </div>
         <div id="mlc-player-input">
           <label for="player-ids">Player IDs</label>
-          <input id ="player-ids" type="text" placeholder="5020000,5497816">
+          <input id="player-ids" type="text" placeholder="5020000,5497816">
         </div>
-        <button id = "lnk-gen-btn">Generate Link</button>
+        <button id="lnk-gen-btn">Generate Link</button>
         <div class="map-link-output">
           <label>Map-Link:</label>
           <a id="map-link" href="#" target="_blank" rel="noopener noreferrer">-</a>
@@ -88,14 +89,7 @@
     </section>
   </main>
 
-  <script src="/js/config.js"></script>
-  <script src="/js/api.js"></script>
-  <script src="/js/inventory.js"></script>
-  <script src="/js/maplink.js"></script>
-  <script type="module" src="/js/ui.js"></script>
-  <script src="/js/dashboard.js"></script>
-  <script src="/js/citizens.js"></script>
-  <script src="/js/ids.js"></script>
+  <!-- Single module entry point - imports all dependencies -->
   <script type="module" src="/js/main.js"></script>
 </body>
 </html>

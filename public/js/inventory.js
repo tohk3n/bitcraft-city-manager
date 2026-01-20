@@ -1,49 +1,8 @@
 // Process inventory data using API-provided item/cargo metadata
-// Category mappings: which tags belong to which high-level category
-const TAG_CATEGORIES = {
-  'Wood': ['Wood Log', 'Plank', 'Bark', 'Timber', 'Trunk', 'Stripped Wood'],
-  'Metal': ['Ingot', 'Ore', 'Ore Concentrate', 'Ore Chunk', 'Nail', 'Molten Ingot'],
-  'Stone': ['Pebbles', 'Brick', 'Clay', "Potter's Mix", 'Chunk', 'Geode', 'Sand', 'Glass', 'Gypsite'],
-  'Cloth': ['Plant Fiber', 'Thread', 'Cloth', 'Cloth Strip', 'Filament', 'Rope'],
-  'Farming': ['Fertilizer', 'Grain', 'Grain Seeds', 'Vegetable', 'Vegetable Seeds', 'Filament Seeds', 'Berry', 'Flower', 'Mushroom', 'Vegetable Plant', 'Filament Plant', 'Roots'],
-  'Fishing': ['Bait', 'Lake Fish', 'Lake Fish Filet', 'Ocean Fish', 'Oceanfish Filet', 'Chum', 'Fish Oil', 'Crushed Shells', 'Baitfish'],
-  'Leather': ['Leather', 'Raw Pelt', 'Cleaned Pelt', 'Tanned Pelt', 'Tannin', 'Raw Meat'],
-  'Food': ['Basic Food', 'Meal', 'Dough'],
-  'Scholar': ['Parchment', 'Journal', 'Ancient Hieroglyphs', 'Ink', 'Pigment'],
-  'Packages': ['Package', 'Sheeting'],
-  'Gems': ['Gem', 'Gem Fragment'],
-  'Tools': ['Forester Tool', 'Miner Tool', 'Farmer Tool', 'Tailor Tool', 'Mason Tool', 'Blacksmith Tool', 'Hunter Tool', 'Forager Tool', 'Carpenter Tool', 'Scholar Tool'],
-};
-
-// Tags that count as "raw materials" for tier aggregation
-const RAW_MATERIAL_TAGS = new Set([
-  'Wood Log', 'Plank', 'Bark', 'Timber', 'Trunk',
-  'Ingot', 'Ore Concentrate', 'Ore Chunk', 'Nail',
-  'Pebbles', 'Brick', 'Clay', "Potter's Mix", 'Chunk', 'Sand', 'Glass',
-  'Plant Fiber', 'Thread', 'Cloth', 'Filament', 'Rope',
-  'Fertilizer', 'Grain', 'Vegetable',
-  'Bait', 'Lake Fish', 'Lake Fish Filet', 'Ocean Fish', 'Oceanfish Filet', 'Chum',
-  'Leather', 'Tanned Pelt', 'Tannin', 'Raw Meat',
-]);
-
-// Build reverse lookup: tag -> category
-function buildTagToCategory() {
-  const map = {};
-  for (const [category, tags] of Object.entries(TAG_CATEGORIES)) {
-    for (const tag of tags) {
-      map[tag] = category;
-    }
-  }
-  return map;
-}
-
-const TAG_TO_CATEGORY = buildTagToCategory();
-
-// Categories to include in the material matrix (order matters for display)
-const MATRIX_CATEGORIES = ['Wood', 'Metal', 'Stone', 'Cloth', 'Farming', 'Fishing', 'Leather'];
+import { CONFIG } from './config.js';
 
 // Process raw API response into structured inventory
-function processInventory(data) {
+export function processInventory(data) {
   const buildings = data.buildings || [];
   const itemMeta = buildMetaLookup(data.items || []);
   const cargoMeta = buildMetaLookup(data.cargos || []);
@@ -53,7 +12,7 @@ function processInventory(data) {
 
   // Material matrix: category -> tier -> quantity
   const materialMatrix = {};
-  for (const cat of MATRIX_CATEGORIES) {
+  for (const cat of CONFIG.MATRIX_CATEGORIES) {
     materialMatrix[cat] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
   }
 
@@ -78,12 +37,12 @@ function processInventory(data) {
       if (!meta) continue;
 
       const tag = meta.tag || 'Other';
-      const category = TAG_TO_CATEGORY[tag] || 'Other';
+      const category = CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
       const tier = meta.tier > 0 ? meta.tier : 1;
       const tierKey = Math.min(tier, 7);
 
       // Aggregate raw materials into matrix by category and tier
-      if (RAW_MATERIAL_TAGS.has(tag) && materialMatrix[category]) {
+      if (CONFIG.RAW_MATERIAL_TAGS.has(tag) && materialMatrix[category]) {
         materialMatrix[category][tierKey] += qty;
       }
 
@@ -144,7 +103,7 @@ function buildMetaLookup(arr) {
 }
 
 // Process buildings data into crafting station summary
-function processCraftingStations(buildings) {
+export function processCraftingStations(buildings) {
   const active = {};   // name -> { tiers: {1:0, 2:0, ...}, total: 0 }
   const passive = {};
 
@@ -175,4 +134,4 @@ function processCraftingStations(buildings) {
   }
 
   return { active, passive };
-}
+// }

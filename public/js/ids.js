@@ -1,7 +1,7 @@
-// ID Lookup view rendering - extends UI object
+// ID Lookup view rendering
 // Handles: citizen and item ID lists with filtering
 
-Object.assign(UI, {
+export const IdsUI = {
   // Render ID list (citizens or items)
   renderIdList(type, items, citizensData) {
     const list = document.getElementById('ids-list');
@@ -18,8 +18,8 @@ Object.assign(UI, {
 
       for (const c of citizens.sort((a, b) => (a.userName || '').localeCompare(b.userName || ''))) {
         html += `<tr data-name="${(c.userName || '').toLowerCase()}">
-          <td>${c.userName || 'Unknown'}</td>
-          <td><button class="copy-btn" data-id="${c.entityId}">${c.entityId}</button></td>
+        <td>${c.userName || 'Unknown'}</td>
+        <td><button class="copy-btn" data-id="${c.entityId}">${c.entityId}</button></td>
         </tr>`;
       }
     } else if (type === 'items') {
@@ -31,8 +31,8 @@ Object.assign(UI, {
       for (const item of items.sort((a, b) => a.name.localeCompare(b.name))) {
         const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span> ` : '';
         html += `<tr data-name="${item.name.toLowerCase()}">
-          <td>${tierBadge}${item.name}</td>
-          <td><button class="copy-btn" data-id="${item.id}">${item.id}</button></td>
+        <td>${tierBadge}${item.name}</td>
+        <td><button class="copy-btn" data-id="${item.id}">${item.id}</button></td>
         </tr>`;
       }
     }
@@ -60,4 +60,4 @@ Object.assign(UI, {
       }
     });
   }
-});
+};

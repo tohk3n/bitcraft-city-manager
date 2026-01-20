@@ -1,5 +1,5 @@
 // API wrapper - all calls to bitjita go through proxy
-const API = {
+export const API = {
   async fetch(path) {
     const response = await fetch(`/api/proxy?path=${encodeURIComponent(path)}`);
     if (!response.ok) {
