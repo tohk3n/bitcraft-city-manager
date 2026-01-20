@@ -1,4 +1,5 @@
 // Main entry point
+import { UI } from './ui.js';
 (function () {
   const input = document.getElementById('claim-id');
   const loadBtn = document.getElementById('load-btn');

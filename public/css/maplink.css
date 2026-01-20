@@ -22,7 +22,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  color: #888;
+  color: var(--text-muted);
   font-size: 0.9rem;
   white-space: nowrap;
 }
@@ -103,19 +103,10 @@
   border-color: var(--accent);
 }
 #map-link {
-  color: #4a6cf7;
+  color: #var(--accent);
   word-break: break-all;
   text-decoration: none;
 }
 #map-link:hover {
   text-decoration: underline;
-}
-#lnk-gen-btn{
-  padding: 6px 16px;
-  font-size: 0.85rem;
-  background: var(--bg-secondary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
 }
