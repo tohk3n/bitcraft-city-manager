@@ -103,7 +103,11 @@
   border-color: var(--accent);
 }
 #map-link {
-  color: #var(--accent);
+  color: var(--accent);
+  word-break: break-all;
+  text-decoration: none;
+}
+#map-link:visited {
   word-break: break-all;
   text-decoration: none;
 }
