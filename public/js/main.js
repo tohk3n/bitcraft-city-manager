@@ -2,6 +2,7 @@
 import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
+import * as Planner from './planner.js';
 
 const input = document.getElementById('claim-id');
 const loadBtn = document.getElementById('load-btn');
@@ -13,6 +14,12 @@ let claimData = {
   inventories: null,
   citizens: null,
   items: null
+};
+
+// Planner state
+let plannerState = {
+  targetTier: 6, // Default target
+  results: null
 };
 
 async function loadClaim() {
@@ -68,6 +75,9 @@ async function loadClaim() {
       console.log('Could not fetch buildings:', e);
     }
 
+    // Initialize planner controls (don't load data yet - lazy load on tab click)
+    initPlanner();
+
     // Save to URL for sharing
     history.replaceState(null, '', `?claim=${claimId}`);
 
@@ -76,6 +86,50 @@ async function loadClaim() {
     UI.showError('Failed to load claim data. Check the ID and try again.');
   } finally {
     UI.setLoading(false);
+  }
+}
+
+// Initialize planner UI
+function initPlanner() {
+  const controlsContainer = document.getElementById('planner-controls');
+  const summaryContainer = document.getElementById('deficit-summary');
+  const treeContainer = document.getElementById('research-tree');
+
+  Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier) => {
+    plannerState.targetTier = newTier;
+    await loadPlanner();
+  });
+
+  Planner.renderEmpty(treeContainer);
+  summaryContainer.innerHTML = '';
+}
+
+// Load planner data
+async function loadPlanner() {
+  if (!claimData.claimId) return;
+
+  const summaryContainer = document.getElementById('deficit-summary');
+  const treeContainer = document.getElementById('research-tree');
+
+  Planner.renderLoading(treeContainer);
+
+  try {
+    const results = await Planner.calculateRequirements(
+      claimData.claimId,
+      plannerState.targetTier
+    );
+    plannerState.results = results;
+
+    Planner.renderDeficitSummary(summaryContainer, results.summary);
+    Planner.renderResearchTree(treeContainer, results.researches);
+
+  } catch (err) {
+    console.error('Planner error:', err);
+    treeContainer.innerHTML = `
+    <div class="planner-empty">
+    Failed to calculate requirements: ${err.message}
+    </div>
+    `;
   }
 }
 
@@ -173,6 +227,11 @@ function setupTabs() {
         UI.renderIdList('citizens', claimData.items, claimData.citizens);
       } else if (view === 'mapLinkComposer') {
         UI.renderMapLinkComposer();
+      } else if (view === 'planner' && claimData.claimId) {
+        // Only load if we haven't yet or if claim changed
+        if (!plannerState.results) {
+          loadPlanner();
+        }
       }
     });
   });
