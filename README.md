@@ -1,63 +1,60 @@
 # Bitcraft City Manager
 
-A basic dashboard for viewing a Bitcraft settlement's inventory, citizens, and equipment status.
+You have 47 chests. Are there enough rocks in them? **NOBODY KNOWS.**
 
-## Features
+Until now. Now we know **HOW MANY ROCKS**.
 
-- **Inventory View**: Using a matrix table to show quantities by category and tier
-- **Citizens View**: Check your citizen's gear at a glance
-- **ID Lookup**: Quick search and copy-to-clipboard for player and item IDs
+**WE STILL DO NOT IF IT IS ENOUGH!**
 
-## Usage
+## The Sacred Features
 
-1. Enter a Claim ID, this can be retrieved from bitjita if you're not sure
-2. Click Load
-3. Switch between Inventory/Citizens/IDs tabs
+**Inventory Dashboard** - All your stuff. One screen. Tier bars show the distribution of your hoarding. Finally answer "do we have food" without opening every container in the settlement.
 
-## Project Structure
+**Upgrade Planner** - THE BIG ONE. Pick a target tier, behold the flowchart of REQUIREMENTS. Drag it around (it gets wide). When leadership asks "how many berries for T5" you can answer with actual numbers instead of vibes.
 
-```
-/api
-  proxy.js          # Serverless proxy to bitjita.com API
-/public
-  index.html        # Main page
-  /js
-    api.js          # API wrapper
-    inventory.js    # Data processing and category mappings
-    ui.js           # Rendering functions
-    main.js         # Entry point and state management
-  /css
-    style.css       # All styles
-```
+**Citizens View** - Who's wearing what. Find the naked ones. *You know who you are.*
 
-## API Endpoints Used
+**ID Lookup** - Entity IDs for API things. Quietly useful.
 
-All data comes from [bitjita.com](https://bitjita.com) API:
+**Map Link Composer** - Generate bitcraftmap links with parameters.
 
-| Endpoint | Purpose |
-|----------|---------|
-| `/claims/{id}` | Claim name, tier, region, supplies |
-| `/claims/{id}/inventories` | Building inventories with item metadata |
-| `/claims/{id}/citizens` | Settlement members |
-| `/players/{id}/equipment` | Player gear |
-| `/items` | Full item database |
+## The Using Of It
 
-## Adding Item Categories
+1. Claim ID from bitjita.com (it's in the URL)
+2. Paste, Load
+3. Tabs
 
-Item categories are defined in `inventory.js`. The `TAG_CATEGORIES` object maps high-level categories to item tags. The `RAW_MATERIAL_TAGS` set determines which items appear in the material matrix.
+### Planner Specifics
+
+The flowchart shows dependencies. Colors:
+- **Green** = Sufficient
+- **Yellow** = Partial  
+- **Red** = Lacking
+- **Dashed border** = Research goal, not an actual item
+- **Red badge** = The deficit
+
+Click and drag to pan. These trees get WIDE.
+
+Codex count defaults to tier requirements but you can override it. Outposts rejoice.
+
+"Copy Task List" exports a Discord-ready gathering list.
+
+## Technical
+
+Vanilla JS. No build step. No framework. Data from [bitjita.com](https://bitjita.com).
+
+For planner implementation details, see `docs/PLANNER-INTERNALS.md`.
 
 ## Contributing
 
-Pull requests welcome. Keep it simple:
-- No build step
-- No frameworks
-- Vanilla JS only
+PRs welcome. Keep it simple. No frameworks.
 
 ## Credits
 
-- Data provided by [bitjita.com](https://bitjita.com)
-- Inspired by the Bitcraft community tools ecosystem
-- Player Lomacil for the original work and idea
+- Bitjita for the API
+- Lomacil for the original work
+- The Ardent City for testing
+- Caffeine
 
 ## License
 

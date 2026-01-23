@@ -1,0 +1,1048 @@
+{
+  "name": "Beginner's Codex",
+  "tier": 1,
+  "researches": [
+    {
+      "name": "Beginner's Stone Research",
+      "tier": 1,
+      "qty": 1,
+      "children": [
+        {
+          "name": "Refined Rough Brick",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Brick",
+              "tier": 1,
+              "qty": 5,
+              "children": [
+                {
+                  "name": "Unfired Rough Brick",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Basic Potter's Mix",
+                      "tier": 1,
+                      "qty": 5,
+                      "children": [
+                        {
+                          "name": "Rough Pebbles",
+                          "tier": 1,
+                          "qty": 25,
+                          "children": [
+                            {
+                              "name": "Rough Stone Chunk",
+                              "tier": 1,
+                              "qty": 4,
+                              "children": []
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Basic Clay Lump",
+                          "tier": 1,
+                          "qty": 10,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Rough Wood Log",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Firesand",
+              "tier": 1,
+              "qty": 1,
+              "children": [
+                {
+                  "name": "Rough Gypsite",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": []
+                },
+                {
+                  "name": "Crushed Rough Shells",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Moonlit Crawdad",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Beginner's Study Journal",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Parchment",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Rough Tree Bark",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Ink",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Basic Pigment",
+                  "tier": 1,
+                  "qty": 2,
+                  "children": [
+                    {
+                      "name": "Basic Flower",
+                      "tier": 1,
+                      "qty": 10,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Fish Oil",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Breezy Fin Darter",
+                      "tier": 1,
+                      "qty": 4,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Beginner's Stone Carvings",
+              "tier": 1,
+              "qty": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Beginner's Wood Research",
+      "tier": 1,
+      "qty": 1,
+      "children": [
+        {
+          "name": "Refined Rough Plank",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Plank",
+              "tier": 1,
+              "qty": 5,
+              "children": [
+                {
+                  "name": "Rough Stripped Wood",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Rough Wood Log",
+                      "tier": 1,
+                      "qty": 15,
+                      "children": [
+                        {
+                          "name": "Rough Wood Trunk",
+                          "tier": 1,
+                          "qty": 3,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Wood Polish",
+              "tier": 1,
+              "qty": 1,
+              "children": [
+                {
+                  "name": "Basic Amber Resin",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Crop Oil",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Basic Starbulb Plant",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Basic Starbulb Seeds",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": []
+                        },
+                        {
+                          "name": "Basic Fertilizer",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": [
+                            {
+                              "name": "Basic Berry",
+                              "tier": 1,
+                              "qty": 2,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Pitch",
+                  "tier": 0,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Tree Sap",
+                      "tier": 0,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Rough Glass Vial",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Rough Glass",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Basic Sand",
+                          "tier": 1,
+                          "qty": 5,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Beginner's Study Journal",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Parchment",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Rough Tree Bark",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Ink",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Basic Pigment",
+                  "tier": 1,
+                  "qty": 2,
+                  "children": [
+                    {
+                      "name": "Basic Flower",
+                      "tier": 1,
+                      "qty": 10,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Fish Oil",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Breezy Fin Darter",
+                      "tier": 1,
+                      "qty": 4,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Beginner's Stone Carvings",
+              "tier": 1,
+              "qty": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Beginner's Metal Research",
+      "tier": 1,
+      "qty": 1,
+      "children": [
+        {
+          "name": "Refined Ferralith Ingot",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Ferralith Ingot",
+              "tier": 1,
+              "qty": 5,
+              "children": [
+                {
+                  "name": "Molten Ferralith",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Ferralith Ore Concentrate",
+                      "tier": 1,
+                      "qty": 5,
+                      "children": [
+                        {
+                          "name": "Ferralith Ore Piece",
+                          "tier": 1,
+                          "qty": 10,
+                          "children": [
+                            {
+                              "name": "Ferralith Ore Chunk",
+                              "tier": 1,
+                              "qty": 3,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Rough Wood Log",
+                      "tier": 1,
+                      "qty": 5,
+                      "children": [
+                        {
+                          "name": "Rough Wood Trunk",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Metal Solvent",
+              "tier": 1,
+              "qty": 1,
+              "children": [
+                {
+                  "name": "Basic Citric Berry",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": []
+                },
+                {
+                  "name": "Rough Pebbles",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Rough Stone Chunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Rough Glass Vial",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Rough Glass",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Basic Sand",
+                          "tier": 1,
+                          "qty": 5,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Water Bucket",
+                  "tier": 0,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Empty Bucket",
+                      "tier": 0,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Rough Plank",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": [
+                            {
+                              "name": "Rough Stripped Wood",
+                              "tier": 1,
+                              "qty": 1,
+                              "children": [
+                                {
+                                  "name": "Rough Wood Log",
+                                  "tier": 1,
+                                  "qty": 3,
+                                  "children": [
+                                    {
+                                      "name": "Rough Wood Trunk",
+                                      "tier": 1,
+                                      "qty": 1,
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Beginner's Study Journal",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Parchment",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Rough Tree Bark",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Ink",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Basic Pigment",
+                  "tier": 1,
+                  "qty": 2,
+                  "children": [
+                    {
+                      "name": "Basic Flower",
+                      "tier": 1,
+                      "qty": 10,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Fish Oil",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Breezy Fin Darter",
+                      "tier": 1,
+                      "qty": 4,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Beginner's Stone Carvings",
+              "tier": 1,
+              "qty": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Beginner's Leather Research",
+      "tier": 1,
+      "qty": 1,
+      "children": [
+        {
+          "name": "Refined Rough Leather",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Leather",
+              "tier": 1,
+              "qty": 5,
+              "children": [
+                {
+                  "name": "Rough Tanned Pelt",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Rough Cleaned Pelt",
+                      "tier": 1,
+                      "qty": 5,
+                      "children": [
+                        {
+                          "name": "Rough Raw Pelt",
+                          "tier": 1,
+                          "qty": 5,
+                          "children": [
+                            {
+                              "name": "Sagi Bird",
+                              "tier": 1,
+                              "qty": 2,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Basic Tannin",
+                      "tier": 1,
+                      "qty": 5,
+                      "children": [
+                        {
+                          "name": "Rough Tree Bark",
+                          "tier": 1,
+                          "qty": 2,
+                          "children": [
+                            {
+                              "name": "Rough Wood Trunk",
+                              "tier": 1,
+                              "qty": 1,
+                              "children": []
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Water Bucket",
+                          "tier": 0,
+                          "qty": 4,
+                          "children": [
+                            {
+                              "name": "Empty Bucket",
+                              "tier": 0,
+                              "qty": 4,
+                              "children": [
+                                {
+                                  "name": "Rough Plank",
+                                  "tier": 1,
+                                  "qty": 1,
+                                  "children": [
+                                    {
+                                      "name": "Rough Stripped Wood",
+                                      "tier": 1,
+                                      "qty": 1,
+                                      "children": [
+                                        {
+                                          "name": "Rough Wood Log",
+                                          "tier": 1,
+                                          "qty": 3,
+                                          "children": [
+                                            {
+                                              "name": "Rough Wood Trunk",
+                                              "tier": 1,
+                                              "qty": 1,
+                                              "children": []
+                                            }
+                                          ]
+                                        }
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Leather Treatment",
+              "tier": 1,
+              "qty": 1,
+              "children": [
+                {
+                  "name": "Rough Braxite",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Ferralith Ore Piece",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Ferralith Ore Chunk",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Fish Oil",
+                  "tier": 1,
+                  "qty": 2,
+                  "children": [
+                    {
+                      "name": "Breezy Fin Darter",
+                      "tier": 1,
+                      "qty": 2,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Rough Glass Vial",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Rough Glass",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Basic Sand",
+                          "tier": 1,
+                          "qty": 5,
+                          "children": []
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Water Bucket",
+                  "tier": 0,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Empty Bucket",
+                      "tier": 0,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Rough Plank",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": [
+                            {
+                              "name": "Rough Stripped Wood",
+                              "tier": 1,
+                              "qty": 1,
+                              "children": [
+                                {
+                                  "name": "Rough Wood Log",
+                                  "tier": 1,
+                                  "qty": 3,
+                                  "children": [
+                                    {
+                                      "name": "Rough Wood Trunk",
+                                      "tier": 1,
+                                      "qty": 1,
+                                      "children": []
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Beginner's Study Journal",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Parchment",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Rough Tree Bark",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Ink",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Basic Pigment",
+                  "tier": 1,
+                  "qty": 2,
+                  "children": [
+                    {
+                      "name": "Basic Flower",
+                      "tier": 1,
+                      "qty": 10,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Fish Oil",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Breezy Fin Darter",
+                      "tier": 1,
+                      "qty": 4,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Beginner's Stone Carvings",
+              "tier": 1,
+              "qty": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Beginner's Cloth Research",
+      "tier": 1,
+      "qty": 1,
+      "children": [
+        {
+          "name": "Refined Rough Cloth",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Cloth",
+              "tier": 1,
+              "qty": 5,
+              "children": [
+                {
+                  "name": "Rough Cloth Strip",
+                  "tier": 1,
+                  "qty": 5,
+                  "children": [
+                    {
+                      "name": "Rough Spool Of Thread",
+                      "tier": 1,
+                      "qty": 5,
+                      "children": [
+                        {
+                          "name": "Rough Plant Fiber",
+                          "tier": 1,
+                          "qty": 200,
+                          "children": [
+                            {
+                              "name": "Rough Plant Roots",
+                              "tier": 1,
+                              "qty": 2,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Rough Wispweave Filament",
+                  "tier": 1,
+                  "qty": 25,
+                  "children": [
+                    {
+                      "name": "Basic Wispweave Plant",
+                      "tier": 1,
+                      "qty": 13,
+                      "children": [
+                        {
+                          "name": "Basic Wispweave Seeds",
+                          "tier": 1,
+                          "qty": 13,
+                          "children": []
+                        },
+                        {
+                          "name": "Basic Fertilizer",
+                          "tier": 1,
+                          "qty": 13,
+                          "children": [
+                            {
+                              "name": "Basic Berry",
+                              "tier": 1,
+                              "qty": 26,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Rough Textile",
+              "tier": 1,
+              "qty": 1,
+              "children": [
+                {
+                  "name": "Rough Animal Hair",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Sagi Bird",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Rough Straw",
+                  "tier": 1,
+                  "qty": 1,
+                  "children": [
+                    {
+                      "name": "Basic Embergrain Plant",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": [
+                        {
+                          "name": "Basic Embergrain Seeds",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": []
+                        },
+                        {
+                          "name": "Basic Fertilizer",
+                          "tier": 1,
+                          "qty": 1,
+                          "children": [
+                            {
+                              "name": "Basic Berry",
+                              "tier": 1,
+                              "qty": 2,
+                              "children": []
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Beginner's Study Journal",
+          "tier": 1,
+          "qty": 1,
+          "children": [
+            {
+              "name": "Rough Parchment",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Rough Tree Bark",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Rough Wood Trunk",
+                      "tier": 1,
+                      "qty": 1,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Basic Ink",
+              "tier": 1,
+              "qty": 2,
+              "children": [
+                {
+                  "name": "Basic Pigment",
+                  "tier": 1,
+                  "qty": 2,
+                  "children": [
+                    {
+                      "name": "Basic Flower",
+                      "tier": 1,
+                      "qty": 10,
+                      "children": []
+                    }
+                  ]
+                },
+                {
+                  "name": "Basic Fish Oil",
+                  "tier": 1,
+                  "qty": 4,
+                  "children": [
+                    {
+                      "name": "Breezy Fin Darter",
+                      "tier": 1,
+                      "qty": 4,
+                      "children": []
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Beginner's Stone Carvings",
+              "tier": 1,
+              "qty": 1,
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

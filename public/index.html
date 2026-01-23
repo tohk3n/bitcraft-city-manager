@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="/css/citizens.css">
   <link rel="stylesheet" href="/css/ids.css">
   <link rel="stylesheet" href="/css/maplink.css">
+  <link rel="stylesheet" href="/css/planner.css">
 </head>
 <body>
   <header>
@@ -33,6 +34,7 @@
 
     <nav id="view-tabs" class="hidden">
       <button class="tab-btn active" data-view="inventory">Inventory</button>
+      <button class="tab-btn" data-view="planner">Planner</button>
       <button class="tab-btn" data-view="citizens">Citizens</button>
       <button class="tab-btn" data-view="ids">ID Lookup</button>
       <button class="tab-btn" data-view="mapLinkComposer">Map Link Composer</button>
@@ -48,6 +50,13 @@
       <div id="inventory" class="hidden">
         <div id="inventory-grid"></div>
       </div>
+    </section>
+
+    <!-- Planner View -->
+    <section id="view-planner" class="view-section hidden">
+      <div id="planner-controls"></div>
+      <div id="deficit-summary" class="deficit-summary"></div>
+      <div id="research-tree"></div>
     </section>
 
     <!-- Citizens View -->
