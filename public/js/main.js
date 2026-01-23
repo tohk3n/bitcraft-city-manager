@@ -2,7 +2,7 @@
 import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
-import * as Planner from './planner.js';
+import * as Planner from './planner/planner.js';
 
 const input = document.getElementById('claim-id');
 const loadBtn = document.getElementById('load-btn');
@@ -19,6 +19,7 @@ let claimData = {
 // Planner state
 let plannerState = {
   targetTier: 6, // Default target
+  codexCount: null, // null means use default for tier
   results: null
 };
 
@@ -95,8 +96,9 @@ function initPlanner() {
   const summaryContainer = document.getElementById('deficit-summary');
   const treeContainer = document.getElementById('research-tree');
 
-  Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier) => {
+  Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier, newCount) => {
     plannerState.targetTier = newTier;
+    plannerState.codexCount = newCount;
     await loadPlanner();
   });
 
@@ -114,9 +116,11 @@ async function loadPlanner() {
   Planner.renderLoading(treeContainer);
 
   try {
+    const options = plannerState.codexCount ? { customCount: plannerState.codexCount } : {};
     const results = await Planner.calculateRequirements(
       claimData.claimId,
-      plannerState.targetTier
+      plannerState.targetTier,
+      options
     );
     plannerState.results = results;
 
