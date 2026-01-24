@@ -1,203 +1,87 @@
 # Planner Internals
 
-How the calculation pipeline works. Read this before touching the planner modules.
+So you want to touch the planner code. Godspeed.
 
-## Architecture Overview
-
-Four modules, each does one thing:
+## The Pipeline
 
 ```
-recipe-expander.js   →   cascade-calc.js   →   progress-calc.js
-     │                        │                      │
-     ▼                        ▼                      ▼
- "ideal totals"      "adjusted for           "statistics &
-  assuming empty      inventory"              grouping"
-  inventory"
+recipe-expander  →  cascade-calc  →  progress-calc
+     ↓                   ↓               ↓
+  "raw math"      "subtract your     "percentages
+                   hoard"             for Discord"
 
-inventory-matcher.js (utility - used by cascade-calc)
+inventory-matcher (figures out where you put things)
 ```
 
-All pure functions. No side effects. Data flows in, transformed data flows out.
+Data in, data out. No state. No surprises. Mostly.
 
-## The Data Model
+## THE THING THAT WILL BITE YOU
 
-### Input: Codex JSON
+Study Journals show up in ALL FIVE research branches. You have 350. You need 1340.
 
-The `qty` on each node is the **total needed for one codex completion**. The tree structure shows dependencies, not multiplication factors.
+Old broken code: each branch looks at inventory, sees 350, says "I'm good!" 
+Result: carvings show 0 needed. LIES.
+
+Fixed code: first branch grabs what it can from the pile. Next branch gets leftovers. Sorry branch #5, the cupboard is bare.
+
+This is `cascade-calc.js`. The `consumed` map tracks who took what. Don't remove it or Lomacil will find you.
+
+## Codex Files
+
+The `qty` values are totals, not multipliers. 
 
 ```javascript
-// Example: t4-codex.json structure
-{
-  name: "Proficient Codex",
-  tier: 4,
-  researches: [
-    {
-      name: "Proficient Cloth Research",
-      qty: 1,
-      children: [
-        { name: "Refined Fine Cloth", qty: 1, children: [...] }
-      ]
-    }
-  ]
-}
+{ name: "Refined Cloth", qty: 1 }  // need 1 per codex
 ```
 
-### Output: Processed Tree
+If you start multiplying qty × parent qty × grandparent qty you will get numbers in the billions and then you will open an issue and I will point you to this paragraph.
 
-Each node gets enriched with:
-```javascript
-{
-  name: "Basic Berry",
-  tier: 1,
-  recipeQty: 200,        // from codex
-  idealQty: 4000,        // recipeQty × batchCount
-  required: 4000,        // what we actually need (may be reduced by parent inventory)
-  have: 1500,            // from inventory lookup
-  deficit: 2500,         // Math.max(0, required - have)
-  status: "partial",     // "complete" | "partial" | "missing"
-  trackable: true,       // exists in inventory system
-  children: []
-}
+## The Modules
+
+**recipe-expander.js** — Multiplies everything by batch count. That's it. 20 codexes means 20× the berries.
+
+**cascade-calc.js** — The inventory subtraction. Tracks consumption. Does the "if parent has 74% deficit, children only need 74%" thing. This is where the bugs live.
+
+**inventory-matcher.js** — Packages are 100 items. Except flowers (500). Except fiber (1000). Some items don't exist in inventory at all (research goals). This module handles the pain.
+
+**progress-calc.js** — Turns the tree into percentages and categories. Makes the Discord export. Least likely to break.
+
+## UI Modules
+
+**task-list.js** — The card grid with filters. Yes you can filter by tier. Yes you can sort. Yes there's a copy button. You're welcome.
+
+**flowchart.js** — The big draggy tree. Tabs, connectors, collapse toggle. It gets wide. Deal with it.
+
+**planner.js** — Loads data, calls the other modules. The coordinator. Doesn't do much itself anymore.
+
+## File Layout
+
+```
+planner.js, task-list.js, flowchart.js    # UI
+lib/recipe-expander.js                     # math
+lib/cascade-calc.js                        # math + inventory
+lib/progress-calc.js                       # aggregation  
+lib/inventory-matcher.js                   # inventory lookups
+
+/data/t*-codex.json                        # the recipe trees
+/data/item-mappings.json                   # name weirdness
 ```
 
-## Module Details
+## Debugging
 
-### recipe-expander.js
+Numbers too big? You're multiplying through the tree. Stop that. Children get `batchCount`, not `parent.qty × batchCount`.
 
-Expands the codex for N completions.
+Numbers not changing when you add inventory? Check `inventory-matcher`. Probably a tier mismatch or the item is marked non-trackable.
 
-```javascript
-// Key function signature
-function expandNode(node, batchCount, mappings) → expandedNode
-```
+Carvings showing 0 when journals show deficit? You broke cascade-calc. The `consumed` map is gone or the branches aren't sharing properly.
 
-**Critical:** Children receive `batchCount`, not the parent's `idealQty`. This is what keeps quantities sane.
-
-```javascript
-// Inside expandNode:
-const idealQty = recipeQty * batchCount;
-
-// Children get the same batchCount
-children: node.children.map(child => 
-    expandNode(child, batchCount, mappings)  // ✓ batchCount
-)
-```
-
-### cascade-calc.js
-
-Applies inventory. If you have materials at any level, children need to produce less.
+## JS Stuff
 
 ```javascript
-function processNodeCascade(node, inventoryLookup, mappings, batchCount) → processedNode
+lookup.get(key)              // undefined if missing
+options.count ?? default     // only replaces null/undefined, 0 is fine
+mappings?.items?.[name]      // won't explode
+const { qty: have } = fn()   // rename during destructure
 ```
 
-The cascade math:
-```javascript
-const required = recipeQty * batchCount;
-const deficit = Math.max(0, required - have);
-
-// Key insight: children only need to cover the deficit
-const effectiveBatches = recipeQty > 0 
-    ? (deficit / recipeQty)  // reduced batch count for children
-    : batchCount;
-```
-
-Example walkthrough:
-- Rough Cloth: `recipeQty=40`, `batchCount=20`, `required=800`, `have=200`
-- `deficit = 600`
-- `effectiveBatches = 600 / 40 = 15`
-- Children now calculate for 15 batches instead of 20
-
-### inventory-matcher.js
-
-Handles inventory lookups with some edge cases:
-
-```javascript
-// Build lookup from API response
-buildInventoryLookup(buildings, itemMeta, cargoMeta) → Map<string, number>
-
-// Query with fallbacks
-getItemQuantity(lookup, name, tier, mappings) → { qty, trackable }
-```
-
-**Package handling:** API returns packages (100 items per package, 500 for flowers, 1000 for fiber). The lookup multiplies these out.
-
-**Tier fallbacks:** Some items are tierless. If exact tier not found, tries tier 0 and tier -1.
-
-**Trackable flag:** Some codex items don't exist in inventory (research goals). Marked `trackable: false` in item-mappings.json. These always return `qty: 0`.
-
-### progress-calc.js
-
-Aggregation and formatting. Less critical to understand, but:
-
-- `collectFirstTrackable()` - Finds the "crafting frontier" (first trackable item in each branch)
-- `groupByActivity()` - Categorizes by Mining/Logging/Farming/etc based on item names
-- `generateExportText()` - Discord markdown output
-
-## JavaScript Patterns Used
-
-**Map for lookups:**
-```javascript
-const lookup = new Map();
-lookup.set(key, value);
-lookup.get(key);  // returns undefined if not found, not null
-lookup.has(key);  // boolean check
-```
-
-**Nullish coalescing (`??`):**
-```javascript
-const count = options.customCount ?? defaultCount;
-// Uses defaultCount only if customCount is null/undefined
-// Different from || which treats 0 and "" as falsy
-```
-
-**Optional chaining (`?.`):**
-```javascript
-const mapping = mappings?.mappings?.[name];
-// Returns undefined if any part of chain is null/undefined
-// No NPE equivalent - just gracefully returns undefined
-```
-
-**Destructuring with defaults:**
-```javascript
-const { qty: have } = getItemQuantity(...);
-// Extracts qty property, renames to 'have'
-```
-
-**Array methods (functional style):**
-```javascript
-// map: transform each element
-nodes.map(n => processNode(n))
-
-// filter: keep elements matching predicate  
-items.filter(i => i.deficit > 0)
-
-// reduce: accumulate to single value
-items.reduce((sum, i) => sum + i.qty, 0)
-```
-
-## File Locations
-
-```
-/js/planner/
-  planner.js           # UI rendering, orchestration
-
-/js/planner/lib/
-      recipe-expander.js   # Phase 1: expand for N completions
-      cascade-calc.js      # Phase 2: apply inventory
-      progress-calc.js     # Phase 3: aggregate stats
-      inventory-matcher.js # Utility: inventory lookups
-
-/data/
-  t1-codex.json ... t9-codex.json   # Recipe trees
-  item-mappings.json                 # Name mappings, trackable flags
-```
-
-## Testing Sanity Check
-
-If quantities look wrong:
-1. Find a leaf node's `qty` in the codex JSON
-2. Multiply by your batch count
-3. That's the expected `required` (with empty inventory)
-
-If you're seeing numbers orders of magnitude larger, something is multiplying through the tree incorrectly.
+If you're from Java, `?.` is your new best friend. No more NPEs.
