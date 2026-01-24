@@ -79,7 +79,8 @@
   color: var(--text-primary);
 }
 
-#lnk-gen-btn {
+#lnk-gen-btn,
+#id-matrix-btn {
   padding: 8px 16px;
   font-size: 0.85rem;
   background: var(--bg-secondary);
@@ -113,4 +114,49 @@
 }
 #map-link:hover {
   text-decoration: underline;
+}
+
+.hidden {
+  display: none;
+}
+
+.matrix-cell {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #999;
+  text-align: center;
+  vertical-align: middle;
+  background-color: var(--bg-secondary);
+}
+
+.matrix-cell:nth-child(even) {
+  background-color: var(--bg-primary);
+}
+
+.row-label {
+  font-weight: bold;
+  background-color: var(--bg-secondary);
+}
+
+.matrix-cell-inner {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.matrix-cell-inner:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.matrix-cell-inner.active {
+  background-color: var(--accent);
+}
+
+.matrix-cell-btn {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
 }

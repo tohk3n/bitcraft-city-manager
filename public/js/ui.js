@@ -165,6 +165,90 @@ const BaseUI = {
 
     const btn = document.getElementById("lnk-gen-btn");
     btn.addEventListener("click", () => MAP_LINK.generateLinkEvent());
+
+    const matrixBtn = document.getElementById("id-matrix-btn");
+    const matrixWrapper = document.getElementById('id-matrix');
+    this.renderResourceMatrix('id-matrix',CONFIG.RESOURCE_ID_MATRIX);
+    matrixBtn.addEventListener("click", () => {
+      matrixWrapper.classList.toggle('hidden');
+    });
+  },
+
+  // Generates table with clickable fields to add to input field for resource selection
+  renderResourceMatrix(containerId, resourceMatrix) {
+    const table = document.getElementById(containerId);
+      if (!table) return;
+
+      table.innerHTML = '';
+
+      /* ---------- Header ---------- */
+      const head = document.createElement('thead');
+      const headerRow = document.createElement('tr');
+
+      // Empty top-left cell
+      const emptyTh = document.createElement('th');
+      headerRow.appendChild(emptyTh);
+
+      // T1–T10
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+        const th = document.createElement('th');
+        th.textContent = `T${t}`;
+        headerRow.appendChild(th);
+      }
+
+      head.appendChild(headerRow);
+      table.appendChild(head);
+
+      /* ---------- Body ---------- */
+      const tbody = document.createElement('tbody');
+      const rowNames = Object.keys(resourceMatrix);
+      rowNames.forEach(rowName => {
+        const tr = document.createElement('tr');
+
+        // Row label (not clickable)
+        const nameCell = document.createElement('td');
+        nameCell.textContent = rowName;
+        nameCell.classList.add('row-label');
+        tr.appendChild(nameCell);
+
+        // T1–T10 cells
+        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+          const td = document.createElement('td');
+          td.classList.add('matrix-cell');
+
+          // clickable area
+          const cellArea = document.createElement('div');
+          cellArea.classList.add('matrix-cell-inner');
+
+          // data attributes for later logic
+          cellArea.dataset.row = rowName;
+          cellArea.dataset.tier = t;
+
+          const cellButton = document.createElement('button');
+          cellButton.textContent = ''; // leer, nur für Klick
+          cellButton.classList.add('matrix-cell-btn');
+
+          cellButton.addEventListener('click', () => {
+            MAP_LINK.cellButtonEvent(cellArea, cellButton);
+          });
+
+          cellArea.appendChild(cellButton);
+          td.appendChild(cellArea);
+          tr.appendChild(td);
+        }
+
+        tbody.appendChild(tr);
+      });
+
+      table.appendChild(tbody);
+    },
+
+  showResourceMatrix(show) {
+    if (show) {
+      this.show('id-matrix');
+    } else {
+      this.hide('id-matrix');
+    }
   }
 };
 

@@ -72,5 +72,47 @@ export const MAP_LINK = {
   // Clean up trailing commas from input
   finalizeCommaNumberInput(value) {
     return value.replace(/,+$/, '');
+  },
+
+  //add or remove new value to input field, separates by comma, leaves the rest intact
+  syncInputValue(value, activated){
+    value = String(value)
+    const inputField = document.getElementById('res-ids');
+    if(!inputField) return;
+
+    const resultValue = inputField.value.trim();
+    const values = resultValue
+      ? new Set(resultValue.split(',').map(v => v.trim()))
+      : new Set();
+
+    if (activated) {
+      values.add(value);
+    } else {
+      values.delete(value);
+    }
+    inputField.value = Array.from(values).join(',');
+  },
+
+  cellButtonEvent(cellArea, button){
+    if (!cellArea) return;
+    if (!cellArea?.dataset.row || !cellArea?.dataset.tier) return;
+
+    const isActive = cellArea.classList.contains('active');
+
+    const rowName = cellArea.dataset.row;
+    const tier = cellArea.dataset.tier;
+    const index = tier - 1;
+    console.log('for index',index);
+    //get corresponding ids for this row/tier
+    const idValues = CONFIG.RESOURCE_ID_MATRIX[rowName][index];
+
+    idValues.forEach(id => this.syncInputValue(id,!isActive))
+
+    //update state
+    if(!isActive){
+      cellArea.classList.add('active');
+    }else{
+      cellArea.classList.remove('active');
+    }
   }
 };
