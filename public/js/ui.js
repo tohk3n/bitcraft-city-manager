@@ -229,7 +229,7 @@ const BaseUI = {
           cellButton.classList.add('matrix-cell-btn');
 
           cellButton.addEventListener('click', () => {
-            MAP_LINK.cellButtonEvent(cellArea, cellButton);
+            MAP_LINK.cellButtonEvent(cellArea);
           });
 
           cellArea.appendChild(cellButton);

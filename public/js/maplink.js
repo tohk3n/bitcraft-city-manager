@@ -93,7 +93,7 @@ export const MAP_LINK = {
     inputField.value = Array.from(values).join(',');
   },
 
-  cellButtonEvent(cellArea, button){
+  cellButtonEvent(cellArea){
     if (!cellArea) return;
     if (!cellArea?.dataset.row || !cellArea?.dataset.tier) return;
 
@@ -102,7 +102,7 @@ export const MAP_LINK = {
     const rowName = cellArea.dataset.row;
     const tier = cellArea.dataset.tier;
     const index = tier - 1;
-    console.log('for index',index);
+
     //get corresponding ids for this row/tier
     const idValues = CONFIG.RESOURCE_ID_MATRIX[rowName][index];
 
