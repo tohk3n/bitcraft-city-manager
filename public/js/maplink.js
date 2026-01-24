@@ -26,29 +26,18 @@ export const MAP_LINK = {
 
   // Generate link to bitcraft map from provided data
   generateLink(regions, resourceIds, playerIds) {
-    const dataMap = {};
-
+    const url = new URL(CONFIG.MAP_BASE_URL);
     if (regions.length > 0) {
-      dataMap.regionId = regions.join(',');
+      url.searchParams.set("regionId", regions.join(','));
     }
     if (resourceIds !== '') {
-      dataMap.resourceId = encodeURIComponent(resourceIds);
+      url.searchParams.set("resourceId", resourceIds);
     }
     if (playerIds !== '') {
-      dataMap.playerId = playerIds;
+      url.searchParams.set("playerId", playerIds);
     }
 
-    let generatedLink = CONFIG.MAP_BASE_URL;
-    let first = true;
-
-    // First value has ? prefix, subsequent use &
-    for (const [key, value] of Object.entries(dataMap)) {
-      const prefix = first ? '?' : '&';
-      generatedLink += `${prefix}${key}=${value}`;
-      first = false;
-    }
-
-    return generatedLink;
+    return url;
   },
 
   // Add input validation for comma-separated number fields
@@ -105,7 +94,7 @@ export const MAP_LINK = {
 
     //get corresponding ids for this row/tier
     const idValues = CONFIG.RESOURCE_ID_MATRIX[rowName][index];
-
+    //update input field
     idValues.forEach(id => this.syncInputValue(id,!isActive))
 
     //update state
