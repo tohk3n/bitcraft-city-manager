@@ -1,0 +1,4388 @@
+{
+  "version": 1,
+  "generated": "2026-01-22",
+  "description": "Mapping file for codex items that cannot be directly matched to API items by name+tier",
+  "usage": {
+    "intermediate": "Items crafted and consumed immediately in recipes - always assume 0 in inventory",
+    "gathered": "Raw resources that convert to another item on collection - track the converted form instead",
+    "reagent": "Process reagents crafted and consumed in single recipe chains",
+    "mob_drop": "Creatures that yield materials when killed - track the drop items instead",
+    "fish": "Fish/seafood caught via fishing - track in inventory",
+    "container": "Container items with API naming differences",
+    "research": "Codex research goals, not inventory items",
+    "codex": "Codex items themselves, tracked separately",
+    "study_material": "Study materials for codex progression",
+    "alias": "Items with naming mismatches requiring API verification",
+    "likely_api": "Items following standard API pattern - verify with full API list",
+    "unknown": "Items needing manual categorization"
+  },
+  "stats": {
+    "totalCodexItems": 711,
+    "directlyMatched": 174,
+    "requiresMapping": 535
+  },
+  "mappings": {
+    "Advanced Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Exquisite Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Brick": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Unfired Exquisite Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Pebbles": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Clay Lump": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Brickworking Binding Ash": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        0
+      ]
+    },
+    "Exquisite Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Crushed Exquisite Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        5
+      ]
+    },
+    "Golden Crawfish": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Fine Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        4
+      ]
+    },
+    "Unfired Fine Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        4
+      ]
+    },
+    "Crushed Fine Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        4
+      ]
+    },
+    "Pygmy Lobster": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        4
+      ]
+    },
+    "Refined Sturdy Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Wood Trunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Wood Log on collection",
+      "convertsTo": "Wood Log",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        3
+      ]
+    },
+    "Refined Simple Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Wood Trunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Wood Log on collection",
+      "convertsTo": "Wood Log",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        2
+      ]
+    },
+    "Refined Rough Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        1
+      ]
+    },
+    "Rough Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        1
+      ]
+    },
+    "Rough Wood Trunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Wood Log on collection",
+      "convertsTo": "Wood Log",
+      "tiers": [
+        1
+      ]
+    },
+    "Basic Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        1
+      ]
+    },
+    "Advanced Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Parchment": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Flower": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Fish Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Emberscale Sturgeon": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        5
+      ]
+    },
+    "Advanced Stone Carvings": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        5
+      ]
+    },
+    "Proficient Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Parchment": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Tree Bark": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        4
+      ]
+    },
+    "Mossfin Chub": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        4
+      ]
+    },
+    "Infused Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        3
+      ]
+    },
+    "Novice Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        2
+      ]
+    },
+    "Basic Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        1
+      ]
+    },
+    "Basic Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        1
+      ]
+    },
+    "Advanced Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Exquisite Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Crop Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Fertilizer": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Empty Bucket": {
+      "type": "container",
+      "trackable": true,
+      "note": "Empty container, API tracks Water Bucket instead",
+      "apiEquivalent": "Water Bucket",
+      "apiId": 11007
+    },
+    "Rough Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        1
+      ]
+    },
+    "Exquisite Glass Vial": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Fine Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        4
+      ]
+    },
+    "Refined Sturdy Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        3
+      ]
+    },
+    "Refined Simple Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        2
+      ]
+    },
+    "Refined Rough Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        1
+      ]
+    },
+    "Basic Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        1
+      ]
+    },
+    "Rough Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        1
+      ]
+    },
+    "Advanced Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Luminite Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Molten Luminite": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        5
+      ]
+    },
+    "Luminite Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Luminite Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Luminite Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        5
+      ]
+    },
+    "Metalworking Flux": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        0
+      ]
+    },
+    "Exquisite Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Elenvar Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        4
+      ]
+    },
+    "Elenvar Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        4
+      ]
+    },
+    "Elenvar Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        4
+      ]
+    },
+    "Refined Emarium Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        3
+      ]
+    },
+    "Emarium Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        3
+      ]
+    },
+    "Emarium Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        3
+      ]
+    },
+    "Refined Pyrelite Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Molten Pyrelite": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        2
+      ]
+    },
+    "Pyrelite Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Pyrelite Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Pyrelite Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        2
+      ]
+    },
+    "Refined Ferralith Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        1
+      ]
+    },
+    "Molten Ferralith": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        1
+      ]
+    },
+    "Ferralith Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        1
+      ]
+    },
+    "Basic Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        1
+      ]
+    },
+    "Advanced Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Exquisite Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Leather": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Cleaned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Cleaned pelt, intermediate in leather processing",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        5
+      ]
+    },
+    "Plains Ox": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Fine Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        4
+      ]
+    },
+    "Female Scrofa": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        4
+      ]
+    },
+    "Refined Sturdy Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        3
+      ]
+    },
+    "Female Cervus": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        3
+      ]
+    },
+    "Refined Simple Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        2
+      ]
+    },
+    "Nubi Goat": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        2
+      ]
+    },
+    "Refined Rough Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        1
+      ]
+    },
+    "Rough Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        1
+      ]
+    },
+    "Sagi Bird": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        1
+      ]
+    },
+    "Advanced Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Exquisite Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Cloth": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Cloth Strip": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Plant Fiber": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Wispweave Filament": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Animal Hair": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Straw": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        5
+      ]
+    },
+    "Exquisite Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        5
+      ]
+    },
+    "Refined Fine Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        4
+      ]
+    },
+    "Fine Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        4
+      ]
+    },
+    "Refined Sturdy Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        3
+      ]
+    },
+    "Sturdy Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        3
+      ]
+    },
+    "Infused Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        3
+      ]
+    },
+    "Refined Simple Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        2
+      ]
+    },
+    "Simple Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        2
+      ]
+    },
+    "Refined Rough Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        1
+      ]
+    },
+    "Rough Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        1
+      ]
+    },
+    "Basic Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        1
+      ]
+    },
+    "Basic Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        1
+      ]
+    },
+    "Beginner's Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        1
+      ]
+    },
+    "Beginner's Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        1
+      ]
+    },
+    "Beginner's Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        1
+      ]
+    },
+    "Beginner's Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        1
+      ]
+    },
+    "Beginner's Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        1
+      ]
+    },
+    "Comprehensive Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        6
+      ]
+    },
+    "Comprehensive Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        6
+      ]
+    },
+    "Refined Peerless Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Wood Log": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Amber Resin": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Crop Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Starbulb Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Fertilizer": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Glass Vial": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Comprehensive Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Parchment": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Flower": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Fish Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Hexfin Perch": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        6
+      ]
+    },
+    "Comprehensive Stone Carvings": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        6
+      ]
+    },
+    "Comprehensive Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        6
+      ]
+    },
+    "Refined Rathium Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Rathium Ingot": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Final ingot item - likely in API",
+      "tiers": [
+        6
+      ]
+    },
+    "Molten Rathium": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        6
+      ]
+    },
+    "Rathium Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Rathium Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Rathium Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Citric Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Pebbles": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        6
+      ]
+    },
+    "Comprehensive Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        6
+      ]
+    },
+    "Refined Peerless Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Leather": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Cleaned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Cleaned pelt, intermediate in leather processing",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        6
+      ]
+    },
+    "Yagi": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Comprehensive Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        6
+      ]
+    },
+    "Refined Peerless Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Cloth": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Cloth Strip": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Plant Fiber": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Wispweave Filament": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Wispweave Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Animal Hair": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Straw": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Embergrain Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Essential Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        3
+      ]
+    },
+    "Essential Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        3
+      ]
+    },
+    "Essential Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        3
+      ]
+    },
+    "Essential Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        3
+      ]
+    },
+    "Essential Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        3
+      ]
+    },
+    "Flawless Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Flawless Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Brick": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Unfired Flawless Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Pebbles": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Clay Lump": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Wood Log": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Crushed Flawless Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Baitfish": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Magnificient Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Brick": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Unfired Magnificient Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Pebbles": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Clay Lump": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Wood Log": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Crushed Magnificient Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Baitfish": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        9
+      ]
+    },
+    "Refined Pristine Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Brick": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Unfired Pristine Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Pebbles": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Clay Lump": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Ornate Wood Log": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Pristine Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Crushed Pristine Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        8
+      ]
+    },
+    "Sparkling Prawn": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        8
+      ]
+    },
+    "Refined Ornate Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Brick": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Unfired Ornate Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Pebbles": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Stone Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Pebbles on collection",
+      "convertsTo": "Pebbles",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Clay Lump": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Crushed Ornate Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        7
+      ]
+    },
+    "Misty Crustacean": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        7
+      ]
+    },
+    "Refined Peerless Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Brick": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Unfired Peerless Brick": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Unfired brick, consumed when fired in kiln",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Potter's Mix": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Potter's mix, consumed in brick crafting",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Clay Lump": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Firesand": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        6
+      ]
+    },
+    "Peerless Gypsite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        6
+      ]
+    },
+    "Crushed Peerless Shells": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Crushed shells, consumed in crafting recipes",
+      "tiers": [
+        6
+      ]
+    },
+    "Sunrise Shrimp": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        6
+      ]
+    },
+    "Flawless Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Parchment": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Tree Bark": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Flower": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Fish Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Lakefish": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Stone Carvings": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Flawless Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Amber Resin": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Crop Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Glass Vial": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Magnificient Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Amber Resin": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Crop Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Starbulb Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Fertilizer": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Glass Vial": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Refined Pristine Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Wood Log": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Trunk": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Amber Resin": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Crop Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Starbulb Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Fertilizer": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Glass Vial": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Refined Ornate Plank": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Plank": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Stripped Wood": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Wood Polish": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Amber Resin": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Crop Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Starbulb Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Starbulb Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Fertilizer": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Glass Vial": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Glass": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate glass product, consumed in vial crafting",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Sand": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Flawless Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Astralite Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Astralite Ingot": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Final ingot item - likely in API",
+      "tiers": [
+        10
+      ]
+    },
+    "Molten Astralite": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        10
+      ]
+    },
+    "Astralite Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Astralite Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Astralite Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Citric Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Umbracite Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Umbracite Ingot": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Final ingot item - likely in API",
+      "tiers": [
+        9
+      ]
+    },
+    "Molten Umbracite": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        9
+      ]
+    },
+    "Umbracite Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Umbracite Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Umbracite Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Citric Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Refined Celestium Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Celestium Ingot": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Final ingot item - likely in API",
+      "tiers": [
+        8
+      ]
+    },
+    "Molten Celestium": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        8
+      ]
+    },
+    "Celestium Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Celestium Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Celestium Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Citric Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Refined Aurumite Ingot": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Aurumite Ingot": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Final ingot item - likely in API",
+      "tiers": [
+        7
+      ]
+    },
+    "Molten Aurumite": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate smelting product, consumed in ingot crafting",
+      "tiers": [
+        7
+      ]
+    },
+    "Aurumite Ore Concentrate": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore concentrate, intermediate in smelting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Aurumite Ore Piece": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Ore piece, intermediate in smelting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Aurumite Ore Chunk": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Ore Piece on collection",
+      "convertsTo": "Ore Piece",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Metal Solvent": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Citric Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ferralith Ore Concentrate": {
+      "type": "unknown",
+      "trackable": false,
+      "note": "Requires manual categorization - check API for existence"
+    },
+    "Flawless Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Flawless Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Leather": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Cleaned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Cleaned pelt, intermediate in leather processing",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        10
+      ]
+    },
+    "Desert Terrorbird": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Magnificient Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Leather": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Cleaned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Cleaned pelt, intermediate in leather processing",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        9
+      ]
+    },
+    "Tundra Ox": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Tree Bark": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Fish Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Lakefish": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        9
+      ]
+    },
+    "Refined Pristine Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Leather": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Cleaned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Cleaned pelt, intermediate in leather processing",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        8
+      ]
+    },
+    "Elder Scrofa": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Tree Bark": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Fish Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Rainbowscaled Tilapia": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        8
+      ]
+    },
+    "Refined Ornate Leather": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Leather": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Tanned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tanned pelt, intermediate in leather processing",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Cleaned Pelt": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Cleaned pelt, intermediate in leather processing",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Raw Pelt": {
+      "type": "alias",
+      "trackable": true,
+      "note": "Raw Pelt with tier prefix mismatch - verify API naming pattern",
+      "possibleApiName": "Basic Raw Pelt",
+      "tiers": [
+        7
+      ]
+    },
+    "Jungle Terrorbird": {
+      "type": "mob_drop",
+      "trackable": false,
+      "note": "Creature killed for drops (pelts, meat, hair)",
+      "yields": [
+        "Raw Pelt",
+        "Raw Meat",
+        "Animal Hair"
+      ],
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Tannin": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Tannin, consumed in pelt processing",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Tree Bark": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Leather Treatment": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Leather treatment, consumed in leather processing",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Braxite": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Fish Oil": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Speedy Glowfin": {
+      "type": "fish",
+      "trackable": true,
+      "note": "Fish/seafood item, caught via fishing - likely in API",
+      "tiers": [
+        7
+      ]
+    },
+    "Rough Stripped Woo": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Intermediate wood processing product, consumed in plank crafting"
+    },
+    "Rough Wood Tru": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Wood Log on collection",
+      "convertsTo": "Wood Log"
+    },
+    "Flawless Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Flawless Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Cloth": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Cloth Strip": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Plant Fiber": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Wispweave Filament": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Wispweave Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Fertilizer": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Berry": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Animal Hair": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Straw": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        10
+      ]
+    },
+    "Flawless Embergrain Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        10
+      ]
+    },
+    "Refined Magnificient Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Cloth": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Cloth Strip": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Plant Fiber": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Wispweave Filament": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Wispweave Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Animal Hair": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Straw": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        9
+      ]
+    },
+    "Magnificient Embergrain Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        9
+      ]
+    },
+    "Refined Pristine Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Cloth": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Cloth Strip": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Plant Fiber": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Wispweave Filament": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Wispweave Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Animal Hair": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Straw": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Embergrain Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Refined Ornate Cloth": {
+      "type": "intermediate",
+      "trackable": false,
+      "note": "Refined material, crafted and immediately consumed in crafting chain",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Cloth": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Cloth Strip": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Spool Of Thread": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Plant Fiber": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Plant Roots": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Gathered resource, converts to Plant Fiber on collection",
+      "convertsTo": "Plant Fiber",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Wispweave Filament": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Wispweave Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Wispweave Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Textile": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Animal Hair": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Straw": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Embergrain Plant": {
+      "type": "gathered",
+      "trackable": false,
+      "note": "Harvested plant, yields crops/materials on harvest",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Embergrain Seeds": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Novice's Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        2
+      ]
+    },
+    "Novice's Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        2
+      ]
+    },
+    "Novice's Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        2
+      ]
+    },
+    "Novice's Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        2
+      ]
+    },
+    "Novice's Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        2
+      ]
+    },
+    "Ornate Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Parchment": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Flower": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Stone Carvings": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        7
+      ]
+    },
+    "Ornate Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        7
+      ]
+    },
+    "Pristine Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Study Journal": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Parchment": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Ink": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted ink reagent, consumed in parchment crafting",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Pigment": {
+      "type": "reagent",
+      "trackable": false,
+      "note": "Crafted process reagent, consumed immediately in recipes",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Flower": {
+      "type": "likely_api",
+      "trackable": true,
+      "note": "Follows standard API naming pattern - verify with API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Stone Carvings": {
+      "type": "study_material",
+      "trackable": true,
+      "note": "Study/research material used in codex progression - likely in API",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        8
+      ]
+    },
+    "Pristine Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        8
+      ]
+    },
+    "Proficient Stone Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        4
+      ]
+    },
+    "Proficient Wood Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        4
+      ]
+    },
+    "Proficient Metal Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        4
+      ]
+    },
+    "Proficient Leather Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        4
+      ]
+    },
+    "Proficient Cloth Research": {
+      "type": "research",
+      "trackable": false,
+      "note": "Top-level codex research goal, not an inventory item",
+      "tiers": [
+        4
+      ]
+    }
+  }
+}

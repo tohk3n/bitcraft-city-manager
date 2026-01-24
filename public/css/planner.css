@@ -1,0 +1,591 @@
+/* Planner styles - codex requirement tree and deficit summary */
+
+/* Planner header controls */
+.planner-controls {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.planner-controls label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-right: 6px;
+}
+
+.planner-controls select {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.planner-controls select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.planner-controls input[type="number"] {
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  width: 80px;
+}
+
+.planner-controls input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Hide number input spinners for cleaner look */
+.planner-controls input[type="number"]::-webkit-outer-spin-button,
+.planner-controls input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.planner-controls input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.planner-requirement {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  padding: 8px 16px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.planner-requirement strong {
+  color: var(--accent);
+}
+
+/* Deficit summary */
+.deficit-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.summary-empty,
+.summary-complete {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 24px;
+  color: var(--status-complete);
+  font-size: 1.1rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--status-complete);
+  border-radius: 8px;
+}
+
+.deficit-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.deficit-card.has-deficit {
+  border-color: var(--status-partial);
+}
+
+.deficit-card.complete {
+  border-color: var(--status-complete);
+  opacity: 0.7;
+}
+
+.deficit-card .item-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.deficit-card .item-tier {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  background: var(--bg-tertiary);
+  padding: 2px 6px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.deficit-card .item-progress {
+  margin: 4px 0;
+}
+
+.progress-bar-small {
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill-small {
+  height: 100%;
+  background: var(--status-partial);
+  border-radius: 2px;
+  transition: width 0.2s ease;
+}
+
+.deficit-card .item-counts {
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.deficit-card .item-counts .have {
+  color: var(--text-primary);
+}
+
+.deficit-card .item-counts .sep {
+  color: var(--text-muted);
+  margin: 0 2px;
+}
+
+.deficit-card .item-counts .required {
+  color: var(--text-muted);
+}
+
+.deficit-card .item-deficit {
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--status-missing);
+  margin-top: auto;
+}
+
+.deficit-card.complete .item-deficit {
+  color: var(--status-complete);
+}
+
+/* Research tree container - DEPRECATED, keeping for reference */
+.research-tree {
+  display: none;
+}
+
+/* ============================================================================
+ *  Flowchart View
+ *  ============================================================================ */
+
+/* Tab navigation */
+.flowchart-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  padding-bottom: 0;
+}
+
+.flowchart-tab {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.flowchart-tab:hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+.flowchart-tab.active {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  border-color: var(--border);
+}
+
+.flowchart-tab-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.flowchart-tab-status.complete { background: var(--status-complete); }
+.flowchart-tab-status.partial { background: var(--status-partial); }
+.flowchart-tab-status.missing { background: var(--status-missing); }
+
+/* Flowchart container */
+.flowchart-container {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 24px;
+  min-height: 300px;
+  overflow: auto;
+  cursor: grab;
+  user-select: none;
+}
+
+.flowchart-container.dragging {
+  cursor: grabbing;
+}
+
+.flowchart-container:active {
+  cursor: grabbing;
+}
+
+/* Tree layout */
+.flowchart-tree {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  padding: 20px;
+  min-width: fit-content;
+}
+
+.flowchart-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: visible;
+}
+
+.flowchart-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* SVG connector paths */
+.fc-connector {
+  fill: none;
+  stroke: var(--border);
+  stroke-width: 2;
+}
+
+.fc-connector.complete { stroke: var(--status-complete); }
+.fc-connector.partial { stroke: var(--status-partial); }
+
+/* Node groups - for when a parent has multiple children */
+.fc-node-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.fc-node-children {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
+}
+
+/* Individual node */
+.fc-node {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-width: 130px;
+  max-width: 180px;
+  text-align: center;
+  position: relative;
+}
+
+.fc-node.complete { border-color: var(--status-complete); }
+.fc-node.partial { border-color: var(--status-partial); }
+.fc-node.missing { border-color: var(--status-missing); }
+
+.fc-node.goal {
+  background: var(--bg-tertiary);
+  min-width: 160px;
+}
+
+.fc-node.non-trackable {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.fc-node-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.fc-node-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.fc-node-tier {
+  background: var(--bg-tertiary);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.fc-node.goal .fc-node-tier {
+  background: var(--bg-primary);
+}
+
+.fc-node-qty {
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-node-qty .have { color: var(--text-primary); }
+.fc-node-qty .required { color: var(--text-muted); }
+
+.fc-node-progress {
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fc-node.goal .fc-node-progress {
+  background: var(--bg-primary);
+}
+
+.fc-node-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.fc-node.complete .fc-node-progress-fill { background: var(--status-complete); }
+.fc-node.partial .fc-node-progress-fill { background: var(--status-partial); }
+.fc-node.missing .fc-node-progress-fill { background: var(--status-missing); width: 0 !important; }
+
+.fc-node-deficit {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--status-missing);
+  color: white;
+}
+
+.fc-node.complete .fc-node-deficit { display: none; }
+
+/* Flowchart Legend */
+.flowchart-legend {
+  display: flex;
+  gap: 24px;
+  margin-top: 16px;
+  padding: 10px 16px;
+  background: var(--bg-tertiary);
+  border-radius: 6px;
+  font-size: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.flowchart-legend .legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+}
+
+.flowchart-legend .legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 2px solid;
+}
+
+.flowchart-legend .legend-color.complete { border-color: var(--status-complete); }
+.flowchart-legend .legend-color.partial { border-color: var(--status-partial); }
+.flowchart-legend .legend-color.missing { border-color: var(--status-missing); }
+
+.flowchart-legend .legend-spacer {
+  margin-left: auto;
+}
+
+.flowchart-legend .legend-dashed {
+  display: inline-block;
+  width: 24px;
+  height: 12px;
+  border: 2px dashed var(--border);
+  border-radius: 3px;
+}
+
+/* Status colors */
+:root {
+  --status-complete: #3fb950;
+  --status-partial: #d29922;
+  --status-missing: #f05050;
+}
+
+/* Loading state */
+.planner-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px;
+  color: var(--text-secondary);
+}
+
+.planner-loading::after {
+  content: '';
+  width: 24px;
+  height: 24px;
+  margin-left: 12px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty state */
+.planner-empty {
+  text-align: center;
+  padding: 48px;
+  color: var(--text-secondary);
+}
+
+/* Expand/collapse all controls - DEPRECATED */
+.tree-controls {
+  display: none;
+}
+
+/* Mapping type indicators - DEPRECATED, now uses border-style: dashed */
+.mapping-type {
+  display: none;
+}
+
+.tree-node.non-trackable > .node-content {
+  display: none;
+}
+
+.tree-node.non-trackable > .node-content .node-have {
+  display: none;
+}
+
+/* Legend for mapping types - DEPRECATED */
+.planner-legend {
+  display: none;
+}
+
+/* Progress Overview */
+.progress-overview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.progress-stats {
+  flex: 1;
+}
+
+.progress-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.progress-bar-large {
+  flex: 1;
+  height: 20px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 300px;
+}
+
+.progress-fill-large {
+  height: 100%;
+  background: linear-gradient(90deg, var(--status-partial) 0%, var(--status-complete) 100%);
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+.progress-pct {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  min-width: 60px;
+}
+
+.progress-detail {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.export-btn {
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s;
+}
+
+.export-btn:hover {
+  background: #7c5ac7;
+}
+
+/* Branch Progress Bar - DEPRECATED, using tabs instead */
+.branch-progress-bar {
+  display: none;
+}
+
+.branch-progress-fill {
+  display: none;
+}
+
+.branch-progress-text {
+  display: none;
+}
