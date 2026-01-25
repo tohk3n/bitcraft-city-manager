@@ -16,8 +16,8 @@ export const MAP_LINK = {
     playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
 
     // Build the link
-    const generatedLink = this.generateLink(checkboxes, resourceIdInput, playerIdInput);
-    const displayLink = this.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput);
+    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput);
+    const displayLink = MAP_LINK.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput);
     // Show link in UI
     const linkEl = document.getElementById("map-link");
     linkEl.href = generatedLink;
@@ -32,7 +32,7 @@ export const MAP_LINK = {
       dataMap.regionId = regions.join(',');
     }
     if (resourceIds !== '') {
-      dataMap.resourceId = encodeURIComponent(resourceIds);
+      dataMap.resourceId = resourceIds;
     }
     if (playerIds !== '') {
       dataMap.playerId = playerIds;
@@ -48,7 +48,7 @@ export const MAP_LINK = {
       first = false;
     }
     return displayUrl;
-  }
+  },
   // Generate link to bitcraft map from provided data
   generateLink(regions, resourceIds, playerIds) {
     const url = new URL(CONFIG.MAP_BASE_URL);
