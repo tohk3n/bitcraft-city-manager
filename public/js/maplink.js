@@ -114,18 +114,10 @@ export const MAP_LINK = {
     const idSet = new Set(idsToCheck.map(Number));
     const result = [];
     const matrix = CONFIG.RESOURCE_ID_MATRIX;
-    let categoryIndex = 0;
-    let lastCategory = ''
+
     for (const [category, arrayOfArrays] of Object.entries(matrix)) {
       arrayOfArrays.forEach((ids, index) => {
         const matches = ids.filter(id => idSet.has(id)).length;
-        if(lastCategory === ''){
-          lastCategory = category;
-        }
-        if(lastCategory !== category){
-          lastCategory = category;
-          categoryIndex++;
-        }
         let status;
         //TODO add enum for states
         if (matches === 0) {
@@ -138,7 +130,6 @@ export const MAP_LINK = {
 
         result.push({
           category,
-          row: categoryIndex,
           col: index, // 0–9
           status
         });
@@ -171,7 +162,7 @@ export const MAP_LINK = {
     const table = document.getElementById("id-matrix");
 
     stateObject.forEach(entry =>{
-      const cell = MAP_LINK.getCell(table,entry.category,entry.col);
+      const cell = MAP_LINK.getCell(table,entry.category,entry.col+1);
       MAP_LINK.setCellState(cell,entry.status);
     })
   },
