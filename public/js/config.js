@@ -84,6 +84,14 @@ export const CONFIG = {
     // External URLs
     MAP_BASE_URL: 'https://bitcraftmap.com/',
 
+    // Flowchart zoom settings
+    FLOWCHART_ZOOM: {
+      MIN: 0.25,
+      MAX: 2,
+      STEP: 0.1,
+      WHEEL_SENSITIVITY: 0.0005
+    },
+
     // Build reverse lookup: tag -> category (computed at load time)
     TAG_TO_CATEGORY: {},
 

@@ -5,15 +5,11 @@
  */
 
 import { formatCompact, generateExportText } from './lib/progress-calc.js';
+import { CONFIG } from '../config.js';
 
 // Module state
 let hideComplete = false;
 let zoomLevel = 1;
-
-// Zoom constraints
-const ZOOM_MIN = 0.25;
-const ZOOM_MAX = 2;
-const ZOOM_STEP = 0.1;
 
 /**
  * Render the flowchart view.
@@ -137,9 +133,10 @@ export function render(container, researches, report) {
         const viewport = container.querySelector('#fc-viewport');
         const canvas = container.querySelector('#fc-canvas');
         const zoomLevelEl = container.querySelector('#fc-zoom-level');
+        const { MIN, MAX, STEP, WHEEL_SENSITIVITY } = CONFIG.FLOWCHART_ZOOM;
 
         const applyZoom = (newZoom, smooth = true) => {
-            zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
+            zoomLevel = Math.max(MIN, Math.min(MAX, newZoom));
             canvas.style.transition = smooth ? 'transform 0.15s ease' : 'none';
             canvas.style.transform = `scale(${zoomLevel})`;
             zoomLevelEl.textContent = `${Math.round(zoomLevel * 100)}%`;
@@ -153,11 +150,11 @@ export function render(container, researches, report) {
         };
 
         container.querySelector('#fc-zoom-in').addEventListener('click', () => {
-            applyZoom(zoomLevel + ZOOM_STEP);
+            applyZoom(zoomLevel + STEP);
         });
 
         container.querySelector('#fc-zoom-out').addEventListener('click', () => {
-            applyZoom(zoomLevel - ZOOM_STEP);
+            applyZoom(zoomLevel - STEP);
         });
 
         container.querySelector('#fc-zoom-reset').addEventListener('click', () => {
@@ -172,8 +169,8 @@ export function render(container, researches, report) {
 
             // Continuous zoom based on scroll delta magnitude
             // Normalize delta and scale for natural feel
-            const delta = -e.deltaY * 0.0005 * oldZoom;
-            const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLevel + delta));
+            const delta = -e.deltaY * WHEEL_SENSITIVITY * oldZoom;
+            const newZoom = Math.max(MIN, Math.min(MAX, zoomLevel + delta));
 
             if (newZoom === oldZoom) return;
 
