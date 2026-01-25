@@ -12,6 +12,7 @@ import { applyCascade } from './lib/cascade-calc.js';
 import { generateProgressReport, formatCompact } from './lib/progress-calc.js';
 import * as TaskList from './task-list.js';
 import * as Flowchart from './flowchart.js';
+import { CONFIG } from '../config.js';
 
 // Tier upgrade requirements: target tier -> { codexTier, count }
 const TIER_REQUIREMENTS = {
@@ -83,6 +84,7 @@ export async function calculateRequirements(claimId, targetTier, options = {}) {
         codexCount,
         codexName: codex.name,
         researches: processed.researches,
+        studyJournals: processed.studyJournals,
         summary: report.secondLevel,
         report
     };
@@ -169,12 +171,12 @@ export function renderDeficitSummary(container, summary) {
 /**
  * Render the research tree (flowchart).
  */
-export function renderResearchTree(container, researches) {
+export function renderResearchTree(container, researches, studyJournals = null) {
     if (!lastReport) {
         container.innerHTML = '<div class="fc-empty">No data</div>';
         return;
     }
-    Flowchart.render(container, researches, lastReport);
+    Flowchart.render(container, researches, lastReport, studyJournals);
 }
 
 /**

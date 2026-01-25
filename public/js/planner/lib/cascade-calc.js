@@ -11,6 +11,9 @@
 
 import { getItemQuantity, createKey } from './inventory-matcher.js';
 
+// Pattern to identify Study Journal nodes
+const STUDY_JOURNAL_PATTERN = /Study Journal$/;
+
 export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
     // Pass 1: Aggregate and compute satisfaction
     const items = new Map();
@@ -26,11 +29,17 @@ export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
     }
 
     // Pass 2: Build tree
+    const fullResearches = expandedCodex.researches.map(r => buildNode(r, items, false, 1.0));
+
+    // Pass 3: Extract Study Journals into separate tab
+    const { researches, studyJournals } = extractStudyJournals(fullResearches);
+
     return {
         name: expandedCodex.name,
         tier: expandedCodex.tier,
         targetCount: expandedCodex.targetCount,
-        researches: expandedCodex.researches.map(r => buildNode(r, items, false, 1.0))
+        researches,
+        studyJournals
     };
 }
 
@@ -95,6 +104,85 @@ function buildNode(node, items, parentSatisfied, parentScale) {
         mappingType: node.mappingType,
         children: (node.children || []).map(c => buildNode(c, items, satisfied, childScale))
     };
+}
+
+/**
+ * Extract Study Journal subtrees from researches into a dedicated synthetic research.
+ * Journals are identified by name pattern and aggregated since they're identical across branches.
+ *
+ * @param {Array} researches - Processed research nodes
+ * @returns {Object} { researches: pruned researches, studyJournals: aggregated journal node or null }
+ */
+function extractStudyJournals(researches) {
+    const extracted = [];
+    const pruned = [];
+
+    for (const research of researches) {
+        const children = research.children || [];
+        const journalChild = children.find(c => STUDY_JOURNAL_PATTERN.test(c.name));
+        const otherChildren = children.filter(c => !STUDY_JOURNAL_PATTERN.test(c.name));
+
+        if (journalChild) {
+            extracted.push(journalChild);
+        }
+
+        // Create pruned research with journal removed
+        pruned.push({
+            ...research,
+            children: otherChildren
+        });
+    }
+
+    // If no journals found, return original
+    if (extracted.length === 0) {
+        return { researches, studyJournals: null };
+    }
+
+    // Aggregate journals - they're identical trees, so take first and multiply quantities
+    const multiplier = extracted.length;
+    const aggregated = aggregateJournalNode(extracted[0], multiplier);
+
+    // Compute overall status for the aggregated journal
+    aggregated.status = computeOverallStatus(aggregated);
+
+    return {
+        researches: pruned,
+        studyJournals: aggregated
+    };
+}
+
+/**
+ * Recursively multiply quantities in a journal node tree.
+ */
+function aggregateJournalNode(node, multiplier) {
+    return {
+        ...node,
+        required: node.required * multiplier,
+        deficit: node.deficit * multiplier,
+        contribution: node.contribution * multiplier,
+        // Recalculate percentage based on new totals
+        pctComplete: (node.required * multiplier) > 0
+        ? Math.round((node.contribution * multiplier) / (node.required * multiplier) * 100)
+        : 100,
+        children: (node.children || []).map(c => aggregateJournalNode(c, multiplier))
+    };
+}
+
+/**
+ * Compute overall status for a node based on its own status and children.
+ */
+function computeOverallStatus(node) {
+    if (node.status === 'missing') return 'missing';
+    if (node.status === 'partial') return 'partial';
+
+    // Check children recursively
+    for (const child of node.children || []) {
+        const childStatus = computeOverallStatus(child);
+        if (childStatus === 'missing') return 'partial';
+        if (childStatus === 'partial') return 'partial';
+    }
+
+    return node.status;
 }
 
 // --- Collection functions ---

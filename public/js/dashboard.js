@@ -100,7 +100,7 @@ export const DashboardUI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">🍖</span>
+      <span class="icon">ðŸ–</span>
       <h4>Food</h4>
       <span class="total">${foodTotal.toLocaleString()}</span>
       </div>
@@ -125,7 +125,7 @@ export const DashboardUI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">📜</span>
+      <span class="icon">ðŸ“œ</span>
       <h4>Scholar</h4>
       <span class="total">${scholarTotal.toLocaleString()}</span>
       </div>

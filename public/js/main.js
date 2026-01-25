@@ -128,7 +128,7 @@ async function loadPlanner() {
     plannerState.results = results;
 
     Planner.renderDeficitSummary(summaryContainer, results.summary);
-    Planner.renderResearchTree(treeContainer, results.researches);
+    Planner.renderResearchTree(treeContainer, results.researches, results.studyJournals);
 
   } catch (err) {
     log.error('Planner error:', err.message);
@@ -282,21 +282,4 @@ const claimParam = params.get('claim');
 if (claimParam) {
   input.value = claimParam;
   loadClaim();
-}
-
-async function loadMatrix() {
-  if (claimData.items) {
-    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
-    UI.renderIdMatrix(idMatrix);
-    return;
-  }
-
-  try {
-    const itemsData = await API.getItems();
-    claimData.items = itemsData.items || [];
-    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
-    UI.renderIdMatrix(idMatrix);
-  } catch (err) {
-    console.error(err);
-  }
 }
