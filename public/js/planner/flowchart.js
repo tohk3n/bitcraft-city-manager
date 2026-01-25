@@ -219,7 +219,7 @@ function renderNode(node, isRoot = false, hideComplete = false) {
         <div class="fc-node-name">${node.name}</div>
         <div class="fc-node-meta">
         <span class="fc-node-tier">T${node.tier}</span>
-        <span class="fc-node-check">âœ“</span>
+        <span class="fc-node-check">✓</span>
         </div>
         </div>
         `;
