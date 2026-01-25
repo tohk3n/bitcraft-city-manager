@@ -17,5 +17,5 @@ Thumbs.db
 # Logs
 *.log
 
-# Build
-dist/
+# Build output
+public/js/
