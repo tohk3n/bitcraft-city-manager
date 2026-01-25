@@ -94,11 +94,13 @@
     border-color 0.15s ease;
 }
 
-#lnk-gen-btn:hover {
+#lnk-gen-btn:hover,
+#id-matrix-btn:hover {
   background: var(--bg-tertiary);
 }
 
-#lnk-gen-btn:active {
+#lnk-gen-btn:active,
+#id-matrix-btn:active {
   background: var(--accent);
   color: var(--bg-primary);
   border-color: var(--accent);
