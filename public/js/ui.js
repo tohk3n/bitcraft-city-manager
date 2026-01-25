@@ -172,6 +172,11 @@ const BaseUI = {
     matrixBtn.addEventListener("click", () => {
       matrixWrapper.classList.toggle('hidden');
     });
+
+    const resInputField = document.getElementById('res-ids');
+    resInputField.addEventListener("blur", () => {
+      MAP_LINK.syncMatrixState(resInputField.value);
+    });
   },
 
   // Generates table with clickable fields to add to input field for resource selection
@@ -219,7 +224,8 @@ const BaseUI = {
           // clickable area
           const cellArea = document.createElement('div');
           cellArea.classList.add('matrix-cell-inner');
-
+          // Needed for state of matrix
+          cellArea.classList.add('none');
           // data attributes for later logic
           cellArea.dataset.row = rowName;
           cellArea.dataset.tier = t;
@@ -231,14 +237,13 @@ const BaseUI = {
             cellButton.classList.add('matrix-cell-btn');
 
             cellButton.addEventListener('click', () => {
-              MAP_LINK.cellButtonEvent(cellArea);
+              MAP_LINK.cellButtonEvent(rowName,t);
             });
 
             cellArea.appendChild(cellButton);
           }else{
             cellArea.classList.add('empty');
           }
-
 
           td.appendChild(cellArea);
           tr.appendChild(td);

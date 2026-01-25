@@ -23,7 +23,6 @@ export const MAP_LINK = {
     linkEl.href = generatedLink;
     linkEl.textContent = displayLink;
   },
-
   // ONLY for display, its not a correct link (so it might not work)
   generateDisplayLink(regions, resourceIds, playerIds) {
     const dataMap = {};
@@ -64,7 +63,6 @@ export const MAP_LINK = {
 
     return url;
   },
-
   // Add input validation for comma-separated number fields
   addCommaNumberValidation(inputId) {
     const field = document.getElementById(inputId);
@@ -82,12 +80,10 @@ export const MAP_LINK = {
       field.value = value;
     });
   },
-
   // Clean up trailing commas from input
   finalizeCommaNumberInput(value) {
     return value.replace(/,+$/, '');
   },
-
   // Add or remove new value to input field, separates by comma, leaves the rest intact
   syncInputValue(value, activated){
     value = String(value)
@@ -106,15 +102,56 @@ export const MAP_LINK = {
     }
     inputField.value = Array.from(values).join(',');
   },
+  // Synchronize the resource ID matrix to match the input
+  syncMatrixState(resourceIdInput)
+  {
+    const inputIds = resourceIdInput.split(',');
+    const stateObject = MAP_LINK.buildStateMatrix(inputIds);
+    MAP_LINK.setMatrixState(stateObject);
+  },
+  buildStateMatrix(idsToCheck) {
 
-  cellButtonEvent(cellArea){
-    if (!cellArea) return;
-    if (!cellArea?.dataset.row || !cellArea?.dataset.tier) return;
+    const idSet = new Set(idsToCheck.map(Number));
+    const result = [];
+    const matrix = CONFIG.RESOURCE_ID_MATRIX;
+    let categoryIndex = 0;
+    let lastCategory = ''
+    for (const [category, arrayOfArrays] of Object.entries(matrix)) {
+      arrayOfArrays.forEach((ids, index) => {
+        const matches = ids.filter(id => idSet.has(id)).length;
+        if(lastCategory === ''){
+          lastCategory = category;
+        }
+        if(lastCategory !== category){
+          lastCategory = category;
+          categoryIndex++;
+        }
+        let status;
+        //TODO add enum for states
+        if (matches === 0) {
+          status = 'none';
+        } else if (matches === ids.length) {
+          status = 'full';
+        } else {
+          status = 'part';
+        }
 
-    const isActive = cellArea.classList.contains('active');
+        result.push({
+          category,
+          row: categoryIndex,
+          col: index, // 0–9
+          status
+        });
+      });
+    }
+    return result
+  },
 
-    const rowName = cellArea.dataset.row;
-    const tier = cellArea.dataset.tier;
+  cellButtonEvent(rowName,tier){
+    const cellArea = document.querySelector(
+          `[data-row="${rowName}"][data-tier="${tier}"]`
+        );
+    const isActive = cellArea.classList.contains('full')||cellArea.classList.contains('part');
     const index = tier - 1;
 
     if(!CONFIG.RESOURCE_ID_MATRIX[rowName]){return};
@@ -123,12 +160,52 @@ export const MAP_LINK = {
     const idValues = CONFIG.RESOURCE_ID_MATRIX[rowName][index];
     //update input field
     idValues.forEach(id => this.syncInputValue(id,!isActive))
+    //update matrix state
+    const inputField = document.getElementById('res-ids');
+    const fieldValues = inputField.value;
+    MAP_LINK.syncMatrixState(fieldValues);
 
-    //update state
-    if(!isActive){
-      cellArea.classList.add('active');
+  },
+  // Uses StateMatrix to set states for all cells
+  setMatrixState(stateObject){
+    const table = document.getElementById("id-matrix");
+
+    stateObject.forEach(entry =>{
+      const cell = MAP_LINK.getCell(table,entry.category,entry.col);
+      MAP_LINK.setCellState(cell,entry.status);
+    })
+  },
+  getCell(table, row, tier) {
+    if (!table) return;
+
+    const el = document.querySelector(
+      `[data-row="${row}"][data-tier="${tier}"]`
+    );
+
+    return el;
+  },
+  //TODO add enum for states
+  setCellState(cell, state){
+    if(!cell)return;
+    if(cell.classList.contains(state)) return;
+
+    if(cell.classList.contains("part")){
+      cell.classList.remove("part");
+    }
+    if(cell.classList.contains("full")){
+      cell.classList.remove("full");
+    }
+    if(cell.classList.contains("none")){
+      cell.classList.remove("none");
+    }
+
+    if(state==="full"){
+      cell.classList.add("full");
+    }else if(state === "part"){
+      cell.classList.add("part");
     }else{
-      cellArea.classList.remove('active');
+      cell.classList.add("none");
     }
   }
 };
+const STATE = { NONE: 'none', PART: 'part', FULL: 'full' };

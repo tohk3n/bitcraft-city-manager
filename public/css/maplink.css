@@ -140,7 +140,7 @@
   background-color: var(--bg-secondary);
 }
 
-.matrix-cell-inner {
+.matrix-cell-inner.none {
   width: 100%;
   height: 100%;
   cursor: pointer;
@@ -151,10 +151,12 @@
   background-color: var(--bg-tertiary);
 }
 
-.matrix-cell-inner.active {
+.matrix-cell-inner.full {
   background-color: var(--accent);
 }
-
+.matrix-cell-inner.part {
+  background-color: var(--accent-hover);
+}
 .matrix-cell-inner.empty {
   background-color: var(--text-secondary);
 }
