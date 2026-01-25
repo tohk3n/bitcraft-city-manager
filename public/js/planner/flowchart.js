@@ -1,0 +1,287 @@
+/**
+ * Flowchart - Research tree visualization
+ *
+ * Renders the recipe tree with tabs, collapsible branches, and SVG connectors.
+ */
+
+import { formatCompact, generateExportText } from './lib/progress-calc.js';
+
+// Module state
+let hideComplete = false;
+
+/**
+ * Render the flowchart view.
+ *
+ * @param {HTMLElement} container - Container element
+ * @param {Array} researches - Processed research branches
+ * @param {Object} report - Progress report for export
+ */
+export function render(container, researches, report) {
+    if (!researches || researches.length === 0) {
+        container.innerHTML = '<div class="fc-empty">No data</div>';
+        return;
+    }
+
+    const { overall } = report;
+
+    container.innerHTML = `
+    <div class="fc-header">
+    <div class="fc-progress">
+    <div class="fc-progress-bar">
+    <div class="fc-progress-fill" style="width: ${overall.percent}%"></div>
+    </div>
+    <span class="fc-progress-pct">${overall.percent}%</span>
+    </div>
+    <div class="fc-progress-detail">${overall.completeCount}/${overall.totalItems} materials ready</div>
+    <button class="fc-export" id="fc-export">Copy Task List</button>
+    </div>
+    <div class="fc-tabs" id="fc-tabs">
+    ${researches.map((r, i) => `
+        <button class="fc-tab ${i === 0 ? 'active' : ''}" data-index="${i}">
+        <span class="fc-tab-status ${r.status}"></span>
+        ${formatTabName(r.name)}
+        </button>
+        `).join('')}
+        </div>
+        <div class="fc-options">
+        <label class="fc-toggle">
+        <input type="checkbox" id="fc-hide-complete">
+        <span>Hide completed branches</span>
+        </label>
+        </div>
+        <div class="fc-viewport" id="fc-viewport">
+        <div class="fc-canvas" id="fc-canvas">
+        <svg class="fc-svg" id="fc-svg"></svg>
+        <div class="fc-tree" id="fc-tree"></div>
+        </div>
+        </div>
+        <div class="fc-legend">
+        <div class="fc-legend-item">
+        <div class="fc-legend-color complete"></div>
+        <span>Complete</span>
+        </div>
+        <div class="fc-legend-item">
+        <div class="fc-legend-color partial"></div>
+        <span>Partial</span>
+        </div>
+        <div class="fc-legend-item">
+        <div class="fc-legend-color missing"></div>
+        <span>Missing</span>
+        </div>
+        <div class="fc-legend-item fc-legend-spacer">
+        <span class="fc-legend-dashed"></span>
+        <span>Non-trackable</span>
+        </div>
+        </div>
+        `;
+
+        let activeIndex = 0;
+        const treeEl = container.querySelector('#fc-tree');
+
+        const renderTree = () => {
+            treeEl.innerHTML = renderNode(researches[activeIndex], true, hideComplete);
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => drawConnections(container));
+            });
+        };
+
+        // Initial render
+        renderTree();
+
+        // Tab switching
+        container.querySelectorAll('.fc-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const index = parseInt(tab.dataset.index, 10);
+                if (index === activeIndex) return;
+
+                activeIndex = index;
+                container.querySelectorAll('.fc-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                renderTree();
+            });
+        });
+
+        // Hide complete toggle
+        container.querySelector('#fc-hide-complete').addEventListener('change', e => {
+            hideComplete = e.target.checked;
+            renderTree();
+        });
+
+        // Export button
+        container.querySelector('#fc-export').addEventListener('click', () => {
+            const text = generateExportText(report, report.targetTier);
+            navigator.clipboard.writeText(text).then(() => {
+                const btn = container.querySelector('#fc-export');
+                const orig = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => btn.textContent = orig, 2000);
+            });
+        });
+
+        // Drag panning
+        setupDragPan(container.querySelector('#fc-viewport'));
+
+        // Redraw on resize
+        window.addEventListener('resize', () => drawConnections(container));
+}
+
+/**
+ * Format research name for tab display.
+ */
+function formatTabName(name) {
+    return name
+    .replace(' Research', '')
+    .replace(' Codex', '')
+    .replace(/^(Novice|Apprentice|Journeyman|Expert|Master|Proficient) /, '');
+}
+
+/**
+ * Render a node recursively.
+ */
+function renderNode(node, isRoot = false, hideComplete = false) {
+    // Collapse completed non-root branches
+    if (hideComplete && node.status === 'complete' && !isRoot) {
+        return `
+        <div class="fc-node complete collapsed">
+        <div class="fc-node-name">${node.name}</div>
+        <div class="fc-node-meta">
+        <span class="fc-node-tier">T${node.tier}</span>
+        <span class="fc-node-check">✓</span>
+        </div>
+        </div>
+        `;
+    }
+
+    const pct = node.required > 0
+    ? Math.round((Math.min(node.have, node.required) / node.required) * 100)
+    : 100;
+    const deficit = Math.max(0, node.required - node.have);
+
+    const nodeHtml = `
+    <div class="fc-node ${node.status} ${isRoot ? 'root' : ''} ${!node.trackable ? 'non-trackable' : ''}">
+    ${deficit > 0 ? `<div class="fc-node-deficit">-${formatCompact(deficit)}</div>` : ''}
+    <div class="fc-node-name">${node.name}</div>
+    <div class="fc-node-meta">
+    <span class="fc-node-tier">T${node.tier}</span>
+    <span class="fc-node-qty">
+    <span class="fc-have">${formatCompact(node.have)}</span>
+    <span class="fc-sep">/</span>
+    <span class="fc-need">${formatCompact(node.required)}</span>
+    </span>
+    </div>
+    <div class="fc-node-progress">
+    <div class="fc-node-progress-fill" style="width: ${pct}%"></div>
+    </div>
+    </div>
+    `;
+
+    const children = node.children || [];
+    if (children.length === 0) {
+        return nodeHtml;
+    }
+
+    // Filter children if hiding complete
+    const visible = hideComplete
+    ? children.filter(c => c.status !== 'complete' || hasIncompleteDescendant(c))
+    : children;
+
+    if (visible.length === 0) {
+        return nodeHtml;
+    }
+
+    return `
+    <div class="fc-group">
+    ${nodeHtml}
+    <div class="fc-children">
+    ${visible.map(c => renderNode(c, false, hideComplete)).join('')}
+    </div>
+    </div>
+    `;
+}
+
+/**
+ * Check if a node has any incomplete descendants.
+ */
+function hasIncompleteDescendant(node) {
+    if (node.status !== 'complete') return true;
+    return (node.children || []).some(c => hasIncompleteDescendant(c));
+}
+
+/**
+ * Draw SVG connection lines.
+ */
+function drawConnections(container) {
+    const svg = container.querySelector('#fc-svg');
+    const canvas = container.querySelector('#fc-canvas');
+    if (!svg || !canvas) return;
+
+    svg.innerHTML = '';
+    const canvasRect = canvas.getBoundingClientRect();
+
+    container.querySelectorAll('.fc-group').forEach(group => {
+        const parent = group.querySelector(':scope > .fc-node');
+        const childContainer = group.querySelector(':scope > .fc-children');
+        if (!parent || !childContainer) return;
+
+        const children = childContainer.querySelectorAll(':scope > .fc-node, :scope > .fc-group > .fc-node');
+        if (children.length === 0) return;
+
+        const parentRect = parent.getBoundingClientRect();
+        const px = parentRect.left + parentRect.width / 2 - canvasRect.left;
+        const py = parentRect.bottom - canvasRect.top;
+
+        children.forEach(child => {
+            const childRect = child.getBoundingClientRect();
+            const cx = childRect.left + childRect.width / 2 - canvasRect.left;
+            const cy = childRect.top - canvasRect.top;
+
+            const statusClass = child.classList.contains('complete') ? 'complete'
+            : child.classList.contains('partial') ? 'partial'
+            : '';
+
+            const midY = (py + cy) / 2;
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('d', `M ${px} ${py} C ${px} ${midY}, ${cx} ${midY}, ${cx} ${cy}`);
+            path.classList.add('fc-connector');
+            if (statusClass) path.classList.add(statusClass);
+            svg.appendChild(path);
+        });
+    });
+}
+
+/**
+ * Setup click-and-drag panning.
+ */
+function setupDragPan(el) {
+    let dragging = false;
+    let startX, startY, scrollLeft, scrollTop;
+
+    el.addEventListener('mousedown', e => {
+        if (e.button !== 0 || e.target.closest('button, input')) return;
+        dragging = true;
+        el.classList.add('dragging');
+        startX = e.pageX - el.offsetLeft;
+        startY = e.pageY - el.offsetTop;
+        scrollLeft = el.scrollLeft;
+        scrollTop = el.scrollTop;
+        e.preventDefault();
+    });
+
+    el.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        const x = e.pageX - el.offsetLeft;
+        const y = e.pageY - el.offsetTop;
+        el.scrollLeft = scrollLeft - (x - startX) * 1.5;
+        el.scrollTop = scrollTop - (y - startY) * 1.5;
+    });
+
+    el.addEventListener('mouseup', () => {
+        dragging = false;
+        el.classList.remove('dragging');
+    });
+
+    el.addEventListener('mouseleave', () => {
+        dragging = false;
+        el.classList.remove('dragging');
+    });
+}
