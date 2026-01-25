@@ -1,77 +1,91 @@
+/**
+ * Cascade Calculator
+ *
+ * Each node has:
+ * - satisfied: boolean, true if this item's global need is fully met
+ * - scale: 0-1, what fraction of this node's requirement is still needed
+ *
+ * If satisfied, scale = 0 and children inherit satisfied = true.
+ * If not satisfied, scale = globalDeficit / globalRequired, children use this scale.
+ */
+
 import { getItemQuantity, createKey } from './inventory-matcher.js';
 
-/**
- * Apply cascade calculation to an expanded recipe tree.
- * Processes nodes, calculating actual requirements after inventory is applied.
- *
- * @param {Object} expandedCodex - Result from expandRecipes
- * @param {Map<string, number>} inventoryLookup - From buildInventoryLookup
- * @param {Object} mappings - Item mappings for inventory lookup
- * @returns {Object} Processed codex with required/have/deficit on each node
- */
+// Pattern to identify Study Journal nodes
+const STUDY_JOURNAL_PATTERN = /Study Journal$/;
+
 export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
+    // Pass 1: Aggregate and compute satisfaction
+    const items = new Map();
+    for (const research of expandedCodex.researches) {
+        aggregateNode(research, items, inventoryLookup, mappings);
+    }
+
+    // Compute satisfaction and scale for each item
+    for (const item of items.values()) {
+        item.deficit = Math.max(0, item.required - item.have);
+        item.satisfied = item.deficit === 0;
+        item.scale = item.required > 0 ? item.deficit / item.required : 0;
+    }
+
+    // Pass 2: Build tree
+    const fullResearches = expandedCodex.researches.map(r => buildNode(r, items, false, 1.0));
+
+    // Pass 3: Extract Study Journals into separate tab
+    const { researches, studyJournals } = extractStudyJournals(fullResearches);
+
     return {
         name: expandedCodex.name,
         tier: expandedCodex.tier,
         targetCount: expandedCodex.targetCount,
-        researches: expandedCodex.researches.map(research =>
-        processNodeCascade(research, inventoryLookup, mappings, expandedCodex.targetCount)
-        )
+        researches,
+        studyJournals
     };
 }
 
-/**
- * Process a single node with cascade logic.
- *
- * The codex qty values represent totals needed for one codex completion.
- * Inventory at parent levels reduces child requirements proportionally.
- *
- * @param {Object} node - Expanded node with idealQty
- * @param {Map} inventoryLookup - Inventory lookup
- * @param {Object} mappings - Item mappings
- * @param {number} batchCount - Effective number of batches needed at this level
- * @returns {Object} Processed node with all calculations
- */
-function processNodeCascade(node, inventoryLookup, mappings, batchCount) {
-    // Required = qty for one batch × number of batches
-    const required = Math.ceil(node.recipeQty * batchCount);
+function aggregateNode(node, items, inventoryLookup, mappings) {
+    const key = createKey(node.name, node.tier);
 
-    // Get inventory quantity (0 if non-trackable)
-    const { qty: have } = getItemQuantity(
-        inventoryLookup,
-        node.name,
-        node.tier,
-        mappings
-    );
-
-    // Calculate deficit and contribution
-    const deficit = Math.max(0, required - have);
-    const contribution = Math.min(have, required);
-
-    // Calculate percentage complete for this node
-    const pctComplete = required > 0 ? Math.round((contribution / required) * 100) : 100;
-
-    // Determine status
-    let status;
-    if (deficit === 0) {
-        status = 'complete';
-    } else if (have > 0) {
-        status = 'partial';
-    } else {
-        status = 'missing';
+    if (!items.has(key)) {
+        const { qty } = getItemQuantity(inventoryLookup, node.name, node.tier, mappings);
+        items.set(key, {
+            name: node.name,
+            tier: node.tier,
+            required: 0,
+            have: qty,
+            trackable: node.trackable,
+            mappingType: node.mappingType
+        });
     }
 
-    // Children's batch count is proportional to how much we still need to produce
-    // If we have inventory covering some requirement, children produce less
-    // effectiveBatches = deficit / recipeQty = (batches we need to craft ourselves)
-    const effectiveBatches = node.recipeQty > 0
-    ? (deficit / node.recipeQty)
-    : batchCount;
+    items.get(key).required += node.idealQty;
 
-    // Process children with effective batch count
-    const children = (node.children || []).map(child =>
-    processNodeCascade(child, inventoryLookup, mappings, effectiveBatches)
-    );
+    for (const child of node.children || []) {
+        aggregateNode(child, items, inventoryLookup, mappings);
+    }
+}
+
+function buildNode(node, items, parentSatisfied, parentScale) {
+    const key = createKey(node.name, node.tier);
+    const item = items.get(key);
+
+    // If parent is satisfied, we're satisfied too (don't need to gather)
+    const satisfied = parentSatisfied || item.satisfied;
+
+    // Effective requirement after parent's scale
+    const required = Math.ceil(node.idealQty * parentScale);
+
+    // Our deficit: if satisfied, 0. Otherwise, apply our scale to required.
+    const deficit = satisfied ? 0 : Math.ceil(required * item.scale);
+    const contribution = required - deficit;
+    const pctComplete = required > 0 ? Math.round((contribution / required) * 100) : 100;
+
+    const status = satisfied ? 'complete'
+    : contribution > 0 ? 'partial'
+    : 'missing';
+
+    // Children's scale: if we're satisfied, 0. Otherwise, our scale.
+    const childScale = satisfied ? 0 : item.scale * parentScale;
 
     return {
         name: node.name,
@@ -79,111 +93,156 @@ function processNodeCascade(node, inventoryLookup, mappings, batchCount) {
         recipeQty: node.recipeQty,
         idealQty: node.idealQty,
         required,
-        have,
+        have: item.have,
         deficit,
         contribution,
         pctComplete,
         status,
+        satisfied,
+        satisfiedByParent: parentSatisfied,
         trackable: node.trackable,
         mappingType: node.mappingType,
-        children
+        children: (node.children || []).map(c => buildNode(c, items, satisfied, childScale))
     };
 }
 
 /**
- * Collect all trackable items from a processed tree.
- * Aggregates by item key, summing required/have/deficit.
+ * Extract Study Journal subtrees from researches into a dedicated synthetic research.
+ * Journals are identified by name pattern and aggregated since they're identical across branches.
  *
- * @param {Object} processedCodex - Result from applyCascade
- * @returns {Array} Array of aggregated trackable items
+ * @param {Array} researches - Processed research nodes
+ * @returns {Object} { researches: pruned researches, studyJournals: aggregated journal node or null }
  */
+function extractStudyJournals(researches) {
+    const extracted = [];
+    const pruned = [];
+
+    for (const research of researches) {
+        const children = research.children || [];
+        const journalChild = children.find(c => STUDY_JOURNAL_PATTERN.test(c.name));
+        const otherChildren = children.filter(c => !STUDY_JOURNAL_PATTERN.test(c.name));
+
+        if (journalChild) {
+            extracted.push(journalChild);
+        }
+
+        // Create pruned research with journal removed
+        pruned.push({
+            ...research,
+            children: otherChildren
+        });
+    }
+
+    // If no journals found, return original
+    if (extracted.length === 0) {
+        return { researches, studyJournals: null };
+    }
+
+    // Aggregate journals - they're identical trees, so take first and multiply quantities
+    const multiplier = extracted.length;
+    const aggregated = aggregateJournalNode(extracted[0], multiplier);
+
+    // Compute overall status for the aggregated journal
+    aggregated.status = computeOverallStatus(aggregated);
+
+    return {
+        researches: pruned,
+        studyJournals: aggregated
+    };
+}
+
+/**
+ * Recursively multiply quantities in a journal node tree.
+ */
+function aggregateJournalNode(node, multiplier) {
+    return {
+        ...node,
+        required: node.required * multiplier,
+        deficit: node.deficit * multiplier,
+        contribution: node.contribution * multiplier,
+        // Recalculate percentage based on new totals
+        pctComplete: (node.required * multiplier) > 0
+        ? Math.round((node.contribution * multiplier) / (node.required * multiplier) * 100)
+        : 100,
+        children: (node.children || []).map(c => aggregateJournalNode(c, multiplier))
+    };
+}
+
+/**
+ * Compute overall status for a node based on its own status and children.
+ */
+function computeOverallStatus(node) {
+    if (node.status === 'missing') return 'missing';
+    if (node.status === 'partial') return 'partial';
+
+    // Check children recursively
+    for (const child of node.children || []) {
+        const childStatus = computeOverallStatus(child);
+        if (childStatus === 'missing') return 'partial';
+        if (childStatus === 'partial') return 'partial';
+    }
+
+    return node.status;
+}
+
+// --- Collection functions ---
+
 export function collectTrackableItems(processedCodex) {
     const items = new Map();
 
     function collect(node) {
-        if (node.trackable && node.required > 0) {
+        if (node.trackable && node.required > 0 && !node.satisfiedByParent) {
             const key = createKey(node.name, node.tier);
-
-            if (!items.has(key)) {
-                items.set(key, {
-                    name: node.name,
-                    tier: node.tier,
-                    required: 0,
-                    have: node.have, // Same across all occurrences
-                    deficit: 0,
-                    contribution: 0,
-                    mappingType: node.mappingType
-                });
-            }
-
-            const item = items.get(key);
-            item.required += node.required;
-            item.deficit += node.deficit;
-            item.contribution += node.contribution;
-        }
-
-        for (const child of node.children || []) {
-            collect(child);
-        }
-    }
-
-    for (const research of processedCodex.researches) {
-        collect(research);
-    }
-
-    // Calculate percentage and cap contribution at required
-    const result = Array.from(items.values()).map(item => ({
-        ...item,
-        contribution: Math.min(item.contribution, item.required),
-                                                           pctComplete: item.required > 0
-                                                           ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
-                                                           : 100
-    }));
-
-    return result.sort((a, b) => b.deficit - a.deficit);
-}
-
-/**
- * Collect first trackable items from each branch of processed tree.
- * These represent the immediate next crafting step.
- *
- * @param {Object} processedCodex - Result from applyCascade
- * @returns {Array} Array of first trackable items with their requirements
- */
-export function collectFirstTrackable(processedCodex) {
-    const items = new Map();
-
-    function findFirst(node, researchName) {
-        if (node.trackable) {
-            // Found first trackable - aggregate and don't go deeper
-            const key = createKey(node.name, node.tier);
-
             if (!items.has(key)) {
                 items.set(key, {
                     name: node.name,
                     tier: node.tier,
                     required: 0,
                     have: node.have,
-                    deficit: 0,
-                    contribution: 0,
+                    mappingType: node.mappingType
+                });
+            }
+            items.get(key).required += node.required;
+        }
+        for (const child of node.children || []) collect(child);
+    }
+
+    for (const research of processedCodex.researches) collect(research);
+
+    return Array.from(items.values())
+    .map(item => ({
+        ...item,
+        deficit: Math.max(0, item.required - item.have),
+                  pctComplete: item.required > 0
+                  ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
+                  : 100
+    }))
+    .sort((a, b) => b.deficit - a.deficit);
+}
+
+export function collectFirstTrackable(processedCodex) {
+    const items = new Map();
+
+    function findFirst(node, source) {
+        if (node.satisfiedByParent) return;
+
+        if (node.trackable) {
+            const key = createKey(node.name, node.tier);
+            if (!items.has(key)) {
+                items.set(key, {
+                    name: node.name,
+                    tier: node.tier,
+                    required: 0,
+                    have: node.have,
                     mappingType: node.mappingType,
                     sources: new Set()
                 });
             }
-
-            const item = items.get(key);
-            item.required += node.required;
-            item.deficit += node.deficit;
-            item.contribution += node.contribution;
-            item.sources.add(researchName);
-
-            return; // Don't go deeper - this is "first trackable"
+            items.get(key).required += node.required;
+            items.get(key).sources.add(source);
+            return;
         }
-
-        // Non-trackable - continue to children
-        for (const child of node.children || []) {
-            findFirst(child, researchName);
-        }
+        for (const child of node.children || []) findFirst(child, source);
     }
 
     for (const research of processedCodex.researches) {
@@ -192,49 +251,44 @@ export function collectFirstTrackable(processedCodex) {
         }
     }
 
-    // Convert Sets to arrays, calculate pctComplete
-    const result = Array.from(items.values()).map(item => ({
+    return Array.from(items.values())
+    .map(item => ({
         ...item,
         sources: Array.from(item.sources),
-                                                           pctComplete: item.required > 0
-                                                           ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
-                                                           : 100
-    }));
-
-    return result.sort((a, b) => b.deficit - a.deficit);
+                  deficit: Math.max(0, item.required - item.have),
+                  pctComplete: item.required > 0
+                  ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
+                  : 100
+    }))
+    .sort((a, b) => b.deficit - a.deficit);
 }
 
-/**
- * Get second-level items (direct children of researches).
- * These are the high-level goals like "Refined Fine Brick".
- *
- * @param {Object} processedCodex - Result from applyCascade
- * @returns {Array} Array of second-level items
- */
 export function collectSecondLevel(processedCodex) {
     const items = new Map();
 
     for (const research of processedCodex.researches) {
         for (const child of research.children || []) {
-            const key = createKey(child.name, child.tier);
+            if (child.satisfiedByParent) continue;
 
+            const key = createKey(child.name, child.tier);
             if (!items.has(key)) {
                 items.set(key, {
                     name: child.name,
                     tier: child.tier,
                     required: 0,
                     have: child.have,
-                    deficit: 0,
                     trackable: child.trackable,
                     mappingType: child.mappingType
                 });
             }
-
-            const item = items.get(key);
-            item.required += child.required;
-            item.deficit += child.deficit;
+            items.get(key).required += child.required;
         }
     }
 
-    return Array.from(items.values()).sort((a, b) => b.deficit - a.deficit);
+    return Array.from(items.values())
+    .map(item => ({
+        ...item,
+        deficit: Math.max(0, item.required - item.have)
+    }))
+    .sort((a, b) => b.deficit - a.deficit);
 }

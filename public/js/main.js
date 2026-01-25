@@ -1,8 +1,11 @@
 // Main entry point - imports all modules and wires up the app
+import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
 import * as Planner from './planner/planner.js';
+
+const log = createLogger('Main');
 
 const input = document.getElementById('claim-id');
 const loadBtn = document.getElementById('load-btn');
@@ -53,7 +56,7 @@ async function loadClaim() {
       }
     } catch (e) {
       // Claim endpoint might not exist, continue with default name
-      console.log('Could not fetch claim details:', e);
+      log.debug('Could not fetch claim details:', e.message);
     }
 
     // Only show simple name if header failed
@@ -73,7 +76,7 @@ async function loadClaim() {
       const stations = processCraftingStations(buildingsData);
       UI.renderCraftingStations(stations);
     } catch (e) {
-      console.log('Could not fetch buildings:', e);
+      log.debug('Could not fetch buildings:', e.message);
     }
 
     // Initialize planner controls (don't load data yet - lazy load on tab click)
@@ -83,7 +86,7 @@ async function loadClaim() {
     history.replaceState(null, '', `?claim=${claimId}`);
 
   } catch (err) {
-    console.error(err);
+    log.error('Failed to load claim:', err.message);
     UI.showError('Failed to load claim data. Check the ID and try again.');
   } finally {
     UI.setLoading(false);
@@ -125,10 +128,10 @@ async function loadPlanner() {
     plannerState.results = results;
 
     Planner.renderDeficitSummary(summaryContainer, results.summary);
-    Planner.renderResearchTree(treeContainer, results.researches);
+    Planner.renderResearchTree(treeContainer, results.researches, results.studyJournals);
 
   } catch (err) {
-    console.error('Planner error:', err);
+    log.error('Planner error:', err.message);
     treeContainer.innerHTML = `
     <div class="planner-empty">
     Failed to calculate requirements: ${err.message}
@@ -166,7 +169,7 @@ async function loadCitizens() {
           const equipment = await API.getPlayerEquipment(citizen.entityId);
           return { id: citizen.entityId, equipment: equipment.equipment || [] };
         } catch (e) {
-          console.error(`Failed to load equipment for ${citizen.entityId}:`, e);
+          log.warn(`Failed to load equipment for ${citizen.entityId}:`, e.message);
           return { id: citizen.entityId, equipment: [] };
         }
       })
@@ -187,7 +190,7 @@ async function loadCitizens() {
     }
 
   } catch (err) {
-    console.error(err);
+    log.error('Failed to load citizens:', err.message);
     UI.showError('Failed to load citizens data.');
     UI.showCitizensLoading(false);
   }
@@ -205,7 +208,7 @@ async function loadItems() {
     claimData.items = itemsData.items || [];
     UI.renderIdList('items', claimData.items, claimData.citizens);
   } catch (err) {
-    console.error(err);
+    log.error('Failed to load items:', err.message);
   }
 }
 
