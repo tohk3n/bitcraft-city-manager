@@ -17,38 +17,52 @@ export const MAP_LINK = {
 
     // Build the link
     const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput);
-
+    const displayLink = MAP_LINK.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput);
     // Show link in UI
     const linkEl = document.getElementById("map-link");
     linkEl.href = generatedLink;
-    linkEl.textContent = generatedLink;
+    linkEl.textContent = displayLink;
   },
 
-  // Generate link to bitcraft map from provided data
-  generateLink(regions, resourceIds, playerIds) {
+  // ONLY for display, its not a correct link (so it might not work)
+  generateDisplayLink(regions, resourceIds, playerIds) {
     const dataMap = {};
 
-    if (regions.length > 0) {
+    if(regions.length > 0){
       dataMap.regionId = regions.join(',');
     }
     if (resourceIds !== '') {
-      dataMap.resourceId = encodeURIComponent(resourceIds);
+      dataMap.resourceId = resourceIds;
     }
     if (playerIds !== '') {
       dataMap.playerId = playerIds;
     }
 
-    let generatedLink = CONFIG.MAP_BASE_URL;
+    let displayUrl = CONFIG.MAP_BASE_URL;
     let first = true;
 
     // First value has ? prefix, subsequent use &
     for (const [key, value] of Object.entries(dataMap)) {
       const prefix = first ? '?' : '&';
-      generatedLink += `${prefix}${key}=${value}`;
+      displayUrl += `${prefix}${key}=${value}`;
       first = false;
     }
+    return displayUrl;
+  },
+  // Generate link to bitcraft map from provided data
+  generateLink(regions, resourceIds, playerIds) {
+    const url = new URL(CONFIG.MAP_BASE_URL);
+    if (regions.length > 0) {
+      url.searchParams.set("regionId", regions.join(','));
+    }
+    if (resourceIds !== '') {
+      url.searchParams.set("resourceId", resourceIds);
+    }
+    if (playerIds !== '') {
+      url.searchParams.set("playerId", playerIds);
+    }
 
-    return generatedLink;
+    return url;
   },
 
   // Add input validation for comma-separated number fields
@@ -72,5 +86,49 @@ export const MAP_LINK = {
   // Clean up trailing commas from input
   finalizeCommaNumberInput(value) {
     return value.replace(/,+$/, '');
+  },
+
+  // Add or remove new value to input field, separates by comma, leaves the rest intact
+  syncInputValue(value, activated){
+    value = String(value)
+    const inputField = document.getElementById('res-ids');
+    if(!inputField) return;
+
+    const resultValue = inputField.value.trim();
+    const values = resultValue
+      ? new Set(resultValue.split(',').map(v => v.trim()))
+      : new Set();
+
+    if (activated) {
+      values.add(value);
+    } else {
+      values.delete(value);
+    }
+    inputField.value = Array.from(values).join(',');
+  },
+
+  cellButtonEvent(cellArea){
+    if (!cellArea) return;
+    if (!cellArea?.dataset.row || !cellArea?.dataset.tier) return;
+
+    const isActive = cellArea.classList.contains('active');
+
+    const rowName = cellArea.dataset.row;
+    const tier = cellArea.dataset.tier;
+    const index = tier - 1;
+
+    if(!CONFIG.RESOURCE_ID_MATRIX[rowName]){return};
+    if(!CONFIG.RESOURCE_ID_MATRIX[rowName][index]){return};
+    //get corresponding ids for this row/tier
+    const idValues = CONFIG.RESOURCE_ID_MATRIX[rowName][index];
+    //update input field
+    idValues.forEach(id => this.syncInputValue(id,!isActive))
+
+    //update state
+    if(!isActive){
+      cellArea.classList.add('active');
+    }else{
+      cellArea.classList.remove('active');
+    }
   }
 };
