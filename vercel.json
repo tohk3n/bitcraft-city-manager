@@ -1,12 +1,12 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/api/proxy", "destination": "/api/proxy" },
-    { "source": "/js/(.*)", "destination": "/js/$1" },
-    { "source": "/css/(.*)", "destination": "/css/$1" },
-    { "source": "/data/(.*)", "destination": "/data/$1" },
-    { "source": "/(.*)", "destination": "/$1" }
+    { "source": "/js/:path*", "destination": "/dist/js/:path*" },
+    { "source": "/css/:path*", "destination": "/src/css/:path*" },
+    { "source": "/data/:path*", "destination": "/data/:path*" },
+    { "source": "/", "destination": "/public/index.html" },
+    { "source": "/:path*", "destination": "/public/:path*" }
   ],
   "headers": [
     {

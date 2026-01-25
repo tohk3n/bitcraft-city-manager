@@ -8,8 +8,8 @@
     "watch": "tsc --watch",
     "deploy": "npm run build && vercel --prod"
   },
-    "devDependencies": {
-    "typescript": "^5.4.0"
+  "devDependencies": {
+  "typescript": "^5.4.0"
   },
   "repository": {
     "type": "git",
