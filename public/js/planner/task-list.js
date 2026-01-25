@@ -1,22 +1,18 @@
 /**
  * Task List - Filterable, sortable task cards
- *
- * Renders deficit items with filter/sort controls and copy functionality.
  */
 
 import { formatCompact, categorizeByActivity } from './lib/progress-calc.js';
 
-// Module state for current filter/sort settings
+// Module state
 let currentItems = [];
 let filterTier = '';
 let filterActivity = '';
 let sortBy = 'deficit';
+let hideComplete = true;
 
 /**
  * Render the task list with controls.
- *
- * @param {HTMLElement} container - Container element
- * @param {Array} items - Items from report.firstTrackable
  */
 export function render(container, items) {
     if (!items || items.length === 0) {
@@ -24,19 +20,17 @@ export function render(container, items) {
         return;
     }
 
-    const itemsWithDeficit = items.filter(item => item.deficit > 0);
+    currentItems = items;
 
-    if (itemsWithDeficit.length === 0) {
+    const itemsWithDeficit = items.filter(i => i.deficit > 0);
+
+    if (itemsWithDeficit.length === 0 && hideComplete) {
         container.innerHTML = '<div class="task-complete">All materials in stock!</div>';
         return;
     }
 
-    // Store items and reset filters
-    currentItems = itemsWithDeficit;
-
-    // Get unique tiers and activities for filter options
-    const tiers = [...new Set(itemsWithDeficit.map(i => i.tier))].sort((a, b) => a - b);
-    const activities = [...new Set(itemsWithDeficit.map(i => categorizeByActivity(i.name)))].sort();
+    const tiers = [...new Set(items.map(i => i.tier))].sort((a, b) => a - b);
+    const activities = [...new Set(items.map(i => categorizeByActivity(i.name)))].sort();
 
     container.innerHTML = `
     <div class="task-controls">
@@ -50,13 +44,17 @@ export function render(container, items) {
     ${activities.map(a => `<option value="${a}">${a}</option>`).join('')}
     </select>
     </div>
+    <label class="task-toggle">
+    <input type="checkbox" id="task-hide-complete" ${hideComplete ? 'checked' : ''}>
+    <span>Hide complete</span>
+    </label>
     <div class="task-sort">
     <label>Sort:</label>
     <select id="task-sort" class="task-select">
-    <option value="deficit">Deficit ↓</option>
-    <option value="deficit-asc">Deficit ↑</option>
-    <option value="tier">Tier ↓</option>
-    <option value="tier-asc">Tier ↑</option>
+    <option value="deficit">Deficit (high)</option>
+    <option value="deficit-asc">Deficit (low)</option>
+    <option value="tier">Tier (high)</option>
+    <option value="tier-asc">Tier (low)</option>
     <option value="activity">Activity</option>
     <option value="name">Name</option>
     </select>
@@ -65,37 +63,42 @@ export function render(container, items) {
     <div class="task-cards" id="task-cards"></div>
     `;
 
-    // Wire up controls
+    const cardsEl = container.querySelector('#task-cards');
+
     container.querySelector('#task-filter-tier').addEventListener('change', e => {
         filterTier = e.target.value;
-        renderCards(container.querySelector('#task-cards'));
+        renderCards(cardsEl);
     });
 
     container.querySelector('#task-filter-activity').addEventListener('change', e => {
         filterActivity = e.target.value;
-        renderCards(container.querySelector('#task-cards'));
+        renderCards(cardsEl);
     });
 
     container.querySelector('#task-sort').addEventListener('change', e => {
         sortBy = e.target.value;
-        renderCards(container.querySelector('#task-cards'));
+        renderCards(cardsEl);
     });
 
-    renderCards(container.querySelector('#task-cards'));
+    container.querySelector('#task-hide-complete').addEventListener('change', e => {
+        hideComplete = e.target.checked;
+        renderCards(cardsEl);
+    });
+
+    renderCards(cardsEl);
 }
 
 /**
- * Render the task cards based on current filter/sort state.
+ * Render task cards based on current filter/sort state.
  */
 function renderCards(container) {
-    // Filter
     let items = currentItems.filter(item => {
+        if (hideComplete && item.deficit === 0) return false;
         if (filterTier && item.tier !== parseInt(filterTier, 10)) return false;
         if (filterActivity && categorizeByActivity(item.name) !== filterActivity) return false;
         return true;
     });
 
-    // Sort
     items = sort(items, sortBy);
 
     if (items.length === 0) {
@@ -105,7 +108,6 @@ function renderCards(container) {
 
     container.innerHTML = items.map(item => renderCard(item)).join('');
 
-    // Wire up copy buttons
     container.querySelectorAll('.task-copy').forEach(btn => {
         btn.addEventListener('click', e => {
             e.stopPropagation();
@@ -122,10 +124,14 @@ function renderCard(item) {
     ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
     : 100;
     const activity = categorizeByActivity(item.name);
-    const taskText = `${item.deficit.toLocaleString()}x ${item.name} (T${item.tier})`;
+    const isComplete = item.deficit === 0;
+    const deficitText = isComplete ? 'Done' : `-${formatCompact(item.deficit)}`;
+    const taskText = isComplete
+    ? `${item.name} (T${item.tier}) - Complete`
+    : `${item.deficit.toLocaleString()}x ${item.name} (T${item.tier})`;
 
     return `
-    <div class="task-card">
+    <div class="task-card ${isComplete ? 'complete' : ''}">
     <div class="task-header">
     <span class="task-name">${item.name}</span>
     <button class="task-copy" data-text="${taskText}" title="Copy">📋</button>
@@ -136,7 +142,7 @@ function renderCard(item) {
     </div>
     <div class="task-progress">
     <div class="task-progress-bar">
-    <div class="task-progress-fill" style="width: ${pct}%"></div>
+    <div class="task-progress-fill ${isComplete ? 'complete' : ''}" style="width: ${pct}%"></div>
     </div>
     </div>
     <div class="task-counts">
@@ -144,7 +150,7 @@ function renderCard(item) {
     <span class="task-sep">/</span>
     <span class="task-need">${formatCompact(item.required)}</span>
     </div>
-    <div class="task-deficit">-${formatCompact(item.deficit)}</div>
+    <div class="task-deficit ${isComplete ? 'complete' : ''}">${deficitText}</div>
     </div>
     `;
 }
@@ -154,7 +160,6 @@ function renderCard(item) {
  */
 function sort(items, by) {
     const sorted = [...items];
-
     switch (by) {
         case 'deficit':
             return sorted.sort((a, b) => b.deficit - a.deficit);
