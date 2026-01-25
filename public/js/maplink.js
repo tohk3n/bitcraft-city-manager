@@ -16,14 +16,39 @@ export const MAP_LINK = {
     playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
 
     // Build the link
-    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput);
-
+    const generatedLink = this.generateLink(checkboxes, resourceIdInput, playerIdInput);
+    const displayLink = this.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput);
     // Show link in UI
     const linkEl = document.getElementById("map-link");
     linkEl.href = generatedLink;
-    linkEl.textContent = generatedLink;
+    linkEl.textContent = displayLink;
   },
 
+  // ONLY for display, its not a correct link (so it might not work)
+  generateDisplayLink(regions, resourceIds, playerIds) {
+    const dataMap = {};
+
+    if(regions.length > 0){
+      dataMap.regionId = regions.join(',');
+    }
+    if (resourceIds !== '') {
+      dataMap.resourceId = encodeURIComponent(resourceIds);
+    }
+    if (playerIds !== '') {
+      dataMap.playerId = playerIds;
+    }
+
+    let displayUrl = CONFIG.MAP_BASE_URL;
+    let first = true;
+
+    // First value has ? prefix, subsequent use &
+    for (const [key, value] of Object.entries(dataMap)) {
+      const prefix = first ? '?' : '&';
+      displayUrl += `${prefix}${key}=${value}`;
+      first = false;
+    }
+    return displayUrl;
+  }
   // Generate link to bitcraft map from provided data
   generateLink(regions, resourceIds, playerIds) {
     const url = new URL(CONFIG.MAP_BASE_URL);
@@ -63,7 +88,7 @@ export const MAP_LINK = {
     return value.replace(/,+$/, '');
   },
 
-  //add or remove new value to input field, separates by comma, leaves the rest intact
+  // Add or remove new value to input field, separates by comma, leaves the rest intact
   syncInputValue(value, activated){
     value = String(value)
     const inputField = document.getElementById('res-ids');
@@ -92,6 +117,8 @@ export const MAP_LINK = {
     const tier = cellArea.dataset.tier;
     const index = tier - 1;
 
+    if(!CONFIG.RESOURCE_ID_MATRIX[rowName]){return};
+    if(!CONFIG.RESOURCE_ID_MATRIX[rowName][index]){return};
     //get corresponding ids for this row/tier
     const idValues = CONFIG.RESOURCE_ID_MATRIX[rowName][index];
     //update input field
