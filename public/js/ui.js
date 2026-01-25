@@ -225,7 +225,7 @@ const BaseUI = {
           cellArea.dataset.tier = t;
 
           const cellButton = document.createElement('button');
-          cellButton.textContent = ''; // leer, nur für Klick
+          cellButton.textContent = '';
           cellButton.classList.add('matrix-cell-btn');
 
           cellButton.addEventListener('click', () => {
@@ -241,15 +241,7 @@ const BaseUI = {
       });
 
       table.appendChild(tbody);
-    },
-
-  showResourceMatrix(show) {
-    if (show) {
-      this.show('id-matrix');
-    } else {
-      this.hide('id-matrix');
     }
-  }
 };
 
 // Combine all UI modules into single export
