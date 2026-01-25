@@ -1,59 +1,82 @@
-import { getItemQuantity, createKey } from './inventory-matcher.js';
-
 /**
  * Cascade Calculator
  *
- * Algorithm:
- * 1. Aggregate total needed for each item (to know total inventory demand)
- * 2. Cascade top-down: compute each node's deficit based on cascaded requirement
- * 3. Track inventory consumption to prevent double-counting across branches
+ * Each node has:
+ * - satisfied: boolean, true if this item's global need is fully met
+ * - scale: 0-1, what fraction of this node's requirement is still needed
+ *
+ * If satisfied, scale = 0 and children inherit satisfied = true.
+ * If not satisfied, scale = globalDeficit / globalRequired, children use this scale.
  */
 
-export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
-    // Track inventory consumption across branches
-    const consumed = new Map();
+import { getItemQuantity, createKey } from './inventory-matcher.js';
 
+export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
+    // Pass 1: Aggregate and compute satisfaction
+    const items = new Map();
+    for (const research of expandedCodex.researches) {
+        aggregateNode(research, items, inventoryLookup, mappings);
+    }
+
+    // Compute satisfaction and scale for each item
+    for (const item of items.values()) {
+        item.deficit = Math.max(0, item.required - item.have);
+        item.satisfied = item.deficit === 0;
+        item.scale = item.required > 0 ? item.deficit / item.required : 0;
+    }
+
+    // Pass 2: Build tree
     return {
         name: expandedCodex.name,
         tier: expandedCodex.tier,
         targetCount: expandedCodex.targetCount,
-        researches: expandedCodex.researches.map(r =>
-        cascadeNode(r, inventoryLookup, mappings, consumed, 1.0)
-        )
+        researches: expandedCodex.researches.map(r => buildNode(r, items, false, 1.0))
     };
 }
 
-/**
- * Process a node, computing deficit based on cascaded requirement.
- *
- * @param parentScale - What fraction of this node's idealQty is actually needed
- */
-function cascadeNode(node, inventoryLookup, mappings, consumed, parentScale) {
+function aggregateNode(node, items, inventoryLookup, mappings) {
     const key = createKey(node.name, node.tier);
 
-    // This node's actual requirement after cascade
+    if (!items.has(key)) {
+        const { qty } = getItemQuantity(inventoryLookup, node.name, node.tier, mappings);
+        items.set(key, {
+            name: node.name,
+            tier: node.tier,
+            required: 0,
+            have: qty,
+            trackable: node.trackable,
+            mappingType: node.mappingType
+        });
+    }
+
+    items.get(key).required += node.idealQty;
+
+    for (const child of node.children || []) {
+        aggregateNode(child, items, inventoryLookup, mappings);
+    }
+}
+
+function buildNode(node, items, parentSatisfied, parentScale) {
+    const key = createKey(node.name, node.tier);
+    const item = items.get(key);
+
+    // If parent is satisfied, we're satisfied too (don't need to gather)
+    const satisfied = parentSatisfied || item.satisfied;
+
+    // Effective requirement after parent's scale
     const required = Math.ceil(node.idealQty * parentScale);
 
-    // Get inventory and track consumption
-    const { qty: totalHave } = getItemQuantity(inventoryLookup, node.name, node.tier, mappings);
-    const alreadyConsumed = consumed.get(key) || 0;
-    const available = Math.max(0, totalHave - alreadyConsumed);
-
-    // Deficit based on what's actually needed vs what's available
-    const contribution = Math.min(available, required);
-    const deficit = required - contribution;
-
-    // Mark inventory as consumed
-    consumed.set(key, alreadyConsumed + contribution);
-
-    // Stats
+    // Our deficit: if satisfied, 0. Otherwise, apply our scale to required.
+    const deficit = satisfied ? 0 : Math.ceil(required * item.scale);
+    const contribution = required - deficit;
     const pctComplete = required > 0 ? Math.round((contribution / required) * 100) : 100;
-    const status = deficit === 0 ? 'complete'
+
+    const status = satisfied ? 'complete'
     : contribution > 0 ? 'partial'
     : 'missing';
 
-    // Children scale by our deficit ratio
-    const childScale = required > 0 ? deficit / required : 0;
+    // Children's scale: if we're satisfied, 0. Otherwise, our scale.
+    const childScale = satisfied ? 0 : item.scale * parentScale;
 
     return {
         name: node.name,
@@ -61,16 +84,16 @@ function cascadeNode(node, inventoryLookup, mappings, consumed, parentScale) {
         recipeQty: node.recipeQty,
         idealQty: node.idealQty,
         required,
-        have: totalHave,
+        have: item.have,
         deficit,
         contribution,
         pctComplete,
         status,
+        satisfied,
+        satisfiedByParent: parentSatisfied,
         trackable: node.trackable,
         mappingType: node.mappingType,
-        children: (node.children || []).map(c =>
-        cascadeNode(c, inventoryLookup, mappings, consumed, childScale)
-        )
+        children: (node.children || []).map(c => buildNode(c, items, satisfied, childScale))
     };
 }
 
@@ -80,19 +103,18 @@ export function collectTrackableItems(processedCodex) {
     const items = new Map();
 
     function collect(node) {
-        if (node.trackable && node.required > 0) {
+        if (node.trackable && node.required > 0 && !node.satisfiedByParent) {
             const key = createKey(node.name, node.tier);
             if (!items.has(key)) {
                 items.set(key, {
-                    name: node.name, tier: node.tier,
-                    required: 0, have: node.have, deficit: 0, contribution: 0,
+                    name: node.name,
+                    tier: node.tier,
+                    required: 0,
+                    have: node.have,
                     mappingType: node.mappingType
                 });
             }
-            const item = items.get(key);
-            item.required += node.required;
-            item.deficit += node.deficit;
-            item.contribution += node.contribution;
+            items.get(key).required += node.required;
         }
         for (const child of node.children || []) collect(child);
     }
@@ -102,7 +124,7 @@ export function collectTrackableItems(processedCodex) {
     return Array.from(items.values())
     .map(item => ({
         ...item,
-        contribution: Math.min(item.contribution, item.required),
+        deficit: Math.max(0, item.required - item.have),
                   pctComplete: item.required > 0
                   ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
                   : 100
@@ -114,20 +136,22 @@ export function collectFirstTrackable(processedCodex) {
     const items = new Map();
 
     function findFirst(node, source) {
+        if (node.satisfiedByParent) return;
+
         if (node.trackable) {
             const key = createKey(node.name, node.tier);
             if (!items.has(key)) {
                 items.set(key, {
-                    name: node.name, tier: node.tier,
-                    required: 0, have: node.have, deficit: 0, contribution: 0,
-                    mappingType: node.mappingType, sources: new Set()
+                    name: node.name,
+                    tier: node.tier,
+                    required: 0,
+                    have: node.have,
+                    mappingType: node.mappingType,
+                    sources: new Set()
                 });
             }
-            const item = items.get(key);
-            item.required += node.required;
-            item.deficit += node.deficit;
-            item.contribution += node.contribution;
-            item.sources.add(source);
+            items.get(key).required += node.required;
+            items.get(key).sources.add(source);
             return;
         }
         for (const child of node.children || []) findFirst(child, source);
@@ -143,6 +167,7 @@ export function collectFirstTrackable(processedCodex) {
     .map(item => ({
         ...item,
         sources: Array.from(item.sources),
+                  deficit: Math.max(0, item.required - item.have),
                   pctComplete: item.required > 0
                   ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
                   : 100
@@ -155,19 +180,27 @@ export function collectSecondLevel(processedCodex) {
 
     for (const research of processedCodex.researches) {
         for (const child of research.children || []) {
+            if (child.satisfiedByParent) continue;
+
             const key = createKey(child.name, child.tier);
             if (!items.has(key)) {
                 items.set(key, {
-                    name: child.name, tier: child.tier,
-                    required: 0, have: child.have, deficit: 0,
-                    trackable: child.trackable, mappingType: child.mappingType
+                    name: child.name,
+                    tier: child.tier,
+                    required: 0,
+                    have: child.have,
+                    trackable: child.trackable,
+                    mappingType: child.mappingType
                 });
             }
-            const item = items.get(key);
-            item.required += child.required;
-            item.deficit += child.deficit;
+            items.get(key).required += child.required;
         }
     }
 
-    return Array.from(items.values()).sort((a, b) => b.deficit - a.deficit);
+    return Array.from(items.values())
+    .map(item => ({
+        ...item,
+        deficit: Math.max(0, item.required - item.have)
+    }))
+    .sort((a, b) => b.deficit - a.deficit);
 }

@@ -178,3 +178,29 @@
     color: var(--status-missing);
     margin-top: auto;
 }
+
+.task-deficit.complete {
+    color: var(--status-complete);
+}
+
+.task-card.complete {
+    border-color: var(--status-complete);
+    opacity: 0.8;
+}
+
+.task-card.complete .task-progress-fill {
+    background: var(--status-complete);
+}
+
+.task-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.task-toggle input {
+    cursor: pointer;
+}
