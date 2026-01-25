@@ -8,6 +8,12 @@ import { formatCompact, generateExportText } from './lib/progress-calc.js';
 
 // Module state
 let hideComplete = false;
+let zoomLevel = 1;
+
+// Zoom constraints
+const ZOOM_MIN = 0.25;
+const ZOOM_MAX = 2;
+const ZOOM_STEP = 0.1;
 
 /**
  * Render the flowchart view.
@@ -21,6 +27,9 @@ export function render(container, researches, report) {
         container.innerHTML = '<div class="fc-empty">No data</div>';
         return;
     }
+
+    // Reset zoom on new render
+    zoomLevel = 1;
 
     const { overall } = report;
 
@@ -50,6 +59,12 @@ export function render(container, researches, report) {
         </label>
         </div>
         <div class="fc-viewport" id="fc-viewport">
+        <div class="fc-zoom-controls">
+        <button class="fc-zoom-btn" id="fc-zoom-out" title="Zoom out">−</button>
+        <span class="fc-zoom-level" id="fc-zoom-level">100%</span>
+        <button class="fc-zoom-btn" id="fc-zoom-in" title="Zoom in">+</button>
+        <button class="fc-zoom-btn fc-zoom-reset" id="fc-zoom-reset" title="Reset zoom">Reset</button>
+        </div>
         <div class="fc-canvas" id="fc-canvas">
         <svg class="fc-svg" id="fc-svg"></svg>
         <div class="fc-tree" id="fc-tree"></div>
@@ -118,8 +133,69 @@ export function render(container, researches, report) {
             });
         });
 
+        // Zoom controls
+        const viewport = container.querySelector('#fc-viewport');
+        const canvas = container.querySelector('#fc-canvas');
+        const zoomLevelEl = container.querySelector('#fc-zoom-level');
+
+        const applyZoom = (newZoom, smooth = true) => {
+            zoomLevel = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, newZoom));
+            canvas.style.transition = smooth ? 'transform 0.15s ease' : 'none';
+            canvas.style.transform = `scale(${zoomLevel})`;
+            zoomLevelEl.textContent = `${Math.round(zoomLevel * 100)}%`;
+
+            // Redraw connections after transform settles
+            if (smooth) {
+                setTimeout(() => drawConnections(container), 160);
+            } else {
+                requestAnimationFrame(() => drawConnections(container));
+            }
+        };
+
+        container.querySelector('#fc-zoom-in').addEventListener('click', () => {
+            applyZoom(zoomLevel + ZOOM_STEP);
+        });
+
+        container.querySelector('#fc-zoom-out').addEventListener('click', () => {
+            applyZoom(zoomLevel - ZOOM_STEP);
+        });
+
+        container.querySelector('#fc-zoom-reset').addEventListener('click', () => {
+            applyZoom(1);
+        });
+
+        // Wheel zoom (continuous, cursor-anchored)
+        viewport.addEventListener('wheel', e => {
+            e.preventDefault();
+
+            const oldZoom = zoomLevel;
+
+            // Continuous zoom based on scroll delta magnitude
+            // Normalize delta and scale for natural feel
+            const delta = -e.deltaY * 0.0005 * oldZoom;
+            const newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoomLevel + delta));
+
+            if (newZoom === oldZoom) return;
+
+            // Cursor position relative to viewport
+            const rect = viewport.getBoundingClientRect();
+            const cursorX = e.clientX - rect.left;
+            const cursorY = e.clientY - rect.top;
+
+            // Content point under cursor (in unscaled coordinates)
+            const contentX = (viewport.scrollLeft + cursorX) / oldZoom;
+            const contentY = (viewport.scrollTop + cursorY) / oldZoom;
+
+            // Apply zoom
+            applyZoom(newZoom, false);
+
+            // Adjust scroll to keep content point under cursor
+            viewport.scrollLeft = (contentX * newZoom) - cursorX;
+            viewport.scrollTop = (contentY * newZoom) - cursorY;
+        }, { passive: false });
+
         // Drag panning
-        setupDragPan(container.querySelector('#fc-viewport'));
+        setupDragPan(viewport);
 
         // Redraw on resize
         window.addEventListener('resize', () => drawConnections(container));
@@ -146,7 +222,7 @@ function renderNode(node, isRoot = false, hideComplete = false) {
         <div class="fc-node-name">${node.name}</div>
         <div class="fc-node-meta">
         <span class="fc-node-tier">T${node.tier}</span>
-        <span class="fc-node-check">✓</span>
+        <span class="fc-node-check">âœ“</span>
         </div>
         </div>
         `;
@@ -209,6 +285,7 @@ function hasIncompleteDescendant(node) {
 
 /**
  * Draw SVG connection lines.
+ * Accounts for CSS transform scale on canvas.
  */
 function drawConnections(container) {
     const svg = container.querySelector('#fc-svg');
@@ -217,6 +294,10 @@ function drawConnections(container) {
 
     svg.innerHTML = '';
     const canvasRect = canvas.getBoundingClientRect();
+
+    // getBoundingClientRect returns scaled dimensions, so divide by zoomLevel
+    // to get coordinates in the untransformed SVG space
+    const scale = zoomLevel;
 
     container.querySelectorAll('.fc-group').forEach(group => {
         const parent = group.querySelector(':scope > .fc-node');
@@ -227,13 +308,13 @@ function drawConnections(container) {
         if (children.length === 0) return;
 
         const parentRect = parent.getBoundingClientRect();
-        const px = parentRect.left + parentRect.width / 2 - canvasRect.left;
-        const py = parentRect.bottom - canvasRect.top;
+        const px = (parentRect.left + parentRect.width / 2 - canvasRect.left) / scale;
+        const py = (parentRect.bottom - canvasRect.top) / scale;
 
         children.forEach(child => {
             const childRect = child.getBoundingClientRect();
-            const cx = childRect.left + childRect.width / 2 - canvasRect.left;
-            const cy = childRect.top - canvasRect.top;
+            const cx = (childRect.left + childRect.width / 2 - canvasRect.left) / scale;
+            const cy = (childRect.top - canvasRect.top) / scale;
 
             const statusClass = child.classList.contains('complete') ? 'complete'
             : child.classList.contains('partial') ? 'partial'
