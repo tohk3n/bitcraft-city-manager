@@ -155,6 +155,9 @@
   background-color: var(--accent);
 }
 
+.matrix-cell-inner.empty {
+  background-color: var(--text-secondary);
+}
 .matrix-cell-btn {
   width: 100%;
   height: 100%;

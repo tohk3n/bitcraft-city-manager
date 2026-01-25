@@ -200,7 +200,7 @@ const BaseUI = {
       table.appendChild(head);
 
       /* ---------- Body ---------- */
-      const tbody = document.createElement('tbody');
+      const body = document.createElement('tbody');
       const rowNames = Object.keys(resourceMatrix);
       rowNames.forEach(rowName => {
         const tr = document.createElement('tr');
@@ -223,24 +223,31 @@ const BaseUI = {
           // data attributes for later logic
           cellArea.dataset.row = rowName;
           cellArea.dataset.tier = t;
+          const currentIndex = t-1;
+          const idValues = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
+          if(idValues.length > 0){
+            const cellButton = document.createElement('button');
+            cellButton.textContent = '';
+            cellButton.classList.add('matrix-cell-btn');
 
-          const cellButton = document.createElement('button');
-          cellButton.textContent = '';
-          cellButton.classList.add('matrix-cell-btn');
+            cellButton.addEventListener('click', () => {
+              MAP_LINK.cellButtonEvent(cellArea);
+            });
 
-          cellButton.addEventListener('click', () => {
-            MAP_LINK.cellButtonEvent(cellArea);
-          });
+            cellArea.appendChild(cellButton);
+          }else{
+            cellArea.classList.add('empty');
+          }
 
-          cellArea.appendChild(cellButton);
+
           td.appendChild(cellArea);
           tr.appendChild(td);
         }
 
-        tbody.appendChild(tr);
+        body.appendChild(tr);
       });
 
-      table.appendChild(tbody);
+      table.appendChild(body);
     }
 };
 
