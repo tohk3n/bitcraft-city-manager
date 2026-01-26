@@ -1,14 +1,19 @@
 {
   "name": "bitcraft-city-manager",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Dashboard for viewing Bitcraft claim inventory, citizens, and equipment",
   "private": true,
   "scripts": {
-    "deploy": "vercel --prod"
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "deploy": "npm run build && vercel --prod"
+  },
+  "devDependencies": {
+  "typescript": "^5.4.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/YOUR_USERNAME/bitcraft-city-manager"
+    "url": "https://github.com/tohk3n/bitcraft-city-manager"
   },
   "keywords": [
     "bitcraft",

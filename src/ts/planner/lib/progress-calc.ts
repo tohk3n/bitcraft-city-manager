@@ -6,6 +6,16 @@
  */
 
 import { collectFirstTrackable, collectTrackableItems, collectSecondLevel } from './cascade-calc.js';
+import type {
+    ProcessedCodex,
+    ProcessedNode,
+    TrackableItem,
+    FirstTrackableItem,
+    SecondLevelItem,
+    ProgressReport,
+    ActivityGroup,
+    ResearchProgress
+} from '../../types.js';
 
 /**
  * Activity categories for grouping items.
@@ -17,15 +27,14 @@ const ACTIVITIES = {
     FISHING: 'Fishing',
     HUNTING: 'Hunting',
     CRAFTING: 'Crafting'
-};
+} as const;
+
+type Activity = typeof ACTIVITIES[keyof typeof ACTIVITIES];
 
 /**
  * Categorize an item by gathering/crafting activity.
- *
- * @param {string} name - Item name
- * @returns {string} Activity category
  */
-export function categorizeByActivity(name) {
+export function categorizeByActivity(name: string): Activity {
     const lower = name.toLowerCase();
 
     // Mining - raw stone/ore materials
@@ -61,14 +70,20 @@ export function categorizeByActivity(name) {
                 return ACTIVITIES.CRAFTING;
 }
 
+interface ProgressSummary {
+    percent: number;
+    totalRequired: number;
+    totalContribution: number;
+    totalItems: number;
+    completeCount: number;
+    items: FirstTrackableItem[];
+}
+
 /**
  * Calculate overall progress from processed codex.
  * Uses first trackable items as the progress metric.
- *
- * @param {Object} processedCodex - Result from applyCascade
- * @returns {Object} Progress summary
  */
-export function calculateProgress(processedCodex) {
+export function calculateProgress(processedCodex: ProcessedCodex): ProgressSummary {
     const firstTrackable = collectFirstTrackable(processedCodex);
 
     // Calculate totals from first trackable items
@@ -99,19 +114,19 @@ export function calculateProgress(processedCodex) {
 
 /**
  * Calculate progress by research branch.
- *
- * @param {Object} processedCodex - Result from applyCascade
- * @returns {Object} Map of research name -> progress data
  */
-export function calculateProgressByResearch(processedCodex) {
-    const byResearch = {};
+export function calculateProgressByResearch(
+    processedCodex: ProcessedCodex
+): Record<string, ResearchProgress> {
+    const byResearch: Record<string, ResearchProgress> = {};
 
     for (const research of processedCodex.researches) {
         let totalRequired = 0;
         let totalContribution = 0;
+        const items: TrackableItem[] = [];
 
         // Walk tree to find trackable items in this research
-        function collect(node) {
+        function collect(node: ProcessedNode): void {
             if (node.trackable && node.required > 0) {
                 totalRequired += node.required;
                 totalContribution += Math.min(node.have, node.required);
@@ -131,7 +146,7 @@ export function calculateProgressByResearch(processedCodex) {
             percent,
             totalRequired,
             totalContribution,
-            status: research.status
+            items
         };
     }
 
@@ -140,12 +155,11 @@ export function calculateProgressByResearch(processedCodex) {
 
 /**
  * Group items by activity for task assignment.
- *
- * @param {Array} items - Array of items with deficit
- * @returns {Object} Map of activity -> items array
  */
-export function groupByActivity(items) {
-    const byActivity = {};
+export function groupByActivity(
+    items: FirstTrackableItem[]
+): Record<string, ActivityGroup> {
+    const byActivity: Record<string, ActivityGroup> = {};
 
     for (const item of items) {
         if (item.deficit <= 0) continue;
@@ -154,6 +168,7 @@ export function groupByActivity(items) {
 
         if (!byActivity[activity]) {
             byActivity[activity] = {
+                activity,
                 items: [],
                 totalDeficit: 0
             };
@@ -173,12 +188,10 @@ export function groupByActivity(items) {
 
 /**
  * Generate a complete progress report.
- *
- * @param {Object} processedCodex - Result from applyCascade
- * @returns {Object} Comprehensive progress report
  */
-export function generateProgressReport(processedCodex) {
+export function generateProgressReport(processedCodex: ProcessedCodex): ProgressReport {
     const firstTrackable = collectFirstTrackable(processedCodex);
+    const trackableItems = collectTrackableItems(processedCodex);
     const progress = calculateProgress(processedCodex);
     const byResearch = calculateProgressByResearch(processedCodex);
     const byActivity = groupByActivity(firstTrackable);
@@ -194,21 +207,17 @@ export function generateProgressReport(processedCodex) {
         },
         byResearch,
         byActivity,
+        trackableItems,
         firstTrackable,
         secondLevel,
-        codexName: processedCodex.name,
-        codexTier: processedCodex.tier,
         targetCount: processedCodex.targetCount
     };
 }
 
 /**
  * Format a number compactly for display.
- *
- * @param {number} num - Number to format
- * @returns {string} Formatted string (e.g., "1.2M", "456K")
  */
-export function formatCompact(num) {
+export function formatCompact(num: number): string {
     if (num >= 1e9) {
         return (num / 1e9).toFixed(num >= 10e9 ? 0 : 1).replace(/\.0$/, '') + 'B';
     }
@@ -223,20 +232,16 @@ export function formatCompact(num) {
 
 /**
  * Generate exportable task list text (Discord-friendly markdown).
- *
- * @param {Object} report - Result from generateProgressReport
- * @param {number} targetTier - Target tier number
- * @returns {string} Formatted task list
  */
-export function generateExportText(report, targetTier) {
-    const { overall, byActivity, codexName } = report;
+export function generateExportText(report: ProgressReport, targetTier: number): string {
+    const { overall, byActivity } = report;
 
     if (overall.completeCount === overall.totalItems) {
-        return `**T${targetTier} Upgrade - ${codexName}**\nAll requirements met!`;
+        return `**T${targetTier} Upgrade**\nAll requirements met!`;
     }
 
-    const lines = [];
-    lines.push(`**T${targetTier} Upgrade - ${codexName}**`);
+    const lines: string[] = [];
+    lines.push(`**T${targetTier} Upgrade**`);
     lines.push(`Progress: ${overall.percent}% complete`);
     lines.push('');
 

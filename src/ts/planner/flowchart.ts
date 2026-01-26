@@ -6,6 +6,12 @@
 
 import { formatCompact, generateExportText } from './lib/progress-calc.js';
 import { CONFIG } from '../config.js';
+import type { ProcessedNode, ProgressReport } from '../types.js';
+
+// Extended node type for tabs (includes optional isStudyJournals flag)
+interface TabNode extends ProcessedNode {
+    isStudyJournals?: boolean;
+}
 
 // Module state
 let hideComplete = false;
@@ -13,13 +19,13 @@ let zoomLevel = 1;
 
 /**
  * Render the flowchart view.
- *
- * @param {HTMLElement} container - Container element
- * @param {Array} researches - Processed research branches
- * @param {Object} report - Progress report for export
- * @param {Object|null} studyJournals - Aggregated study journal node (optional)
  */
-export function render(container, researches, report, studyJournals = null) {
+export function render(
+    container: HTMLElement,
+    researches: ProcessedNode[],
+    report: ProgressReport & { targetTier: number },
+    studyJournals: ProcessedNode | null = null
+): void {
     if (!researches || researches.length === 0) {
         container.innerHTML = '<div class="fc-empty">No data</div>';
         return;
@@ -29,7 +35,7 @@ export function render(container, researches, report, studyJournals = null) {
     zoomLevel = 1;
 
     // Build combined tab list: researches + study journals (if present)
-    const allTabs = [...researches];
+    const allTabs: TabNode[] = [...researches];
     if (studyJournals) {
         // Wrap studyJournals as a pseudo-research for consistent tab handling
         allTabs.push({
@@ -99,9 +105,9 @@ export function render(container, researches, report, studyJournals = null) {
         `;
 
         let activeIndex = 0;
-        const treeEl = container.querySelector('#fc-tree');
+        const treeEl = container.querySelector('#fc-tree') as HTMLElement;
 
-        const renderTree = () => {
+        const renderTree = (): void => {
             treeEl.innerHTML = renderNode(allTabs[activeIndex], true, hideComplete);
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => drawConnections(container));
@@ -112,9 +118,9 @@ export function render(container, researches, report, studyJournals = null) {
         renderTree();
 
         // Tab switching
-        container.querySelectorAll('.fc-tab').forEach(tab => {
+        container.querySelectorAll<HTMLElement>('.fc-tab').forEach(tab => {
             tab.addEventListener('click', () => {
-                const index = parseInt(tab.dataset.index, 10);
+                const index = parseInt(tab.dataset.index || '0', 10);
                 if (index === activeIndex) return;
 
                 activeIndex = index;
@@ -125,29 +131,31 @@ export function render(container, researches, report, studyJournals = null) {
         });
 
         // Hide complete toggle
-        container.querySelector('#fc-hide-complete').addEventListener('change', e => {
-            hideComplete = e.target.checked;
+        container.querySelector('#fc-hide-complete')?.addEventListener('change', (e) => {
+            hideComplete = (e.target as HTMLInputElement).checked;
             renderTree();
         });
 
         // Export button
-        container.querySelector('#fc-export').addEventListener('click', () => {
+        container.querySelector('#fc-export')?.addEventListener('click', () => {
             const text = generateExportText(report, report.targetTier);
             navigator.clipboard.writeText(text).then(() => {
                 const btn = container.querySelector('#fc-export');
-                const orig = btn.textContent;
-                btn.textContent = 'Copied!';
-                setTimeout(() => btn.textContent = orig, 2000);
+                if (btn) {
+                    const orig = btn.textContent;
+                    btn.textContent = 'Copied!';
+                    setTimeout(() => btn.textContent = orig, 2000);
+                }
             });
         });
 
         // Zoom controls
-        const viewport = container.querySelector('#fc-viewport');
-        const canvas = container.querySelector('#fc-canvas');
-        const zoomLevelEl = container.querySelector('#fc-zoom-level');
+        const viewport = container.querySelector('#fc-viewport') as HTMLElement;
+        const canvas = container.querySelector('#fc-canvas') as HTMLElement;
+        const zoomLevelEl = container.querySelector('#fc-zoom-level') as HTMLElement;
         const { MIN, MAX, STEP, WHEEL_SENSITIVITY } = CONFIG.FLOWCHART_ZOOM;
 
-        const applyZoom = (newZoom, smooth = true) => {
+        const applyZoom = (newZoom: number, smooth = true): void => {
             zoomLevel = Math.max(MIN, Math.min(MAX, newZoom));
             canvas.style.transition = smooth ? 'transform 0.15s ease' : 'none';
             canvas.style.transform = `scale(${zoomLevel})`;
@@ -161,20 +169,20 @@ export function render(container, researches, report, studyJournals = null) {
             }
         };
 
-        container.querySelector('#fc-zoom-in').addEventListener('click', () => {
+        container.querySelector('#fc-zoom-in')?.addEventListener('click', () => {
             applyZoom(zoomLevel + STEP);
         });
 
-        container.querySelector('#fc-zoom-out').addEventListener('click', () => {
+        container.querySelector('#fc-zoom-out')?.addEventListener('click', () => {
             applyZoom(zoomLevel - STEP);
         });
 
-        container.querySelector('#fc-zoom-reset').addEventListener('click', () => {
+        container.querySelector('#fc-zoom-reset')?.addEventListener('click', () => {
             applyZoom(1);
         });
 
         // Wheel zoom (continuous, cursor-anchored)
-        viewport.addEventListener('wheel', e => {
+        viewport.addEventListener('wheel', (e: WheelEvent) => {
             e.preventDefault();
 
             const oldZoom = zoomLevel;
@@ -213,7 +221,7 @@ export function render(container, researches, report, studyJournals = null) {
 /**
  * Format research name for tab display.
  */
-function formatTabName(name) {
+function formatTabName(name: string): string {
     return name
     .replace(' Research', '')
     .replace(' Codex', '')
@@ -223,7 +231,7 @@ function formatTabName(name) {
 /**
  * Render a node recursively.
  */
-function renderNode(node, isRoot = false, hideComplete = false) {
+function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): string {
     // Collapse completed non-root branches
     if (hideComplete && node.status === 'complete' && !isRoot) {
         return `
@@ -231,7 +239,7 @@ function renderNode(node, isRoot = false, hideComplete = false) {
         <div class="fc-node-name">${node.name}</div>
         <div class="fc-node-meta">
         <span class="fc-node-tier">T${node.tier}</span>
-        <span class="fc-node-check">✓</span>
+        <span class="fc-node-check">✔</span>
         </div>
         </div>
         `;
@@ -287,7 +295,7 @@ function renderNode(node, isRoot = false, hideComplete = false) {
 /**
  * Check if a node has any incomplete descendants.
  */
-function hasIncompleteDescendant(node) {
+function hasIncompleteDescendant(node: ProcessedNode): boolean {
     if (node.status !== 'complete') return true;
     return (node.children || []).some(c => hasIncompleteDescendant(c));
 }
@@ -296,7 +304,7 @@ function hasIncompleteDescendant(node) {
  * Draw SVG connection lines.
  * Accounts for CSS transform scale on canvas.
  */
-function drawConnections(container) {
+function drawConnections(container: HTMLElement): void {
     const svg = container.querySelector('#fc-svg');
     const canvas = container.querySelector('#fc-canvas');
     if (!svg || !canvas) return;
@@ -342,12 +350,15 @@ function drawConnections(container) {
 /**
  * Setup click-and-drag panning.
  */
-function setupDragPan(el) {
+function setupDragPan(el: HTMLElement): void {
     let dragging = false;
-    let startX, startY, scrollLeft, scrollTop;
+    let startX = 0;
+    let startY = 0;
+    let scrollLeft = 0;
+    let scrollTop = 0;
 
-    el.addEventListener('mousedown', e => {
-        if (e.button !== 0 || e.target.closest('button, input')) return;
+    el.addEventListener('mousedown', (e: MouseEvent) => {
+        if (e.button !== 0 || (e.target as HTMLElement).closest('button, input')) return;
         dragging = true;
         el.classList.add('dragging');
         startX = e.pageX - el.offsetLeft;
@@ -357,7 +368,7 @@ function setupDragPan(el) {
         e.preventDefault();
     });
 
-    el.addEventListener('mousemove', e => {
+    el.addEventListener('mousemove', (e: MouseEvent) => {
         if (!dragging) return;
         const x = e.pageX - el.offsetLeft;
         const y = e.pageY - el.offsetTop;

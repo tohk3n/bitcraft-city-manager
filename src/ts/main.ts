@@ -4,29 +4,38 @@ import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
 import * as Planner from './planner/planner.js';
+import {
+  ClaimData,
+  PlannerState,
+  EquipmentSlot,
+  CalculateOptions
+} from './types.js';
+
 
 const log = createLogger('Main');
 
-const input = document.getElementById('claim-id');
+const input = document.getElementById('claim-id') as HTMLInputElement | null;
 const loadBtn = document.getElementById('load-btn');
 
 // Store loaded data for switching views
-let claimData = {
+const claimData: ClaimData = {
   claimId: null,
   claimInfo: null,
   inventories: null,
   citizens: null,
+  buildings: null,
   items: null
 };
 
 // Planner state
-let plannerState = {
+const plannerState: PlannerState = {
   targetTier: 6, // Default target
   codexCount: null, // null means use default for tier
   results: null
 };
 
-async function loadClaim() {
+async function loadClaim(): Promise<void> {
+  if (!input) return;
   const claimId = input.value.trim();
 
   if (!claimId || !/^\d+$/.test(claimId)) {
@@ -56,7 +65,8 @@ async function loadClaim() {
       }
     } catch (e) {
       // Claim endpoint might not exist, continue with default name
-      log.debug('Could not fetch claim details:', e.message);
+      const error = e as Error;
+      log.debug('Could not fetch claim details:', error.message);
     }
 
     // Only show simple name if header failed
@@ -73,10 +83,11 @@ async function loadClaim() {
     try {
       const buildingsData = await API.getClaimBuildings(claimId);
       claimData.buildings = buildingsData;
-      const stations = processCraftingStations(buildingsData);
+      const stations = processCraftingStations(buildingsData.buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {
-      log.debug('Could not fetch buildings:', e.message);
+      const error = e as Error;
+      log.debug('Could not fetch buildings:', error.message);
     }
 
     // Initialize planner controls (don't load data yet - lazy load on tab click)
@@ -86,7 +97,8 @@ async function loadClaim() {
     history.replaceState(null, '', `?claim=${claimId}`);
 
   } catch (err) {
-    log.error('Failed to load claim:', err.message);
+    const error = err as Error;
+    log.error('Failed to load claim:', error.message);
     UI.showError('Failed to load claim data. Check the ID and try again.');
   } finally {
     UI.setLoading(false);
@@ -94,32 +106,36 @@ async function loadClaim() {
 }
 
 // Initialize planner UI
-function initPlanner() {
+function initPlanner(): void {
   const controlsContainer = document.getElementById('planner-controls');
   const summaryContainer = document.getElementById('deficit-summary');
   const treeContainer = document.getElementById('research-tree');
 
-  Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier, newCount) => {
+  if (!controlsContainer || !treeContainer) return;
+
+  Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier: number, newCount: number | null) => {
     plannerState.targetTier = newTier;
     plannerState.codexCount = newCount;
     await loadPlanner();
   });
 
   Planner.renderEmpty(treeContainer);
-  summaryContainer.innerHTML = '';
+  if (summaryContainer) summaryContainer.innerHTML = '';
 }
 
 // Load planner data
-async function loadPlanner() {
+async function loadPlanner(): Promise<void> {
   if (!claimData.claimId) return;
 
   const summaryContainer = document.getElementById('deficit-summary');
   const treeContainer = document.getElementById('research-tree');
 
+  if (!treeContainer) return;
+
   Planner.renderLoading(treeContainer);
 
   try {
-    const options = plannerState.codexCount ? { customCount: plannerState.codexCount } : {};
+    const options: CalculateOptions = plannerState.codexCount ? { customCount: plannerState.codexCount } : {};
     const results = await Planner.calculateRequirements(
       claimData.claimId,
       plannerState.targetTier,
@@ -127,21 +143,24 @@ async function loadPlanner() {
     );
     plannerState.results = results;
 
-    Planner.renderDeficitSummary(summaryContainer, results.summary);
+    if (summaryContainer) {
+      Planner.renderDeficitSummary(summaryContainer, results.summary);
+    }
     Planner.renderResearchTree(treeContainer, results.researches, results.studyJournals);
 
   } catch (err) {
-    log.error('Planner error:', err.message);
+    const error = err as Error;
+    log.error('Planner error:', error.message);
     treeContainer.innerHTML = `
     <div class="planner-empty">
-    Failed to calculate requirements: ${err.message}
+    Failed to calculate requirements: ${error.message}
     </div>
     `;
   }
 }
 
 // Load citizens data (lazy loaded when tab clicked)
-async function loadCitizens() {
+async function loadCitizens(): Promise<void> {
   if (!claimData.claimId) return;
 
   // Return cached if available
@@ -157,7 +176,7 @@ async function loadCitizens() {
     const citizens = citizensData.citizens || [];
 
     // Render skeleton table immediately with empty equipment
-    const citizensWithEmptyGear = citizens.map(c => ({ ...c, equipment: [] }));
+    const citizensWithEmptyGear = citizens.map(c => ({ ...c, equipment: [] as EquipmentSlot[] }));
     claimData.citizens = { citizens: citizensWithEmptyGear };
     UI.renderCitizens(claimData.citizens);
     UI.showCitizensLoading(false);
@@ -169,8 +188,9 @@ async function loadCitizens() {
           const equipment = await API.getPlayerEquipment(citizen.entityId);
           return { id: citizen.entityId, equipment: equipment.equipment || [] };
         } catch (e) {
-          log.warn(`Failed to load equipment for ${citizen.entityId}:`, e.message);
-          return { id: citizen.entityId, equipment: [] };
+          const error = e as Error;
+          log.warn(`Failed to load equipment for ${citizen.entityId}:`, error.message);
+          return { id: citizen.entityId, equipment: [] as EquipmentSlot[] };
         }
       })
     );
@@ -184,20 +204,23 @@ async function loadCitizens() {
         UI.updateCitizenEquipment(result.id, result.equipment);
 
         // Update cached data
-        const cached = claimData.citizens.citizens.find(c => c.entityId === result.id);
-        if (cached) cached.equipment = result.equipment;
+        if (claimData.citizens) {
+          const cached = claimData.citizens.citizens.find(c => c.entityId === result.id);
+          if (cached) cached.equipment = result.equipment;
+        }
       }, i * 30);
     }
 
   } catch (err) {
-    log.error('Failed to load citizens:', err.message);
+    const error = err as Error;
+    log.error('Failed to load citizens:', error.message);
     UI.showError('Failed to load citizens data.');
     UI.showCitizensLoading(false);
   }
 }
 
 // Load items data (lazy loaded when tab clicked)
-async function loadItems() {
+async function loadItems(): Promise<void> {
   if (claimData.items) {
     UI.renderIdList('items', claimData.items, claimData.citizens);
     return;
@@ -208,13 +231,14 @@ async function loadItems() {
     claimData.items = itemsData.items || [];
     UI.renderIdList('items', claimData.items, claimData.citizens);
   } catch (err) {
-    log.error('Failed to load items:', err.message);
+    const error = err as Error;
+    log.error('Failed to load items:', error.message);
   }
 }
 
 // Tab switching
-function setupTabs() {
-  const tabs = document.querySelectorAll('#view-tabs .tab-btn');
+function setupTabs(): void {
+  const tabs = document.querySelectorAll<HTMLElement>('#view-tabs .tab-btn');
   tabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const view = tab.dataset.view;
@@ -225,7 +249,8 @@ function setupTabs() {
 
       // Show correct view
       document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
-      document.getElementById(`view-${view}`).classList.remove('hidden');
+      const viewEl = document.getElementById(`view-${view}`);
+      viewEl?.classList.remove('hidden');
 
       // Load data if needed
       if (view === 'citizens' && claimData.claimId) {
@@ -244,7 +269,7 @@ function setupTabs() {
   });
 
   // ID type tabs (citizens vs items)
-  const idTabs = document.querySelectorAll('.ids-tab-btn');
+  const idTabs = document.querySelectorAll<HTMLElement>('.ids-tab-btn');
   idTabs.forEach(tab => {
     tab.addEventListener('click', () => {
       const type = tab.dataset.type;
@@ -261,16 +286,17 @@ function setupTabs() {
   });
 
   // ID filter
-  const filterInput = document.getElementById('ids-filter');
-  filterInput.addEventListener('input', () => {
-    const activeType = document.querySelector('.ids-tab-btn.active').dataset.type;
+  const filterInput = document.getElementById('ids-filter') as HTMLInputElement | null;
+  filterInput?.addEventListener('input', () => {
+    const activeTab = document.querySelector<HTMLElement>('.ids-tab-btn.active');
+    const activeType = activeTab?.dataset.type || 'citizens';
     UI.filterIdList(filterInput.value, activeType);
   });
 }
 
 // Event listeners
-loadBtn.addEventListener('click', loadClaim);
-input.addEventListener('keypress', (e) => {
+loadBtn?.addEventListener('click', loadClaim);
+input?.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') loadClaim();
 });
 
@@ -278,25 +304,8 @@ setupTabs();
 
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);
-const claimParam = params.get('claim');
-if (claimParam) {
+const claimParam:string|null = params.get('claim');
+if (claimParam && input) {
   input.value = claimParam;
   loadClaim();
-}
-
-async function loadMatrix() {
-  if (claimData.items) {
-    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
-    UI.renderIdMatrix(idMatrix);
-    return;
-  }
-
-  try {
-    const itemsData = await API.getItems();
-    claimData.items = itemsData.items || [];
-    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
-    UI.renderIdMatrix(idMatrix);
-  } catch (err) {
-    console.error(err);
-  }
 }

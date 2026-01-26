@@ -13,9 +13,21 @@ import { generateProgressReport, formatCompact } from './lib/progress-calc.js';
 import * as TaskList from './task-list.js';
 import * as Flowchart from './flowchart.js';
 import { CONFIG } from '../config.js';
+import type {
+    Codex,
+    ItemMappingsFile,
+    ProcessedNode,
+    ProgressReport,
+    PlannerResults,
+    TierRequirement,
+    TierRequirements,
+    CalculateOptions,
+    SecondLevelItem,
+    FirstTrackableItem
+} from '../types.js';
 
 // Tier upgrade requirements: target tier -> { codexTier, count }
-const TIER_REQUIREMENTS = {
+const TIER_REQUIREMENTS: TierRequirements = {
     3:  { codexTier: 2, count: 10 },
     4:  { codexTier: 3, count: 15 },
     5:  { codexTier: 4, count: 20 },
@@ -27,14 +39,14 @@ const TIER_REQUIREMENTS = {
 };
 
 // Caches
-const codexCache = {};
-let mappingsCache = null;
-let lastReport = null;
+const codexCache: Record<number, Codex> = {};
+let mappingsCache: ItemMappingsFile | null = null;
+let lastReport: (ProgressReport & { targetTier: number }) | null = null;
 
 /**
  * Load codex JSON for a tier.
  */
-async function loadCodex(tier) {
+async function loadCodex(tier: number): Promise<Codex> {
     if (!codexCache[tier]) {
         const response = await fetch(`/data/codex/t${tier}-codex.json`);
         if (!response.ok) throw new Error(`Failed to load codex for tier ${tier}`);
@@ -46,18 +58,22 @@ async function loadCodex(tier) {
 /**
  * Load item mappings.
  */
-async function loadMappings() {
+async function loadMappings(): Promise<ItemMappingsFile> {
     if (!mappingsCache) {
         const response = await fetch('/data/item-mappings.json');
-        mappingsCache = response.ok ? await response.json() : { mappings: {} };
+        mappingsCache = response.ok ? await response.json() : { mappings: {} } as ItemMappingsFile;
     }
-    return mappingsCache;
+    return mappingsCache!;
 }
 
 /**
  * Calculate requirements for a tier upgrade.
  */
-export async function calculateRequirements(claimId, targetTier, options = {}) {
+export async function calculateRequirements(
+    claimId: string,
+    targetTier: number,
+    options: CalculateOptions = {}
+): Promise<PlannerResults> {
     const req = TIER_REQUIREMENTS[targetTier];
     if (!req) throw new Error(`Invalid target tier: ${targetTier}`);
 
@@ -93,23 +109,29 @@ export async function calculateRequirements(claimId, targetTier, options = {}) {
 /**
  * Get tier requirements info.
  */
-export function getTierRequirements() {
+export function getTierRequirements(): TierRequirements {
     return TIER_REQUIREMENTS;
 }
 
 /**
  * Get last calculated report.
  */
-export function getLastReport() {
+export function getLastReport(): (ProgressReport & { targetTier: number }) | null {
     return lastReport;
 }
 
 // --- UI Rendering ---
 
+type OnCalculateCallback = (tier: number, count: number | null) => void;
+
 /**
  * Render tier selector controls.
  */
-export function renderControls(container, currentTier, onCalculate) {
+export function renderControls(
+    container: HTMLElement,
+    currentTier: number,
+    onCalculate: OnCalculateCallback
+): void {
     const tiers = Object.keys(TIER_REQUIREMENTS).map(Number).sort((a, b) => a - b);
     const defaultCount = TIER_REQUIREMENTS[currentTier]?.count || 20;
 
@@ -129,12 +151,13 @@ export function renderControls(container, currentTier, onCalculate) {
     </div>
     `;
 
-    const tierSelect = container.querySelector('#target-tier');
-    const countInput = container.querySelector('#codex-count');
-    const infoEl = container.querySelector('#planner-info');
+    const tierSelect = container.querySelector('#target-tier') as HTMLSelectElement;
+    const countInput = container.querySelector('#codex-count') as HTMLInputElement;
+    const infoEl = container.querySelector('#planner-info') as HTMLElement;
 
-    const updateInfo = (tier, count) => {
+    const updateInfo = (tier: number, count: number): void => {
         const req = TIER_REQUIREMENTS[tier];
+        if (!req) return;
         const custom = count !== req.count ? ' (custom)' : '';
         infoEl.innerHTML = `Requires: <strong>${count}× T${req.codexTier} Codex</strong>${custom}`;
     };
@@ -142,7 +165,7 @@ export function renderControls(container, currentTier, onCalculate) {
     tierSelect.addEventListener('change', () => {
         const tier = parseInt(tierSelect.value, 10);
         const count = TIER_REQUIREMENTS[tier]?.count || 20;
-        countInput.value = count;
+        countInput.value = String(count);
         updateInfo(tier, count);
         onCalculate(tier, count);
     });
@@ -160,7 +183,10 @@ export function renderControls(container, currentTier, onCalculate) {
 /**
  * Render the task list (deficit summary).
  */
-export function renderDeficitSummary(container, summary) {
+export function renderDeficitSummary(
+    container: HTMLElement,
+    summary: SecondLevelItem[]
+): void {
     if (!lastReport) {
         container.innerHTML = '<div class="task-empty">No data</div>';
         return;
@@ -171,7 +197,11 @@ export function renderDeficitSummary(container, summary) {
 /**
  * Render the research tree (flowchart).
  */
-export function renderResearchTree(container, researches, studyJournals = null) {
+export function renderResearchTree(
+    container: HTMLElement,
+    researches: ProcessedNode[],
+    studyJournals: ProcessedNode | null = null
+): void {
     if (!lastReport) {
         container.innerHTML = '<div class="fc-empty">No data</div>';
         return;
@@ -182,14 +212,14 @@ export function renderResearchTree(container, researches, studyJournals = null) 
 /**
  * Render loading state.
  */
-export function renderLoading(container) {
+export function renderLoading(container: HTMLElement): void {
     container.innerHTML = '<div class="planner-loading">Calculating requirements</div>';
 }
 
 /**
  * Render empty state.
  */
-export function renderEmpty(container) {
+export function renderEmpty(container: HTMLElement): void {
     container.innerHTML = '<div class="planner-empty">Load a claim and select a target tier to see codex requirements</div>';
 }
 

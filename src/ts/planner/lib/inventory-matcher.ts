@@ -5,6 +5,17 @@
  * No side effects, no external dependencies beyond passed parameters.
  */
 
+import type {
+    ApiItem,
+    ApiCargo,
+    Building,
+    ItemMappingsFile,
+    ItemMapping,
+    InventoryLookup,
+    MetaLookups,
+    MappingType
+} from '../../types.js';
+
 // Package multipliers - how many individual items per package
 const PACKAGE_MULTIPLIERS = {
     default: 100,
@@ -14,32 +25,23 @@ const PACKAGE_MULTIPLIERS = {
 
 /**
  * Normalize item name for consistent matching.
- * @param {string} name - Raw item name
- * @returns {string} Normalized name (lowercase, trimmed, single spaces)
  */
-export function normalizeName(name) {
+export function normalizeName(name: string): string {
     return name.toLowerCase().trim().replace(/\s+/g, ' ');
 }
 
 /**
  * Create a lookup key for an item.
- * @param {string} name - Item name
- * @param {number} tier - Item tier
- * @returns {string} Lookup key in format "normalized name:tier"
  */
-export function createKey(name, tier) {
+export function createKey(name: string, tier: number): string {
     return `${normalizeName(name)}:${tier}`;
 }
 
 /**
  * Determine package multiplier based on item name/tag.
  * Different item types have different package sizes.
- *
- * @param {string} name - Item name
- * @param {string} tag - Item tag (optional)
- * @returns {number} Multiplier for package contents
  */
-export function getPackageMultiplier(name, tag = '') {
+export function getPackageMultiplier(name: string, tag = ''): number {
     const lowerName = normalizeName(name);
     const lowerTag = tag.toLowerCase();
 
@@ -54,11 +56,8 @@ export function getPackageMultiplier(name, tag = '') {
 
 /**
  * Check if an item is a package (contains multiple items).
- * @param {string} name - Item name
- * @param {string} tag - Item tag
- * @returns {boolean} True if item is a package
  */
-export function isPackage(name, tag = '') {
+export function isPackage(name: string, tag = ''): boolean {
     const lowerName = name.toLowerCase();
     const lowerTag = tag.toLowerCase();
     return lowerTag.includes('package') || lowerName.includes('package');
@@ -68,11 +67,8 @@ export function isPackage(name, tag = '') {
  * Extract base item name from a package name.
  * "Package of Fine Brick" -> "Fine Brick"
  * "Fine Brick Package" -> "Fine Brick"
- *
- * @param {string} name - Package item name
- * @returns {string} Base item name
  */
-export function extractBaseItemName(name) {
+export function extractBaseItemName(name: string): string {
     return name
     .replace(/package\s+of\s+/i, '')
     .replace(/\s+package$/i, '')
@@ -82,14 +78,13 @@ export function extractBaseItemName(name) {
 /**
  * Build inventory lookup from API building data.
  * Aggregates quantities by item key, handles packages.
- *
- * @param {Array} buildings - Array of building objects with inventory
- * @param {Object} itemMeta - Map of item ID -> item metadata
- * @param {Object} cargoMeta - Map of cargo ID -> cargo metadata
- * @returns {Map<string, number>} Map of itemKey -> total quantity
  */
-export function buildInventoryLookup(buildings, itemMeta, cargoMeta) {
-    const lookup = new Map();
+export function buildInventoryLookup(
+    buildings: Building[],
+    itemMeta: Record<number, ApiItem>,
+    cargoMeta: Record<number, ApiCargo>
+): InventoryLookup {
+    const lookup: InventoryLookup = new Map();
 
     for (const building of buildings) {
         const slots = building.inventory || [];
@@ -130,19 +125,14 @@ export function buildInventoryLookup(buildings, itemMeta, cargoMeta) {
 
 /**
  * Build metadata lookup tables from API data.
- * Convenience function to create itemMeta and cargoMeta objects.
- *
- * @param {Array} items - Array of item objects with id property
- * @param {Array} cargos - Array of cargo objects with id property
- * @returns {{ itemMeta: Object, cargoMeta: Object }}
  */
-export function buildMetaLookups(items, cargos) {
-    const itemMeta = {};
+export function buildMetaLookups(items: ApiItem[], cargos: ApiCargo[]): MetaLookups {
+    const itemMeta: Record<number, ApiItem> = {};
     for (const item of items || []) {
         itemMeta[item.id] = item;
     }
 
-    const cargoMeta = {};
+    const cargoMeta: Record<number, ApiCargo> = {};
     for (const cargo of cargos || []) {
         cargoMeta[cargo.id] = cargo;
     }
@@ -150,18 +140,23 @@ export function buildMetaLookups(items, cargos) {
     return { itemMeta, cargoMeta };
 }
 
+export interface ItemQuantityResult {
+    qty: number;
+    mapping: ItemMapping | null;
+    trackable: boolean;
+}
+
 /**
  * Get quantity of an item from inventory lookup.
  * Handles tier fallbacks for tierless items.
  * Respects trackable status from mappings.
- *
- * @param {Map<string, number>} lookup - Inventory lookup from buildInventoryLookup
- * @param {string} name - Item name to find
- * @param {number} tier - Expected tier
- * @param {Object} mappings - Item mappings (optional)
- * @returns {{ qty: number, mapping: Object|null, trackable: boolean }}
  */
-export function getItemQuantity(lookup, name, tier, mappings = null) {
+export function getItemQuantity(
+    lookup: InventoryLookup,
+    name: string,
+    tier: number,
+    mappings: ItemMappingsFile | null = null
+): ItemQuantityResult {
     const mapping = mappings?.mappings?.[name] || null;
 
     // Non-trackable items always return 0 - they don't exist in inventory
@@ -175,19 +170,19 @@ export function getItemQuantity(lookup, name, tier, mappings = null) {
     // Try exact tier match first
     const key = createKey(searchName, tier);
     if (lookup.has(key)) {
-        return { qty: lookup.get(key), mapping, trackable: true };
+        return { qty: lookup.get(key)!, mapping, trackable: true };
     }
 
     // Try tier -1 (tierless items like Water Bucket, Pitch)
     const keyNeg = createKey(searchName, -1);
     if (lookup.has(keyNeg)) {
-        return { qty: lookup.get(keyNeg), mapping, trackable: true };
+        return { qty: lookup.get(keyNeg)!, mapping, trackable: true };
     }
 
     // Try tier 0
     const key0 = createKey(searchName, 0);
     if (lookup.has(key0)) {
-        return { qty: lookup.get(key0), mapping, trackable: true };
+        return { qty: lookup.get(key0)!, mapping, trackable: true };
     }
 
     // Not found - trackable but quantity is 0
@@ -197,23 +192,15 @@ export function getItemQuantity(lookup, name, tier, mappings = null) {
 
 /**
  * Check if an item is trackable (can exist in inventory).
- *
- * @param {string} name - Item name
- * @param {Object} mappings - Item mappings
- * @returns {boolean} True if item can be tracked in inventory
  */
-export function isTrackable(name, mappings) {
+export function isTrackable(name: string, mappings: ItemMappingsFile | null): boolean {
     const mapping = mappings?.mappings?.[name];
     return mapping ? mapping.trackable !== false : true;
 }
 
 /**
  * Get the mapping type for an item.
- *
- * @param {string} name - Item name
- * @param {Object} mappings - Item mappings
- * @returns {string|null} Mapping type or null if not mapped
  */
-export function getMappingType(name, mappings) {
+export function getMappingType(name: string, mappings: ItemMappingsFile | null): MappingType {
     return mappings?.mappings?.[name]?.type || null;
 }

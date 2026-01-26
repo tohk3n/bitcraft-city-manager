@@ -1,35 +1,51 @@
 // Core UI - combines base utilities with view-specific modules
-import { CONFIG } from './config.js';
+import {CELL_TYPE, CONFIG} from './config.js';
 import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
+import type { ResourceIdMatrix } from './types.js';
+import {createLogger} from "./logger";
 
+const log = createLogger('UI');
 // Base UI utilities
 const BaseUI = {
-  show(id) {
+  show(id: string): void {
     document.getElementById(id)?.classList.remove('hidden');
   },
 
-  hide(id) {
+  hide(id: string): void {
     document.getElementById(id)?.classList.add('hidden');
   },
 
-  showError(message) {
-    document.getElementById('error-message').textContent = message;
+  showError(message: string): void {
+    const el = document.getElementById('error-message') as HTMLElement | null;
+    if (el) el.textContent = message;
     this.show('error');
   },
 
-  clearError() {
+  clearError():void {
     this.hide('error');
   },
 
-  setClaimName(name) {
-    document.getElementById('claim-name').textContent = name;
+  setClaimName(name: string): void {
+    const el = document.getElementById('claim-name');
+    if (el) el.textContent = name;
     this.show('claim-info');
   },
 
-  renderClaimHeader(claimInfo) {
+  // ClaimInfo shape from API
+  renderClaimHeader(claimInfo: { claim?: {
+    name?: string;
+    tier?: number;
+    regionName?: string;
+    supplies?: number;
+    suppliesPurchaseThreshold?: number;
+    suppliesRunOut?: string;
+    treasury?: string | number;
+    numTiles?: number;
+    upkeepCost?: number;
+  }}): void {
     const container = document.getElementById('claim-header');
     if (!container || !claimInfo || !claimInfo.claim) {
       return;
@@ -38,15 +54,15 @@ const BaseUI = {
     const c = claimInfo.claim;
 
     // Calculate supplies percentage and time remaining
-    const suppliesPercent = c.suppliesPurchaseThreshold > 0
-    ? Math.min(100, (c.supplies / c.suppliesPurchaseThreshold) * 100)
+    const suppliesPercent = c.suppliesPurchaseThreshold && c.suppliesPurchaseThreshold > 0
+    ? Math.min(100, ((c.supplies || 0) / c.suppliesPurchaseThreshold) * 100)
     : 0;
 
     let suppliesTimeStr = '';
     if (c.suppliesRunOut) {
       const runOutDate = new Date(c.suppliesRunOut);
       const now = new Date();
-      const diffMs = runOutDate - now;
+      const diffMs = runOutDate.getTime() - now.getTime();
 
       if (diffMs > 0) {
         const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
@@ -88,7 +104,7 @@ const BaseUI = {
     </div>
     <div class="claim-stat">
     <div class="stat-label">Treasury</div>
-    <div class="stat-value">${parseInt(c.treasury || 0).toLocaleString()}</div>
+    <div class="stat-value">${parseInt(String(c.treasury || 0)).toLocaleString()}</div>
     </div>
     <div class="claim-stat">
     <div class="stat-label">Tiles</div>
@@ -103,25 +119,27 @@ const BaseUI = {
     `;
 
     container.innerHTML = html;
+    log.debug(html);
     this.show('claim-header');
   },
 
-  setLoading(isLoading) {
-    const btn = document.getElementById('load-btn');
+  setLoading(isLoading: boolean): void {
+    const btn = document.getElementById('load-btn') as HTMLButtonElement | null;
+    if (!btn) return;
     btn.disabled = isLoading;
     btn.textContent = isLoading ? 'Loading...' : 'Load';
   },
 
-  showTabs() {
+  showTabs(): void {
     this.show('view-tabs');
     // Reset to inventory view
     document.querySelectorAll('#view-tabs .tab-btn').forEach(t => t.classList.remove('active'));
-    document.querySelector('#view-tabs .tab-btn[data-view="inventory"]').classList.add('active');
+    document.querySelector('#view-tabs .tab-btn[data-view="inventory"]')?.classList.add('active');
     document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
-    document.getElementById('view-inventory').classList.remove('hidden');
+    document.getElementById('view-inventory')?.classList.remove('hidden');
   },
 
-  showCitizensLoading(show) {
+  showCitizensLoading(show: boolean): void {
     if (show) {
       this.show('citizens-loading');
     } else {
@@ -129,7 +147,7 @@ const BaseUI = {
     }
   },
 
-  copyToClipboard(text, btn) {
+  copyToClipboard(text: string, btn: HTMLElement): void {
     navigator.clipboard.writeText(text).then(() => {
       const original = btn.textContent;
       btn.textContent = 'Copied!';
@@ -143,8 +161,8 @@ const BaseUI = {
     });
   },
 
-  renderMapLinkComposer() {
-    const checkboxContainer = document.getElementById("checkbox-row");
+  renderMapLinkComposer(): void {
+    const checkboxContainer:HTMLElement|null = document.getElementById("checkbox-row");
     if (!checkboxContainer) {
       return;
     }
@@ -153,8 +171,8 @@ const BaseUI = {
     }
 
     // Generate label and checkbox for region selection
-    let html = '';
-    for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
+    let html:string = '';
+    for (let i:number = 1; i <= CONFIG.REGION_COUNT; i++) {
       html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
     }
     checkboxContainer.innerHTML = html;
@@ -163,97 +181,101 @@ const BaseUI = {
     MAP_LINK.addCommaNumberValidation('res-ids');
     MAP_LINK.addCommaNumberValidation('player-ids');
 
-    const btn = document.getElementById("lnk-gen-btn");
-    btn.addEventListener("click", () => MAP_LINK.generateLinkEvent());
+    const btn:HTMLElement|null = document.getElementById("lnk-gen-btn");
+    if(!btn)return;
+    const matrixBtn:HTMLElement|null = document.getElementById("id-matrix-btn");
+    if(!matrixBtn)return;
+    const matrixWrapper:HTMLElement|null = document.getElementById('id-matrix');
+    if(!matrixWrapper)return;
+    this.renderResourceMatrix('id-matrix', CONFIG.RESOURCE_ID_MATRIX);
 
-    const matrixBtn = document.getElementById("id-matrix-btn");
-    const matrixWrapper = document.getElementById('id-matrix');
-    this.renderResourceMatrix('id-matrix',CONFIG.RESOURCE_ID_MATRIX);
-    matrixBtn.addEventListener("click", () => {
-      matrixWrapper.classList.toggle('hidden');
+    btn?.addEventListener("click", ():void => MAP_LINK.generateLinkEvent());
+
+    matrixBtn?.addEventListener("click", ():void => {
+      matrixWrapper?.classList.toggle('hidden');
     });
 
-    const resInputField = document.getElementById('res-ids');
-    resInputField.addEventListener("blur", () => {
+    const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
+    resInputField?.addEventListener("blur", ():void => {
       MAP_LINK.syncMatrixState(resInputField.value);
     });
   },
 
   // Generates table with clickable fields to add to input field for resource selection
-  renderResourceMatrix(containerId, resourceMatrix) {
-    const table = document.getElementById(containerId);
-      if (!table) return;
+  renderResourceMatrix(containerId: string, resourceMatrix: ResourceIdMatrix): void {
+    const table:HTMLElement|null = document.getElementById(containerId);
+    if (!table) return;
 
-      table.innerHTML = '';
+    table.innerHTML = '';
 
-      /* ---------- Header ---------- */
-      const head = document.createElement('thead');
-      const headerRow = document.createElement('tr');
+    /* ---------- Header ---------- */
+    const head = document.createElement('thead');
+    const headerRow = document.createElement('tr');
 
-      // Empty top-left cell
-      const emptyTh = document.createElement('th');
-      headerRow.appendChild(emptyTh);
+    // Empty top-left cell
+    const emptyTh = document.createElement('th');
+    headerRow.appendChild(emptyTh);
 
-      // T1–T10
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const th = document.createElement('th');
-        th.textContent = `T${t}`;
-        headerRow.appendChild(th);
-      }
+    // T1 - T10
+    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+      const th = document.createElement('th');
+      th.textContent = `T${t}`;
+      headerRow.appendChild(th);
+    }
 
-      head.appendChild(headerRow);
-      table.appendChild(head);
+    head.appendChild(headerRow);
+    table.appendChild(head);
 
-      /* ---------- Body ---------- */
-      const body = document.createElement('tbody');
-      const rowNames = Object.keys(resourceMatrix);
-      rowNames.forEach(rowName => {
-        const tr = document.createElement('tr');
+    /* ---------- Body ---------- */
+    const body = document.createElement('tbody') as HTMLTableSectionElement;
+    const rowNames = Object.keys(resourceMatrix) as (keyof ResourceIdMatrix)[];
+    rowNames.forEach(rowName => {
+      const tr = document.createElement('tr') as HTMLTableRowElement;
 
-        // Row label (not clickable)
-        const nameCell = document.createElement('td');
-        nameCell.textContent = rowName;
-        nameCell.classList.add('row-label');
-        tr.appendChild(nameCell);
+      // Row label (not clickable)
+      const nameCell = document.createElement('td') as HTMLTableCellElement;
+      nameCell.textContent = rowName;
+      nameCell.classList.add('row-label');
+      tr.appendChild(nameCell);
 
-        // T1–T10 cells
-        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-          const td = document.createElement('td');
-          td.classList.add('matrix-cell');
+      // T1 - T10 cells
+      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+        const td = document.createElement('td') as HTMLTableCellElement;
+        td.classList.add('matrix-cell');
 
           // clickable area
-          const cellArea = document.createElement('div');
+          const cellArea = document.createElement('div') as HTMLDivElement;
           cellArea.classList.add('matrix-cell-inner');
           // Needed for state of matrix
-          cellArea.classList.add('none');
+          cellArea.classList.add(CELL_TYPE.NONE);
           // data attributes for later logic
           cellArea.dataset.row = rowName;
-          cellArea.dataset.tier = t;
-          const currentIndex = t-1;
-          const idValues = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
+          cellArea.dataset.tier = String(t);
+          const currentIndex:number = t-1;
+          const idValues:number[] = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
           if(idValues.length > 0){
-            const cellButton = document.createElement('button');
+            const cellButton = document.createElement('button') as HTMLButtonElement;
             cellButton.textContent = '';
             cellButton.classList.add('matrix-cell-btn');
 
-            cellButton.addEventListener('click', () => {
+            cellButton.addEventListener('click', ():void => {
               MAP_LINK.cellButtonEvent(rowName,t);
             });
 
-            cellArea.appendChild(cellButton);
-          }else{
-            cellArea.classList.add('empty');
-          }
+          cellArea.appendChild(cellButton);
+        }else{
+          cellArea.classList.add('empty');
+        }
 
           td.appendChild(cellArea);
           tr.appendChild(td);
         }
 
-        body.appendChild(tr);
-      });
+      body.appendChild(tr);
+    });
 
-      table.appendChild(body);
-    }
+    table.appendChild(body);
+  }
 };
 
 // Combine all UI modules into single export

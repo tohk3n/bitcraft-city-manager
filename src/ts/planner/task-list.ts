@@ -3,18 +3,22 @@
  */
 
 import { formatCompact, categorizeByActivity } from './lib/progress-calc.js';
+import type { FirstTrackableItem } from '../types.js';
+
+// Sort options
+type SortOption = 'deficit' | 'deficit-asc' | 'tier' | 'tier-asc' | 'activity' | 'name';
 
 // Module state
-let currentItems = [];
+let currentItems: FirstTrackableItem[] = [];
 let filterTier = '';
 let filterActivity = '';
-let sortBy = 'deficit';
+let sortBy: SortOption = 'deficit';
 let hideComplete = true;
 
 /**
  * Render the task list with controls.
  */
-export function render(container, items) {
+export function render(container: HTMLElement, items: FirstTrackableItem[]): void {
     if (!items || items.length === 0) {
         container.innerHTML = '<div class="task-empty">All requirements met</div>';
         return;
@@ -63,25 +67,25 @@ export function render(container, items) {
     <div class="task-cards" id="task-cards"></div>
     `;
 
-    const cardsEl = container.querySelector('#task-cards');
+    const cardsEl = container.querySelector('#task-cards') as HTMLElement;
 
-    container.querySelector('#task-filter-tier').addEventListener('change', e => {
-        filterTier = e.target.value;
+    container.querySelector('#task-filter-tier')?.addEventListener('change', (e) => {
+        filterTier = (e.target as HTMLSelectElement).value;
         renderCards(cardsEl);
     });
 
-    container.querySelector('#task-filter-activity').addEventListener('change', e => {
-        filterActivity = e.target.value;
+    container.querySelector('#task-filter-activity')?.addEventListener('change', (e) => {
+        filterActivity = (e.target as HTMLSelectElement).value;
         renderCards(cardsEl);
     });
 
-    container.querySelector('#task-sort').addEventListener('change', e => {
-        sortBy = e.target.value;
+    container.querySelector('#task-sort')?.addEventListener('change', (e) => {
+        sortBy = (e.target as HTMLSelectElement).value as SortOption;
         renderCards(cardsEl);
     });
 
-    container.querySelector('#task-hide-complete').addEventListener('change', e => {
-        hideComplete = e.target.checked;
+    container.querySelector('#task-hide-complete')?.addEventListener('change', (e) => {
+        hideComplete = (e.target as HTMLInputElement).checked;
         renderCards(cardsEl);
     });
 
@@ -91,7 +95,7 @@ export function render(container, items) {
 /**
  * Render task cards based on current filter/sort state.
  */
-function renderCards(container) {
+function renderCards(container: HTMLElement): void {
     let items = currentItems.filter(item => {
         if (hideComplete && item.deficit === 0) return false;
         if (filterTier && item.tier !== parseInt(filterTier, 10)) return false;
@@ -108,8 +112,8 @@ function renderCards(container) {
 
     container.innerHTML = items.map(item => renderCard(item)).join('');
 
-    container.querySelectorAll('.task-copy').forEach(btn => {
-        btn.addEventListener('click', e => {
+    container.querySelectorAll<HTMLButtonElement>('.task-copy').forEach(btn => {
+        btn.addEventListener('click', (e) => {
             e.stopPropagation();
             copyTask(btn);
         });
@@ -119,7 +123,7 @@ function renderCards(container) {
 /**
  * Render a single task card.
  */
-function renderCard(item) {
+function renderCard(item: FirstTrackableItem): string {
     const pct = item.required > 0
     ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
     : 100;
@@ -158,7 +162,7 @@ function renderCard(item) {
 /**
  * Sort items by criteria.
  */
-function sort(items, by) {
+function sort(items: FirstTrackableItem[], by: SortOption): FirstTrackableItem[] {
     const sorted = [...items];
     switch (by) {
         case 'deficit':
@@ -183,11 +187,11 @@ function sort(items, by) {
 /**
  * Copy task text to clipboard.
  */
-function copyTask(btn) {
-    const text = btn.dataset.text;
+function copyTask(btn: HTMLButtonElement): void {
+    const text = btn.dataset.text || '';
     navigator.clipboard.writeText(text).then(() => {
         const original = btn.textContent;
-        btn.textContent = '✓';
+        btn.textContent = '✔';
         setTimeout(() => btn.textContent = original, 1500);
     });
 }

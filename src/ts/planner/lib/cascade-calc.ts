@@ -10,13 +10,52 @@
  */
 
 import { getItemQuantity, createKey } from './inventory-matcher.js';
+import type {
+    ExpandedCodex,
+    ExpandedNode,
+    ProcessedCodex,
+    ProcessedNode,
+    NodeStatus,
+    InventoryLookup,
+    ItemMappingsFile,
+    MappingType,
+    TrackableItem,
+    FirstTrackableItem,
+    SecondLevelItem
+} from '../../types.js';
 
 // Pattern to identify Study Journal nodes
 const STUDY_JOURNAL_PATTERN = /Study Journal$/;
 
-export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
+// Internal aggregation types
+interface AggregatedItemInternal {
+    name: string;
+    tier: number;
+    required: number;
+    have: number;
+    deficit: number;
+    satisfied: boolean;
+    scale: number;
+    trackable: boolean;
+    mappingType: MappingType;
+}
+
+interface FirstTrackableInternal {
+    name: string;
+    tier: number;
+    required: number;
+    have: number;
+    mappingType: MappingType;
+    sources: Set<string>;
+}
+
+export function applyCascade(
+    expandedCodex: ExpandedCodex,
+    inventoryLookup: InventoryLookup,
+    mappings: ItemMappingsFile | null = null
+): ProcessedCodex {
     // Pass 1: Aggregate and compute satisfaction
-    const items = new Map();
+    const items = new Map<string, AggregatedItemInternal>();
     for (const research of expandedCodex.researches) {
         aggregateNode(research, items, inventoryLookup, mappings);
     }
@@ -43,7 +82,12 @@ export function applyCascade(expandedCodex, inventoryLookup, mappings = null) {
     };
 }
 
-function aggregateNode(node, items, inventoryLookup, mappings) {
+function aggregateNode(
+    node: ExpandedNode,
+    items: Map<string, AggregatedItemInternal>,
+    inventoryLookup: InventoryLookup,
+    mappings: ItemMappingsFile | null
+): void {
     const key = createKey(node.name, node.tier);
 
     if (!items.has(key)) {
@@ -53,21 +97,29 @@ function aggregateNode(node, items, inventoryLookup, mappings) {
             tier: node.tier,
             required: 0,
             have: qty,
+            deficit: 0,
+            satisfied: false,
+            scale: 0,
             trackable: node.trackable,
             mappingType: node.mappingType
         });
     }
 
-    items.get(key).required += node.idealQty;
+    items.get(key)!.required += node.idealQty;
 
     for (const child of node.children || []) {
         aggregateNode(child, items, inventoryLookup, mappings);
     }
 }
 
-function buildNode(node, items, parentSatisfied, parentScale) {
+function buildNode(
+    node: ExpandedNode,
+    items: Map<string, AggregatedItemInternal>,
+    parentSatisfied: boolean,
+    parentScale: number
+): ProcessedNode {
     const key = createKey(node.name, node.tier);
-    const item = items.get(key);
+    const item = items.get(key)!;
 
     // If parent is satisfied, we're satisfied too (don't need to gather)
     const satisfied = parentSatisfied || item.satisfied;
@@ -80,7 +132,7 @@ function buildNode(node, items, parentSatisfied, parentScale) {
     const contribution = required - deficit;
     const pctComplete = required > 0 ? Math.round((contribution / required) * 100) : 100;
 
-    const status = satisfied ? 'complete'
+    const status: NodeStatus = satisfied ? 'complete'
     : contribution > 0 ? 'partial'
     : 'missing';
 
@@ -106,16 +158,18 @@ function buildNode(node, items, parentSatisfied, parentScale) {
     };
 }
 
+interface ExtractResult {
+    researches: ProcessedNode[];
+    studyJournals: ProcessedNode | null;
+}
+
 /**
  * Extract Study Journal subtrees from researches into a dedicated synthetic research.
  * Journals are identified by name pattern and aggregated since they're identical across branches.
- *
- * @param {Array} researches - Processed research nodes
- * @returns {Object} { researches: pruned researches, studyJournals: aggregated journal node or null }
  */
-function extractStudyJournals(researches) {
-    const extracted = [];
-    const pruned = [];
+function extractStudyJournals(researches: ProcessedNode[]): ExtractResult {
+    const extracted: ProcessedNode[] = [];
+    const pruned: ProcessedNode[] = [];
 
     for (const research of researches) {
         const children = research.children || [];
@@ -154,7 +208,7 @@ function extractStudyJournals(researches) {
 /**
  * Recursively multiply quantities in a journal node tree.
  */
-function aggregateJournalNode(node, multiplier) {
+function aggregateJournalNode(node: ProcessedNode, multiplier: number): ProcessedNode {
     return {
         ...node,
         required: node.required * multiplier,
@@ -171,7 +225,7 @@ function aggregateJournalNode(node, multiplier) {
 /**
  * Compute overall status for a node based on its own status and children.
  */
-function computeOverallStatus(node) {
+function computeOverallStatus(node: ProcessedNode): NodeStatus {
     if (node.status === 'missing') return 'missing';
     if (node.status === 'partial') return 'partial';
 
@@ -187,10 +241,16 @@ function computeOverallStatus(node) {
 
 // --- Collection functions ---
 
-export function collectTrackableItems(processedCodex) {
-    const items = new Map();
+export function collectTrackableItems(processedCodex: ProcessedCodex): TrackableItem[] {
+    const items = new Map<string, {
+        name: string;
+        tier: number;
+        required: number;
+        have: number;
+        mappingType: MappingType;
+    }>();
 
-    function collect(node) {
+    function collect(node: ProcessedNode): void {
         if (node.trackable && node.required > 0 && !node.satisfiedByParent) {
             const key = createKey(node.name, node.tier);
             if (!items.has(key)) {
@@ -202,7 +262,7 @@ export function collectTrackableItems(processedCodex) {
                     mappingType: node.mappingType
                 });
             }
-            items.get(key).required += node.required;
+            items.get(key)!.required += node.required;
         }
         for (const child of node.children || []) collect(child);
     }
@@ -220,10 +280,10 @@ export function collectTrackableItems(processedCodex) {
     .sort((a, b) => b.deficit - a.deficit);
 }
 
-export function collectFirstTrackable(processedCodex) {
-    const items = new Map();
+export function collectFirstTrackable(processedCodex: ProcessedCodex): FirstTrackableItem[] {
+    const items = new Map<string, FirstTrackableInternal>();
 
-    function findFirst(node, source) {
+    function findFirst(node: ProcessedNode, source: string): void {
         if (node.satisfiedByParent) return;
 
         if (node.trackable) {
@@ -238,8 +298,8 @@ export function collectFirstTrackable(processedCodex) {
                     sources: new Set()
                 });
             }
-            items.get(key).required += node.required;
-            items.get(key).sources.add(source);
+            items.get(key)!.required += node.required;
+            items.get(key)!.sources.add(source);
             return;
         }
         for (const child of node.children || []) findFirst(child, source);
@@ -263,8 +323,15 @@ export function collectFirstTrackable(processedCodex) {
     .sort((a, b) => b.deficit - a.deficit);
 }
 
-export function collectSecondLevel(processedCodex) {
-    const items = new Map();
+export function collectSecondLevel(processedCodex: ProcessedCodex): SecondLevelItem[] {
+    const items = new Map<string, {
+        name: string;
+        tier: number;
+        required: number;
+        have: number;
+        trackable: boolean;
+        mappingType: MappingType;
+    }>();
 
     for (const research of processedCodex.researches) {
         for (const child of research.children || []) {
@@ -281,7 +348,7 @@ export function collectSecondLevel(processedCodex) {
                     mappingType: child.mappingType
                 });
             }
-            items.get(key).required += child.required;
+            items.get(key)!.required += child.required;
         }
     }
 

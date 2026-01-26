@@ -1,10 +1,25 @@
 // Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
 import { CONFIG } from './config.js';
+import type {
+  InventoryProcessResult,
+  MaterialMatrix,
+  MaterialCategory,
+  FoodItems,
+  FoodItem,
+  ScholarByTier,
+  TierQuantities,
+  ProcessedInventory,
+  CraftingStationsResult,
+  StationsByName,
+  TagGroup,
+  InventoryItem,
+  BuildingBreakdown
+} from './types.js';
 
 export const DashboardUI = {
   // Main render entry point for inventory view
-  renderDashboard(data) {
+  renderDashboard(data: InventoryProcessResult): void {
     const { inventory, materialMatrix, foodItems, scholarByTier } = data;
 
     this.renderMaterialMatrix(materialMatrix);
@@ -14,33 +29,40 @@ export const DashboardUI = {
     this.show('dashboard');
   },
 
+  // Helper to show a section
+  show(sectionId: string): void {
+    const el = document.getElementById(sectionId);
+    if (el) el.classList.remove('hidden');
+  },
+
   // Material matrix table with heatmap
-  renderMaterialMatrix(matrix) {
+  renderMaterialMatrix(matrix: MaterialMatrix): void {
     const container = document.getElementById('tier-bar');
     if (!container) return;
 
-    const categories = Object.keys(matrix);
+    const categories = Object.keys(matrix) as MaterialCategory[];
 
     // Find global max for heatmap normalization
     let globalMax = 0;
     let grandTotal = 0;
     for (const cat of categories) {
       for (let t = 1; t <= 7; t++) {
-        const val = matrix[cat][t] || 0;
+        const val = matrix[cat][t as keyof TierQuantities] || 0;
         if (val > globalMax) globalMax = val;
         grandTotal += val;
       }
     }
 
     // Calculate row and column totals
-    const rowTotals = {};
-    const colTotals = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+    const rowTotals: Record<string, number> = {};
+    const colTotals: TierQuantities = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
     for (const cat of categories) {
       rowTotals[cat] = 0;
       for (let t = 1; t <= 7; t++) {
-        const val = matrix[cat][t] || 0;
+        const tier = t as keyof TierQuantities;
+        const val = matrix[cat][tier] || 0;
         rowTotals[cat] += val;
-        colTotals[t] += val;
+        colTotals[tier] += val;
       }
     }
 
@@ -60,7 +82,7 @@ export const DashboardUI = {
 
       html += `<tr><td class="cat-label">${cat}</td>`;
       for (let t = 1; t <= 7; t++) {
-        const val = matrix[cat][t] || 0;
+        const val = matrix[cat][t as keyof TierQuantities] || 0;
         const intensity = globalMax > 0 ? val / globalMax : 0;
         const bgStyle = val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
         const displayVal = val > 0 ? val.toLocaleString() : '-';
@@ -73,7 +95,7 @@ export const DashboardUI = {
     // Column totals row
     html += '<tr class="col-totals"><td class="cat-label">Total</td>';
     for (let t = 1; t <= 7; t++) {
-      const val = colTotals[t];
+      const val = colTotals[t as keyof TierQuantities];
       const displayVal = val > 0 ? val.toLocaleString() : '-';
       html += `<td class="matrix-cell">${displayVal}</td>`;
     }
@@ -85,14 +107,14 @@ export const DashboardUI = {
   },
 
   // Food and Scholar quick stats
-  renderQuickStats(foodItems, scholarByTier) {
+  renderQuickStats(foodItems: FoodItems, scholarByTier: ScholarByTier): void {
     const container = document.getElementById('quick-stats');
     if (!container) return;
 
     let html = '';
 
     // Food section
-    const foodList = Object.values(foodItems).sort((a, b) => b.qty - a.qty);
+    const foodList = (Object.values(foodItems) as FoodItem[]).sort((a, b) => b.qty - a.qty);
     let foodTotal = 0;
     for (const f of foodList) foodTotal += f.qty;
 
@@ -100,7 +122,7 @@ export const DashboardUI = {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">ðŸ–</span>
+      <span class="icon">🍖</span>
       <h4>Food</h4>
       <span class="total">${foodTotal.toLocaleString()}</span>
       </div>
@@ -119,13 +141,13 @@ export const DashboardUI = {
 
     // Scholar section
     let scholarTotal = 0;
-    for (const qty of Object.values(scholarByTier)) scholarTotal += qty;
+    for (const qty of Object.values(scholarByTier)) scholarTotal += qty as number;
 
     if (scholarTotal > 0) {
       html += `
       <div class="quick-card">
       <div class="quick-header">
-      <span class="icon">ðŸ“œ</span>
+      <span class="icon">📜</span>
       <h4>Scholar</h4>
       <span class="total">${scholarTotal.toLocaleString()}</span>
       </div>
@@ -133,7 +155,7 @@ export const DashboardUI = {
       <table>
       `;
       for (let t = 1; t <= 7; t++) {
-        const qty = scholarByTier[t] || 0;
+        const qty = scholarByTier[t as keyof ScholarByTier] || 0;
         if (qty > 0) {
           const label = t === 7 ? 'T7+' : `T${t}`;
           html += `<tr><td><span class="tier-badge">${label}</span> Items</td><td class="qty">${qty.toLocaleString()}</td></tr>`;
@@ -146,7 +168,7 @@ export const DashboardUI = {
   },
 
   // Crafting stations summary
-  renderCraftingStations(data) {
+  renderCraftingStations(data: CraftingStationsResult): void {
     const container = document.getElementById('crafting-stations');
     if (!container) return;
 
@@ -163,7 +185,7 @@ export const DashboardUI = {
     let html = '';
 
     // Helper to render a station matrix
-    const renderMatrix = (stations, names, title) => {
+    const renderMatrix = (stations: StationsByName, names: string[], title: string): string => {
       if (names.length === 0) return '';
 
       let total = 0;
@@ -185,8 +207,8 @@ export const DashboardUI = {
         const station = stations[name];
         out += `<tr><td class="cat-label">${name}</td>`;
         for (let t = 1; t <= 7; t++) {
-          const val = station.tiers[t] || 0;
-          const displayVal = val > 0 ? val : '—';
+          const val = station.tiers[t as keyof TierQuantities] || 0;
+          const displayVal = val > 0 ? String(val) : '—';
           const bgStyle = val > 0 ? 'background: rgba(88, 166, 255, 0.2);' : '';
           out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
         }
@@ -206,7 +228,7 @@ export const DashboardUI = {
   },
 
   // Inventory grid with expandable category cards
-  renderInventory(inventory) {
+  renderInventory(inventory: ProcessedInventory): void {
     const grid = document.getElementById('inventory-grid');
     if (!grid) return;
 
@@ -226,7 +248,7 @@ export const DashboardUI = {
       const tags = inventory[category];
 
       let categoryTotal = 0;
-      for (const tagData of Object.values(tags)) {
+      for (const tagData of Object.values(tags) as TagGroup[]) {
         categoryTotal += tagData.total;
       }
 
@@ -238,7 +260,7 @@ export const DashboardUI = {
       for (const tag of sortedTags) {
         const tagData = tags[tag];
 
-        const items = Object.values(tagData.items).sort((a, b) => {
+        const items = (Object.values(tagData.items) as InventoryItem[]).sort((a, b) => {
           if (a.tier !== b.tier) return a.tier - b.tier;
           return a.name.localeCompare(b.name);
         });
@@ -248,7 +270,7 @@ export const DashboardUI = {
 
           let breakdownHtml = '';
           if (item.buildings.length > 1) {
-            const buildingList = item.buildings
+            const buildingList = [...item.buildings]
             .sort((a, b) => b.qty - a.qty)
             .map(b => `<li>${b.name}: ${b.qty.toLocaleString()}</li>`)
             .join('');
@@ -291,7 +313,8 @@ export const DashboardUI = {
     // Attach event listeners after innerHTML assignment
     grid.querySelectorAll('.card-header').forEach(header => {
       header.addEventListener('click', () => {
-        header.closest('.inventory-card').classList.toggle('expanded');
+        const card = header.closest('.inventory-card');
+        card?.classList.toggle('expanded');
       });
     });
 

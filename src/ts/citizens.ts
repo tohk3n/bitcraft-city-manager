@@ -2,14 +2,22 @@
 // Handles: citizen table, equipment display, vault loading
 import { CONFIG } from './config.js';
 import { API } from './api.js';
+import type {
+  ClaimCitizensResponse,
+  EquipmentSlot,
+  VaultCollectible,
+  EquipmentSlotName,
+  GearType,
+  VaultCache
+} from './types.js';
 
 // Internal state for citizens module
-let _citizensData = null;
-let _vaultCache = {};
+let _citizensData: ClaimCitizensResponse | null = null;
+const _vaultCache: VaultCache = {};
 
 export const CitizensUI = {
   // Render citizens table with equipment matrix
-  renderCitizens(data) {
+  renderCitizens(data: ClaimCitizensResponse): void {
     const grid = document.getElementById('citizens-grid');
     if (!grid) return;
 
@@ -76,24 +84,24 @@ export const CitizensUI = {
     grid.innerHTML = html;
 
     // Add vault load handlers
-    grid.querySelectorAll('.vault-btn').forEach(btn => {
+    grid.querySelectorAll<HTMLButtonElement>('.vault-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        this._loadPlayerVault(btn.dataset.playerId, btn);
+        this._loadPlayerVault(btn.dataset.playerId || '', btn);
       });
     });
 
     // Add copy handlers
-    grid.querySelectorAll('.copy-btn').forEach(btn => {
+    grid.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
-        this.copyToClipboard(btn.dataset.id, btn);
+        this.copyToClipboard(btn.dataset.id || '', btn);
       });
     });
   },
 
   // Update a single citizen's equipment cells (for progressive loading)
-  updateCitizenEquipment(playerId, equipment) {
+  updateCitizenEquipment(playerId: string, equipment: EquipmentSlot[]): void {
     const slots = CONFIG.EQUIPMENT_SLOTS;
     const gearTypes = CONFIG.GEAR_TYPES;
 
@@ -120,14 +128,14 @@ export const CitizensUI = {
           cell.textContent = `T${tier}`;
           cell.title = equipped.item.name;
           cell.dataset.equipped = 'true';
-          cell.dataset.tier = tier;
+          cell.dataset.tier = String(tier);
         }
       }
     }
   },
 
   // Load vault gear for a player
-  async _loadPlayerVault(playerId, btn) {
+  async _loadPlayerVault(playerId: string, btn: HTMLButtonElement): Promise<void> {
     // Don't reload if already loaded
     if (_vaultCache[playerId]) {
       btn.textContent = 'ok';
@@ -155,7 +163,7 @@ export const CitizensUI = {
   },
 
   // Parse vault collectibles into gear items
-  _parseVaultCollectibles(data) {
+  _parseVaultCollectibles(data: { collectibles?: VaultCollectible[] }): VaultCollectible[] {
     const collectibles = data.collectibles || [];
 
     // Filter to just clothing/armor items with valid tiers
@@ -172,9 +180,9 @@ export const CitizensUI = {
   },
 
   // Fill in vault gear that's better than equipped
-  _fillVaultGear(playerId, vaultItems) {
-    const slots = CONFIG.EQUIPMENT_SLOTS;
-    const gearTypes = CONFIG.GEAR_TYPES;
+  _fillVaultGear(playerId: string, vaultItems: VaultCollectible[]): void {
+    const slots = CONFIG.EQUIPMENT_SLOTS as EquipmentSlotName[];
+    const gearTypes = CONFIG.GEAR_TYPES as GearType[];
 
     for (const gearType of gearTypes) {
       const gearKey = gearType.split(' ')[0].toLowerCase();
@@ -185,7 +193,7 @@ export const CitizensUI = {
 
         if (!cell) continue;
 
-        const currentTier = parseInt(cell.dataset.tier) || 0;
+        const currentTier = parseInt(cell.dataset.tier || '0', 10);
         const bestVaultItem = this._getBestVaultItem(vaultItems, slot, gearType);
 
         if (bestVaultItem && bestVaultItem.tier > currentTier) {
@@ -196,14 +204,18 @@ export const CitizensUI = {
           cell.className = `gear-cell from-vault ${rarityClass}`;
           cell.textContent = `T${bestVaultItem.tier}`;
           cell.title = `${bestVaultItem.name} (in vault)`;
-          cell.dataset.tier = bestVaultItem.tier;
+          cell.dataset.tier = String(bestVaultItem.tier);
         }
       }
     }
   },
 
   // Find best vault item for a given slot and gear type
-  _getBestVaultItem(vaultItems, slot, gearType) {
+  _getBestVaultItem(
+    vaultItems: VaultCollectible[],
+    slot: EquipmentSlotName,
+    gearType: GearType
+  ): VaultCollectible | null {
     const targetType = CONFIG.SLOT_TYPE_CODES[slot];
 
     // Match tag - vault uses both "X Clothing" and "X Armor" patterns
@@ -221,11 +233,24 @@ export const CitizensUI = {
     matches.sort((a, b) => {
       const tierDiff = (b.tier || 0) - (a.tier || 0);
       if (tierDiff !== 0) return tierDiff;
-      const aRarity = CONFIG.RARITY_ORDER.indexOf((a.rarityStr || '').toLowerCase());
-      const bRarity = CONFIG.RARITY_ORDER.indexOf((b.rarityStr || '').toLowerCase());
+      const aRarity = CONFIG.RARITY_ORDER.indexOf((a.rarityStr || '').toLowerCase() as any);
+      const bRarity = CONFIG.RARITY_ORDER.indexOf((b.rarityStr || '').toLowerCase() as any);
       return bRarity - aRarity;
     });
 
     return matches[0];
+  },
+
+  // Copy text to clipboard with visual feedback
+  copyToClipboard(text: string, btn: HTMLButtonElement): void {
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = '✔';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = original;
+        btn.classList.remove('copied');
+      }, 1500);
+    });
   }
 };

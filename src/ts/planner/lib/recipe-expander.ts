@@ -9,17 +9,36 @@
  */
 
 import { isTrackable, getMappingType } from './inventory-matcher.js';
+import type {
+    Codex,
+    CodexNode,
+    ExpandedCodex,
+    ExpandedNode,
+    ItemMappingsFile,
+    MappingType,
+    FlattenedItem,
+    AggregatedItem,
+    FirstTrackableResult
+} from '../../types.js';
+
+interface AggregatedItemInternal {
+    name: string;
+    tier: number;
+    idealQty: number;
+    trackable: boolean;
+    mappingType: MappingType;
+    sources: Set<string>;
+}
 
 /**
  * Expand a codex to calculate ideal quantities for each item.
  * Creates a deep clone with idealQty calculated on each node.
- *
- * @param {Object} codex - Codex data with researches array
- * @param {number} targetCount - Number of codex completions needed
- * @param {Object} mappings - Item mappings for trackable status
- * @returns {Object} Expanded codex with idealQty on each node
  */
-export function expandRecipes(codex, targetCount, mappings = null) {
+export function expandRecipes(
+    codex: Codex,
+    targetCount: number,
+    mappings: ItemMappingsFile | null = null
+): ExpandedCodex {
     return {
         name: codex.name,
         tier: codex.tier,
@@ -33,13 +52,12 @@ export function expandRecipes(codex, targetCount, mappings = null) {
 /**
  * Expand a single node and its children recursively.
  * Calculates idealQty based on recipeQty and batch count.
- *
- * @param {Object} node - Recipe node from codex
- * @param {number} batchCount - Number of codex completions needed
- * @param {Object} mappings - Item mappings
- * @returns {Object} Expanded node with idealQty and processed children
  */
-function expandNode(node, batchCount, mappings) {
+function expandNode(
+    node: CodexNode,
+    batchCount: number,
+    mappings: ItemMappingsFile | null
+): ExpandedNode {
     const recipeQty = node.qty || 1;
     // idealQty is simply the qty needed for N completions
     const idealQty = recipeQty * batchCount;
@@ -64,14 +82,11 @@ function expandNode(node, batchCount, mappings) {
 /**
  * Get a flat list of all items from an expanded tree.
  * Useful for debugging or alternate calculations.
- *
- * @param {Object} expandedCodex - Result from expandRecipes
- * @returns {Array} Flat array of all nodes with their idealQty
  */
-export function flattenExpanded(expandedCodex) {
-    const items = [];
+export function flattenExpanded(expandedCodex: ExpandedCodex): FlattenedItem[] {
+    const items: FlattenedItem[] = [];
 
-    function collect(node, researchName) {
+    function collect(node: ExpandedNode, researchName: string): void {
         items.push({
             name: node.name,
             tier: node.tier,
@@ -93,19 +108,22 @@ export function flattenExpanded(expandedCodex) {
     return items;
 }
 
+interface AggregateOptions {
+    trackableOnly?: boolean;
+}
+
 /**
  * Aggregate expanded items by key (name:tier).
  * Sums idealQty for items appearing in multiple branches.
- *
- * @param {Object} expandedCodex - Result from expandRecipes
- * @param {Object} options - { trackableOnly: boolean }
- * @returns {Map<string, Object>} Map of itemKey -> aggregated item data
  */
-export function aggregateExpanded(expandedCodex, options = {}) {
+export function aggregateExpanded(
+    expandedCodex: ExpandedCodex,
+    options: AggregateOptions = {}
+): Map<string, AggregatedItem> {
     const { trackableOnly = false } = options;
-    const aggregated = new Map();
+    const aggregated = new Map<string, AggregatedItemInternal>();
 
-    function collect(node, sources) {
+    function collect(node: ExpandedNode, sources: Set<string>): void {
         if (trackableOnly && !node.trackable) {
             // Skip non-trackable, but still process children
             for (const child of node.children || []) {
@@ -127,7 +145,7 @@ export function aggregateExpanded(expandedCodex, options = {}) {
             });
         }
 
-        const item = aggregated.get(key);
+        const item = aggregated.get(key)!;
         item.idealQty += node.idealQty;
         sources.forEach(s => item.sources.add(s));
 
@@ -141,24 +159,28 @@ export function aggregateExpanded(expandedCodex, options = {}) {
     }
 
     // Convert source Sets to arrays for JSON serialization
-    for (const item of aggregated.values()) {
-        item.sources = Array.from(item.sources);
+    const result = new Map<string, AggregatedItem>();
+    for (const [key, item] of aggregated) {
+        result.set(key, {
+            ...item,
+            sources: Array.from(item.sources)
+        });
     }
 
-    return aggregated;
+    return result;
 }
 
 /**
  * Find the first trackable items in each branch.
  * These are the items that actually exist in inventory at the highest level.
- *
- * @param {Object} expandedCodex - Result from expandRecipes
- * @returns {Array} Array of first trackable items with their parent context
  */
-export function findFirstTrackable(expandedCodex) {
-    const results = [];
+export function findFirstTrackable(expandedCodex: ExpandedCodex): FirstTrackableResult[] {
+    const results: FirstTrackableResult[] = [];
 
-    function findInBranch(node, parentName = null) {
+    function findInBranch(
+        node: ExpandedNode,
+        parentName: string | null = null
+    ): FirstTrackableResult | FirstTrackableResult[] | null {
         if (node.trackable) {
             // Found first trackable - don't go deeper
             return {
@@ -171,7 +193,7 @@ export function findFirstTrackable(expandedCodex) {
         }
 
         // Not trackable - check children
-        const found = [];
+        const found: FirstTrackableResult[] = [];
         for (const child of node.children || []) {
             const result = findInBranch(child, node.name);
             if (result) {

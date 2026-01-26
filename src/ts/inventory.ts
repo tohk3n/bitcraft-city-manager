@@ -1,26 +1,50 @@
 // Process inventory data using API-provided item/cargo metadata
 import { CONFIG } from './config.js';
+import type {
+  ClaimInventoriesResponse,
+  ClaimBuildingsResponse,
+  ApiItem,
+  ApiCargo,
+  Building,
+  InventoryProcessResult,
+  ProcessedInventory,
+  MaterialMatrix,
+  MaterialCategory,
+  FoodItems,
+  ScholarByTier,
+  TierQuantities,
+  TagGroup,
+  InventoryItem,
+  CraftingStationsResult,
+  StationsByName,
+  StationSummary
+} from './types.js';
+
+// Helper to create fresh tier quantities object
+function createTierQuantities(): TierQuantities {
+  return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+}
 
 // Process raw API response into structured inventory
-export function processInventory(data) {
+export function processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
   const buildings = data.buildings || [];
   const itemMeta = buildMetaLookup(data.items || []);
   const cargoMeta = buildMetaLookup(data.cargos || []);
 
   // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
-  const inventory = {};
+  const inventory: ProcessedInventory = {};
 
   // Material matrix: category -> tier -> quantity
-  const materialMatrix = {};
+  const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
   for (const cat of CONFIG.MATRIX_CATEGORIES) {
-    materialMatrix[cat] = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+    materialMatrix[cat as MaterialCategory] = createTierQuantities();
   }
 
   // Food totals by item
-  const foodItems = {};
+  const foodItems: FoodItems = {};
 
   // Scholar totals by tier
-  const scholarByTier = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+  const scholarByTier: ScholarByTier = createTierQuantities();
 
   for (const building of buildings) {
     const buildingName = building.buildingNickname || building.buildingName;
@@ -39,11 +63,11 @@ export function processInventory(data) {
       const tag = meta.tag || 'Other';
       const category = CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
       const tier = meta.tier > 0 ? meta.tier : 1;
-      const tierKey = Math.min(tier, 7);
+      const tierKey = Math.min(tier, 7) as keyof TierQuantities;
 
       // Aggregate raw materials into matrix by category and tier
-      if (CONFIG.RAW_MATERIAL_TAGS.has(tag) && materialMatrix[category]) {
-        materialMatrix[category][tierKey] += qty;
+      if (CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
+        materialMatrix[category as MaterialCategory][tierKey] += qty;
       }
 
       // Track food items
@@ -94,8 +118,8 @@ export function processInventory(data) {
 }
 
 // Build id -> metadata lookup
-function buildMetaLookup(arr) {
-  const map = {};
+function buildMetaLookup(arr: ApiItem[] | ApiCargo[]): Record<number, ApiItem | ApiCargo> {
+  const map: Record<number, ApiItem | ApiCargo> = {};
   for (const item of arr) {
     map[item.id] = item;
   }
@@ -103,30 +127,30 @@ function buildMetaLookup(arr) {
 }
 
 // Process buildings data into crafting station summary
-export function processCraftingStations(buildings) {
-  const active = {};   // name -> { tiers: {1:0, 2:0, ...}, total: 0 }
-  const passive = {};
+export function processCraftingStations(buildings: Building[]): CraftingStationsResult {
+  const active: StationsByName = {};
+  const passive: StationsByName = {};
 
   for (const building of buildings) {
     const func = building.functions?.[0];
     if (!func) continue;
 
     const tier = func.level || 1;
-    const tierKey = Math.min(tier, 7);
+    const tierKey = Math.min(tier, 7) as keyof TierQuantities;
     const name = building.buildingName;
 
     // Active: has crafting slots
-    if (func.crafting_slots > 0) {
+    if (func.crafting_slots && func.crafting_slots > 0) {
       if (!active[name]) {
-        active[name] = { tiers: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }, total: 0 };
+        active[name] = { tiers: createTierQuantities(), total: 0 };
       }
       active[name].tiers[tierKey]++;
       active[name].total++;
     }
     // Passive: has refining slots (kilns, smelters, looms, etc.)
-    else if (func.refining_slots > 0) {
+    else if (func.refining_slots && func.refining_slots > 0) {
       if (!passive[name]) {
-        passive[name] = { tiers: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 }, total: 0 };
+        passive[name] = { tiers: createTierQuantities(), total: 0 };
       }
       passive[name].tiers[tierKey]++;
       passive[name].total++;

@@ -92,7 +92,7 @@ export const CONFIG = {
     },
 
     // Build reverse lookup: tag -> category (computed at load time)
-    TAG_TO_CATEGORY: {},
+    TAG_TO_CATEGORY: {} as Record<string, string>,
 
     // Matrix to show resource IDs
     RESOURCE_ID_MATRIX: {
@@ -257,7 +257,7 @@ export const CONFIG = {
         [1043012047],
         [1293969473]
       ]
-    }
+    },
 };
 
 // Initialize reverse lookup
@@ -265,4 +265,10 @@ for (const [category, tags] of Object.entries(CONFIG.TAG_CATEGORIES)) {
     for (const tag of tags) {
         CONFIG.TAG_TO_CATEGORY[tag] = category;
     }
+}
+
+export enum CELL_TYPE {
+    FULL= "full",
+    PART= "part",
+    NONE= "none"
 }
