@@ -257,7 +257,7 @@ export const CONFIG = {
         [1043012047],
         [1293969473]
       ]
-    }
+    },
 };
 
 // Initialize reverse lookup
@@ -265,4 +265,10 @@ for (const [category, tags] of Object.entries(CONFIG.TAG_CATEGORIES)) {
     for (const tag of tags) {
         CONFIG.TAG_TO_CATEGORY[tag] = category;
     }
+}
+
+export enum CELL_TYPE {
+    FULL= "full",
+    PART= "part",
+    NONE= "none"
 }

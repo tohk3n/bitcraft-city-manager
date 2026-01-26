@@ -1,6 +1,6 @@
 // Map link composer functionality
-import { CONFIG } from './config.js';
-import type { ResourceRowName } from './types.js';
+import {CELL_TYPE, CONFIG} from './config.js';
+import {ResourceIdMatrix, ResourceRowName, StateMatrixEntry} from './types.js';
 
 interface LinkDataMap {
   regionId?: string;
@@ -8,11 +8,6 @@ interface LinkDataMap {
   playerId?: string;
 }
 
-export const CELL_TYPE = {
-    FULL: "full",
-    PART: "part",
-    NONE: "none"
-};
 export const MAP_LINK = {
   // Gets values from checkboxes and input fields to generate link
   generateLinkEvent(): void {
@@ -125,68 +120,73 @@ export const MAP_LINK = {
     inputField.value = Array.from(values).join(',');
   },
     // Synchronize the resource ID matrix to match the input
-    syncMatrixState(resourceIdInput) {
-        const inputIds = resourceIdInput.split(',');
-        const stateObject = MAP_LINK.buildStateMatrix(inputIds);
+    syncMatrixState(resourceIdInput: string ):void {
+        const inputIds:string[] = resourceIdInput.split(',');
+        const stateObject:StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds);
         MAP_LINK.setMatrixState(stateObject);
     },
-    buildStateMatrix(idsToCheck) {
+    buildStateMatrix(idsToCheck: string[]): StateMatrixEntry[]  {
 
         const idSet = new Set(idsToCheck.map(Number));
-        const result = [];
-        const matrix = CONFIG.RESOURCE_ID_MATRIX;
+        const result: StateMatrixEntry[] = [];
+        const matrix:ResourceIdMatrix = CONFIG.RESOURCE_ID_MATRIX;
 
         for (const [category, arrayOfArrays] of Object.entries(matrix)) {
-            arrayOfArrays.forEach((ids, index) => {
-                const matches = ids.filter(id => idSet.has(id)).length;
-                let status;
+            arrayOfArrays.forEach((ids:number[], index:number):void => {
+                const matches:number = ids.filter(id => idSet.has(id)).length;
+                let state;
                 if (matches === 0) {
-                    status = CELL_TYPE.NONE;
+                    state = CELL_TYPE.NONE;
                 } else if (matches === ids.length) {
-                    status = CELL_TYPE.FULL;
+                    state = CELL_TYPE.FULL;
                 } else {
-                    status = CELL_TYPE.PART;
+                    state = CELL_TYPE.PART;
                 }
 
                 result.push({
                     category,
                     col: index, // 0–9
-                    status
+                    state: state
                 });
             });
         }
-        return result
+        return result;
     },
-    cellButtonEvent(rowName, tier) {
-        const cellArea = document.querySelector(`[data-row="${rowName}"][data-tier="${tier}"]`);
-        const isActive = cellArea.classList.contains(CELL_TYPE.FULL) || cellArea.classList.contains(CELL_TYPE.PART);
-        const index = tier - 1;
+    cellButtonEvent(rowName:ResourceRowName, tier:number):void {
+        const cellArea:Element|null = document.querySelector(`[data-row="${rowName}"][data-tier="${tier}"]`);
+        if(!cellArea)return;
+        const isActive:boolean | undefined = cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
+        if(isActive===undefined)return;
+        const index:number = tier - 1;
 
         //get corresponding ids for this row/tier
-        const idValues = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[index];
+        const idValues:number[] = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[index];
         if(!idValues)return;
         //update input field
         idValues.forEach(id => this.syncInputValue(id, !isActive))
         //update matrix state
-        const inputField = document.getElementById('res-ids');
-        const fieldValues = inputField.value;
+        const inputField = document.getElementById('res-ids') as HTMLInputElement | null;
+        if(!inputField) return;
+        const fieldValues:string = inputField.value;
         MAP_LINK.syncMatrixState(fieldValues);
     },
-    // Uses StateMatrix to set states for all cells
-    setMatrixState(stateObject) {
-        const table = document.getElementById("id-matrix");
-
-        stateObject.forEach(entry => {
-            const cell = MAP_LINK.getCell(table, entry.category, entry.col + 1);
-            MAP_LINK.setCellState(cell, entry.status);
+    // Uses an array of stateMatrixEntries to set states for all cells
+    setMatrixState(stateObjectArray:StateMatrixEntry[]):void {
+        const table:HTMLElement|null = document.getElementById("id-matrix");
+        if(!table)return;
+        stateObjectArray.forEach(entry => {
+            const cell:HTMLElement|null|undefined = MAP_LINK.getCell(table, entry.category, entry.col + 1);
+            if(cell) {
+                MAP_LINK.setCellState(cell, entry.state);
+            }
         })
     },
-    getCell(table, row, tier) {
-        if (!table) return;
+    getCell(table:HTMLElement, row:string, tier:number):HTMLElement|null {
+        if (!table) return null;
 
         return document.querySelector(`[data-row="${row}"][data-tier="${tier}"]`);
     },
-    setCellState(cell, state) {
+    setCellState(cell:HTMLElement, state:CELL_TYPE):void {
         if (!cell || !Object.values(CELL_TYPE).includes(state)) return;
 
         cell.classList.remove(...Object.values(CELL_TYPE));

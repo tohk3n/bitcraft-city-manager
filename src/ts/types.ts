@@ -6,6 +6,7 @@
  * 2. Codex Types (recipe structures)
  * 3. Internal Domain Types (processed data)
  */
+import {CELL_TYPE} from "./config";
 
 // =============================================================================
 // 1. API RESPONSE TYPES
@@ -549,3 +550,9 @@ export interface CalculateOptions {
 // =============================================================================
 
 export type ResourceRowName = keyof ResourceIdMatrix;
+
+export type StateMatrixEntry = {
+    category: string;
+    col: number;
+    state: CELL_TYPE;
+};

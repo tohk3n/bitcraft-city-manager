@@ -4,14 +4,13 @@ import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
 import * as Planner from './planner/planner.js';
-import type {
+import {
   ClaimData,
   PlannerState,
-  PlannerResults,
-  ClaimCitizensResponse,
   EquipmentSlot,
   CalculateOptions
 } from './types.js';
+
 
 const log = createLogger('Main');
 
@@ -305,25 +304,8 @@ setupTabs();
 
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);
-const claimParam = params.get('claim');
+const claimParam:string|null = params.get('claim');
 if (claimParam && input) {
   input.value = claimParam;
   loadClaim();
-}
-
-async function loadMatrix() {
-  if (claimData.items) {
-    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
-    UI.renderIdMatrix(idMatrix);
-    return;
-  }
-
-  try {
-    const itemsData = await API.getItems();
-    claimData.items = itemsData.items || [];
-    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
-    UI.renderIdMatrix(idMatrix);
-  } catch (err) {
-    console.error(err);
-  }
 }

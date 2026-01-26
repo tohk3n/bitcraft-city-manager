@@ -1,11 +1,13 @@
 // Core UI - combines base utilities with view-specific modules
-import { CONFIG } from './config.js';
+import {CELL_TYPE, CONFIG} from './config.js';
 import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
 import type { ResourceIdMatrix } from './types.js';
+import {createLogger} from "./logger";
 
+const log = createLogger('UI');
 // Base UI utilities
 const BaseUI = {
   show(id: string): void {
@@ -17,12 +19,12 @@ const BaseUI = {
   },
 
   showError(message: string): void {
-    const el = document.getElementById('error-message');
+    const el = document.getElementById('error-message') as HTMLElement | null;
     if (el) el.textContent = message;
     this.show('error');
   },
 
-  clearError() {
+  clearError():void {
     this.hide('error');
   },
 
@@ -117,6 +119,7 @@ const BaseUI = {
     `;
 
     container.innerHTML = html;
+    log.debug(html);
     this.show('claim-header');
   },
 
@@ -159,7 +162,7 @@ const BaseUI = {
   },
 
   renderMapLinkComposer(): void {
-    const checkboxContainer = document.getElementById("checkbox-row");
+    const checkboxContainer:HTMLElement|null = document.getElementById("checkbox-row");
     if (!checkboxContainer) {
       return;
     }
@@ -168,8 +171,8 @@ const BaseUI = {
     }
 
     // Generate label and checkbox for region selection
-    let html = '';
-    for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
+    let html:string = '';
+    for (let i:number = 1; i <= CONFIG.REGION_COUNT; i++) {
       html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
     }
     checkboxContainer.innerHTML = html;
@@ -178,25 +181,29 @@ const BaseUI = {
     MAP_LINK.addCommaNumberValidation('res-ids');
     MAP_LINK.addCommaNumberValidation('player-ids');
 
-    const btn = document.getElementById("lnk-gen-btn");
-    const matrixBtn = document.getElementById("id-matrix-btn");
-    const matrixWrapper = document.getElementById('id-matrix');
+    const btn:HTMLElement|null = document.getElementById("lnk-gen-btn");
+    if(!btn)return;
+    const matrixBtn:HTMLElement|null = document.getElementById("id-matrix-btn");
+    if(!matrixBtn)return;
+    const matrixWrapper:HTMLElement|null = document.getElementById('id-matrix');
+    if(!matrixWrapper)return;
     this.renderResourceMatrix('id-matrix', CONFIG.RESOURCE_ID_MATRIX);
 
-    btn?.addEventListener("click", () => MAP_LINK.generateLinkEvent());
-    matrixBtn?.addEventListener("click", () => {
+    btn?.addEventListener("click", ():void => MAP_LINK.generateLinkEvent());
+
+    matrixBtn?.addEventListener("click", ():void => {
       matrixWrapper?.classList.toggle('hidden');
     });
 
-    const resInputField = document.getElementById('res-ids');
-    resInputField.addEventListener("blur", () => {
+    const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
+    resInputField?.addEventListener("blur", ():void => {
       MAP_LINK.syncMatrixState(resInputField.value);
     });
   },
 
   // Generates table with clickable fields to add to input field for resource selection
   renderResourceMatrix(containerId: string, resourceMatrix: ResourceIdMatrix): void {
-    const table = document.getElementById(containerId);
+    const table:HTMLElement|null = document.getElementById(containerId);
     if (!table) return;
 
     table.innerHTML = '';
@@ -220,38 +227,38 @@ const BaseUI = {
     table.appendChild(head);
 
     /* ---------- Body ---------- */
-    const body = document.createElement('tbody');
+    const body = document.createElement('tbody') as HTMLTableSectionElement;
     const rowNames = Object.keys(resourceMatrix) as (keyof ResourceIdMatrix)[];
     rowNames.forEach(rowName => {
-      const tr = document.createElement('tr');
+      const tr = document.createElement('tr') as HTMLTableRowElement;
 
       // Row label (not clickable)
-      const nameCell = document.createElement('td');
+      const nameCell = document.createElement('td') as HTMLTableCellElement;
       nameCell.textContent = rowName;
       nameCell.classList.add('row-label');
       tr.appendChild(nameCell);
 
       // T1 - T10 cells
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const td = document.createElement('td');
+      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+        const td = document.createElement('td') as HTMLTableCellElement;
         td.classList.add('matrix-cell');
 
           // clickable area
-          const cellArea = document.createElement('div');
+          const cellArea = document.createElement('div') as HTMLDivElement;
           cellArea.classList.add('matrix-cell-inner');
           // Needed for state of matrix
-          cellArea.classList.add('none');
+          cellArea.classList.add(CELL_TYPE.NONE);
           // data attributes for later logic
           cellArea.dataset.row = rowName;
-          cellArea.dataset.tier = t;
-          const currentIndex = t-1;
-          const idValues = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
+          cellArea.dataset.tier = String(t);
+          const currentIndex:number = t-1;
+          const idValues:number[] = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
           if(idValues.length > 0){
-            const cellButton = document.createElement('button');
+            const cellButton = document.createElement('button') as HTMLButtonElement;
             cellButton.textContent = '';
             cellButton.classList.add('matrix-cell-btn');
 
-            cellButton.addEventListener('click', () => {
+            cellButton.addEventListener('click', ():void => {
               MAP_LINK.cellButtonEvent(rowName,t);
             });
 
