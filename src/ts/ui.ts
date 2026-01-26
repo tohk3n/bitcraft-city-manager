@@ -5,7 +5,7 @@ import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
 import type { ResourceIdMatrix } from './types.js';
-import {createLogger} from "./logger";
+import {createLogger} from "./logger.js";
 
 const log = createLogger('UI');
 // Base UI utilities
