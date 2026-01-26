@@ -310,3 +310,20 @@ if (claimParam && input) {
   input.value = claimParam;
   loadClaim();
 }
+
+async function loadMatrix() {
+  if (claimData.items) {
+    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
+    UI.renderIdMatrix(idMatrix);
+    return;
+  }
+
+  try {
+    const itemsData = await API.getItems();
+    claimData.items = itemsData.items || [];
+    const idMatrix = MAP_LINK.mapResourcesToMatrix(claimData);
+    UI.renderIdMatrix(idMatrix);
+  } catch (err) {
+    console.error(err);
+  }
+}

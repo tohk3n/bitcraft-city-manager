@@ -187,6 +187,11 @@ const BaseUI = {
     matrixBtn?.addEventListener("click", () => {
       matrixWrapper?.classList.toggle('hidden');
     });
+
+    const resInputField = document.getElementById('res-ids');
+    resInputField.addEventListener("blur", () => {
+      MAP_LINK.syncMatrixState(resInputField.value);
+    });
   },
 
   // Generates table with clickable fields to add to input field for resource selection
@@ -231,33 +236,33 @@ const BaseUI = {
         const td = document.createElement('td');
         td.classList.add('matrix-cell');
 
-        // clickable area
-        const cellArea = document.createElement('div');
-        cellArea.classList.add('matrix-cell-inner');
+          // clickable area
+          const cellArea = document.createElement('div');
+          cellArea.classList.add('matrix-cell-inner');
+          // Needed for state of matrix
+          cellArea.classList.add('none');
+          // data attributes for later logic
+          cellArea.dataset.row = rowName;
+          cellArea.dataset.tier = t;
+          const currentIndex = t-1;
+          const idValues = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
+          if(idValues.length > 0){
+            const cellButton = document.createElement('button');
+            cellButton.textContent = '';
+            cellButton.classList.add('matrix-cell-btn');
 
-        // data attributes for later logic
-        cellArea.dataset.row = rowName;
-        cellArea.dataset.tier = String(t);
-        const currentIndex = t-1;
-        const idValues = resourceMatrix[rowName]?.[currentIndex] ?? [];
-        if(idValues.length > 0){
-          const cellButton = document.createElement('button');
-          cellButton.textContent = '';
-          cellButton.classList.add('matrix-cell-btn');
-
-          cellButton.addEventListener('click', () => {
-            MAP_LINK.cellButtonEvent(cellArea);
-          });
+            cellButton.addEventListener('click', () => {
+              MAP_LINK.cellButtonEvent(rowName,t);
+            });
 
           cellArea.appendChild(cellButton);
         }else{
           cellArea.classList.add('empty');
         }
 
-
-        td.appendChild(cellArea);
-        tr.appendChild(td);
-      }
+          td.appendChild(cellArea);
+          tr.appendChild(td);
+        }
 
       body.appendChild(tr);
     });

@@ -8,6 +8,11 @@ interface LinkDataMap {
   playerId?: string;
 }
 
+export const CELL_TYPE = {
+    FULL: "full",
+    PART: "part",
+    NONE: "none"
+};
 export const MAP_LINK = {
   // Gets values from checkboxes and input fields to generate link
   generateLinkEvent(): void {
@@ -15,15 +20,14 @@ export const MAP_LINK = {
     .from(document.querySelectorAll<HTMLInputElement>('#checkbox-row input[type="checkbox"]:checked'))
     .map(cb => cb.value);
 
-    const resIdsEl = document.getElementById("res-ids") as HTMLInputElement | null;
-    const playerIdsEl = document.getElementById("player-ids") as HTMLInputElement | null;
+      const resIdsEl = document.getElementById("res-ids") as HTMLInputElement | null;
+      const playerIdsEl = document.getElementById("player-ids") as HTMLInputElement | null;
 
-    let resourceIdInput = resIdsEl?.value || '';
-    let playerIdInput = playerIdsEl?.value || '';
-
-    // Remove possible trailing comma
-    resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
-    playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
+      let resourceIdInput = resIdsEl?.value || '';
+      let playerIdInput = playerIdsEl?.value || '';
+        // Remove possible trailing comma
+        resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
+        playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
 
     // Build the link
     const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput);
@@ -41,18 +45,18 @@ export const MAP_LINK = {
   generateDisplayLink(regions: string[], resourceIds: string, playerIds: string): string {
     const dataMap: LinkDataMap = {};
 
-    if (regions.length > 0) {
-      dataMap.regionId = regions.join(',');
-    }
-    if (resourceIds !== '') {
-      dataMap.resourceId = resourceIds;
-    }
-    if (playerIds !== '') {
-      dataMap.playerId = playerIds;
-    }
+        if (regions.length > 0) {
+            dataMap.regionId = regions.join(',');
+        }
+        if (resourceIds !== '') {
+            dataMap.resourceId = resourceIds;
+        }
+        if (playerIds !== '') {
+            dataMap.playerId = playerIds;
+        }
 
-    let displayUrl = CONFIG.MAP_BASE_URL;
-    let first = true;
+        let displayUrl = CONFIG.MAP_BASE_URL;
+        let first = true;
 
     // First value has ? prefix, subsequent use &
     for (const [key, value] of Object.entries(dataMap)) {
@@ -84,14 +88,14 @@ export const MAP_LINK = {
     const field = document.getElementById(inputId) as HTMLInputElement | null;
     if (!field) return;
 
-    field.addEventListener('input', () => {
-      let value = field.value;
+        field.addEventListener('input', () => {
+            let value = field.value;
 
-      value = value
-      .replace(/[^0-9,]/g, '')  // only numbers and commas
-      .replace(/^,+/, '')       // no leading commas
-      .replace(/\s*,\s*/g, ',') // no spaces around commas
-      .replace(/,{2,}/g, ',');  // no duplicate commas
+            value = value
+                .replace(/[^0-9,]/g, '')  // only numbers and commas
+                .replace(/^,+/, '')       // no leading commas
+                .replace(/\s*,\s*/g, ',') // no spaces around commas
+                .replace(/,{2,}/g, ',');  // no duplicate commas
 
       field.value = value;
     });
@@ -120,32 +124,72 @@ export const MAP_LINK = {
     }
     inputField.value = Array.from(values).join(',');
   },
+    // Synchronize the resource ID matrix to match the input
+    syncMatrixState(resourceIdInput) {
+        const inputIds = resourceIdInput.split(',');
+        const stateObject = MAP_LINK.buildStateMatrix(inputIds);
+        MAP_LINK.setMatrixState(stateObject);
+    },
+    buildStateMatrix(idsToCheck) {
 
-  cellButtonEvent(cellArea: HTMLElement | null): void {
-    if (!cellArea) return;
-    if (!cellArea.dataset.row || !cellArea.dataset.tier) return;
+        const idSet = new Set(idsToCheck.map(Number));
+        const result = [];
+        const matrix = CONFIG.RESOURCE_ID_MATRIX;
 
-    const isActive = cellArea.classList.contains('active');
+        for (const [category, arrayOfArrays] of Object.entries(matrix)) {
+            arrayOfArrays.forEach((ids, index) => {
+                const matches = ids.filter(id => idSet.has(id)).length;
+                let status;
+                if (matches === 0) {
+                    status = CELL_TYPE.NONE;
+                } else if (matches === ids.length) {
+                    status = CELL_TYPE.FULL;
+                } else {
+                    status = CELL_TYPE.PART;
+                }
 
-    const rowName = cellArea.dataset.row as ResourceRowName;
-    const tier = parseInt(cellArea.dataset.tier, 10);
-    const index = tier - 1;
+                result.push({
+                    category,
+                    col: index, // 0–9
+                    status
+                });
+            });
+        }
+        return result
+    },
+    cellButtonEvent(rowName, tier) {
+        const cellArea = document.querySelector(`[data-row="${rowName}"][data-tier="${tier}"]`);
+        const isActive = cellArea.classList.contains(CELL_TYPE.FULL) || cellArea.classList.contains(CELL_TYPE.PART);
+        const index = tier - 1;
 
-    const matrix = CONFIG.RESOURCE_ID_MATRIX;
-    if (!matrix[rowName]) return;
-    if (!matrix[rowName][index]) return;
+        //get corresponding ids for this row/tier
+        const idValues = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[index];
+        if(!idValues)return;
+        //update input field
+        idValues.forEach(id => this.syncInputValue(id, !isActive))
+        //update matrix state
+        const inputField = document.getElementById('res-ids');
+        const fieldValues = inputField.value;
+        MAP_LINK.syncMatrixState(fieldValues);
+    },
+    // Uses StateMatrix to set states for all cells
+    setMatrixState(stateObject) {
+        const table = document.getElementById("id-matrix");
 
-    // Get corresponding ids for this row/tier
-    const idValues = matrix[rowName][index];
+        stateObject.forEach(entry => {
+            const cell = MAP_LINK.getCell(table, entry.category, entry.col + 1);
+            MAP_LINK.setCellState(cell, entry.status);
+        })
+    },
+    getCell(table, row, tier) {
+        if (!table) return;
 
-    // Update input field
-    idValues.forEach(id => this.syncInputValue(id, !isActive));
+        return document.querySelector(`[data-row="${row}"][data-tier="${tier}"]`);
+    },
+    setCellState(cell, state) {
+        if (!cell || !Object.values(CELL_TYPE).includes(state)) return;
 
-    // Update state
-    if (!isActive) {
-      cellArea.classList.add('active');
-    } else {
-      cellArea.classList.remove('active');
+        cell.classList.remove(...Object.values(CELL_TYPE));
+        cell.classList.add(state);
     }
-  }
 };

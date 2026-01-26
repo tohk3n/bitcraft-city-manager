@@ -4,7 +4,7 @@ You have 47 chests. Are there enough rocks in them? **NOBODY KNOWS.**
 
 Until now. Now we know **HOW MANY ROCKS**.
 
-**WE STILL DO NOT IF IT IS ENOUGH!**
+**WE STILL DO NOT KNOW IF IT IS ENOUGH!**
 
 ## The Sacred Features
 
