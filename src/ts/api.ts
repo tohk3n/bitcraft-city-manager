@@ -2,6 +2,7 @@
 import { createLogger } from './logger.js';
 import type {
   ClaimResponse,
+  ClaimSearchResponse,
   ClaimInventoriesResponse,
   ClaimCitizensResponse,
   ClaimBuildingsResponse,
@@ -28,6 +29,10 @@ export const API = {
     done();
     log.data(`Response ${path}`, data);
     return data as T;
+  },
+
+  searchClaims(query: string, limit: number = 10): Promise<ClaimSearchResponse> {
+    return this.fetch<ClaimSearchResponse>(`/claims?q=${encodeURIComponent(query)}&limit=${limit}`);
   },
 
   getClaim(claimId: string): Promise<ClaimResponse> {

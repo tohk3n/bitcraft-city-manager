@@ -4,6 +4,7 @@ import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
 import * as Planner from './planner/planner.js';
+import * as ClaimSearch from './claim-search.js';
 import {
   ClaimData,
   PlannerState,
@@ -294,17 +295,27 @@ function setupTabs(): void {
   });
 }
 
-// Event listeners
+// --- Initialization ---
+
+// Claim ID input handlers
 loadBtn?.addEventListener('click', loadClaim);
 input?.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') loadClaim();
+});
+
+// City name autocomplete
+ClaimSearch.init({
+  onSelect: (claimId) => {
+    if (input) input.value = claimId;
+    loadClaim();
+  }
 });
 
 setupTabs();
 
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);
-const claimParam:string|null = params.get('claim');
+const claimParam: string | null = params.get('claim');
 if (claimParam && input) {
   input.value = claimParam;
   loadClaim();
