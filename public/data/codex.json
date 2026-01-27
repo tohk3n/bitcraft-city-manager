@@ -1,0 +1,758 @@
+{
+  "version": 1,
+  "generated": "2026-01-27",
+  "description": "Codex tier requirements parsed from source text files",
+  "tiers": {
+    "10": {
+      "name": "Flawless Codex",
+      "tier": 10,
+      "researches": [
+        {
+          "id": "Flawless Stone Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Brick:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Wood Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Plank:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Metal Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Astralite Ingot:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Leather Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Leather:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Cloth Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Cloth:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "1": {
+      "name": "Beginner's Codex",
+      "tier": 1,
+      "researches": [
+        {
+          "id": "Beginner's Stone Research",
+          "tier": 1,
+          "inputs": [
+            {
+              "ref": "Refined Rough Brick:1",
+              "qty": 1
+            },
+            {
+              "ref": "Beginner's Study Journal:1",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Beginner's Wood Research",
+          "tier": 1,
+          "inputs": [
+            {
+              "ref": "Refined Rough Plank:1",
+              "qty": 1
+            },
+            {
+              "ref": "Beginner's Study Journal:1",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Beginner's Metal Research",
+          "tier": 1,
+          "inputs": [
+            {
+              "ref": "Refined Ferralith Ingot:1",
+              "qty": 1
+            },
+            {
+              "ref": "Beginner's Study Journal:1",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Beginner's Leather Research",
+          "tier": 1,
+          "inputs": [
+            {
+              "ref": "Refined Rough Leather:1",
+              "qty": 1
+            },
+            {
+              "ref": "Beginner's Study Journal:1",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Beginner's Cloth Research",
+          "tier": 1,
+          "inputs": [
+            {
+              "ref": "Refined Rough Cloth:1",
+              "qty": 1
+            },
+            {
+              "ref": "Beginner's Study Journal:1",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "2": {
+      "name": "Novice's Codex",
+      "tier": 2,
+      "researches": [
+        {
+          "id": "Novice's Stone Research",
+          "tier": 2,
+          "inputs": [
+            {
+              "ref": "Refined Simple Brick:2",
+              "qty": 1
+            },
+            {
+              "ref": "Novice Study Journal:2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Novice's Wood Research",
+          "tier": 2,
+          "inputs": [
+            {
+              "ref": "Refined Simple Plank:2",
+              "qty": 1
+            },
+            {
+              "ref": "Novice Study Journal:2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Novice's Metal Research",
+          "tier": 2,
+          "inputs": [
+            {
+              "ref": "Refined Pyrelite Ingot:2",
+              "qty": 1
+            },
+            {
+              "ref": "Novice Study Journal:2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Novice's Leather Research",
+          "tier": 2,
+          "inputs": [
+            {
+              "ref": "Refined Simple Leather:2",
+              "qty": 1
+            },
+            {
+              "ref": "Novice Study Journal:2",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Novice's Cloth Research",
+          "tier": 2,
+          "inputs": [
+            {
+              "ref": "Refined Simple Cloth:2",
+              "qty": 1
+            },
+            {
+              "ref": "Novice Study Journal:2",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "3": {
+      "name": "Essential Codex",
+      "tier": 3,
+      "researches": [
+        {
+          "id": "Essential Stone Research",
+          "tier": 3,
+          "inputs": [
+            {
+              "ref": "Refined Sturdy Brick:3",
+              "qty": 1
+            },
+            {
+              "ref": "Essential Study Journal:3",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Essential Wood Research",
+          "tier": 3,
+          "inputs": [
+            {
+              "ref": "Refined Sturdy Plank:3",
+              "qty": 1
+            },
+            {
+              "ref": "Essential Study Journal:3",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Essential Metal Research",
+          "tier": 3,
+          "inputs": [
+            {
+              "ref": "Refined Emarium Ingot:3",
+              "qty": 1
+            },
+            {
+              "ref": "Essential Study Journal:3",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Essential Leather Research",
+          "tier": 3,
+          "inputs": [
+            {
+              "ref": "Refined Sturdy Leather:3",
+              "qty": 1
+            },
+            {
+              "ref": "Essential Study Journal:3",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Essential Cloth Research",
+          "tier": 3,
+          "inputs": [
+            {
+              "ref": "Refined Sturdy Cloth:3",
+              "qty": 1
+            },
+            {
+              "ref": "Essential Study Journal:3",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "4": {
+      "name": "Proficient Codex",
+      "tier": 4,
+      "researches": [
+        {
+          "id": "Proficient Stone Research",
+          "tier": 4,
+          "inputs": [
+            {
+              "ref": "Refined Fine Brick:4",
+              "qty": 1
+            },
+            {
+              "ref": "Proficient Study Journal:4",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Proficient Wood Research",
+          "tier": 4,
+          "inputs": [
+            {
+              "ref": "Refined Fine Plank:4",
+              "qty": 1
+            },
+            {
+              "ref": "Proficient Study Journal:4",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Proficient Metal Research",
+          "tier": 4,
+          "inputs": [
+            {
+              "ref": "Refined Elenvar Ingot:4",
+              "qty": 1
+            },
+            {
+              "ref": "Proficient Study Journal:4",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Proficient Leather Research",
+          "tier": 4,
+          "inputs": [
+            {
+              "ref": "Refined Fine Leather:4",
+              "qty": 1
+            },
+            {
+              "ref": "Proficient Study Journal:4",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Proficient Cloth Research",
+          "tier": 4,
+          "inputs": [
+            {
+              "ref": "Refined Fine Cloth:4",
+              "qty": 1
+            },
+            {
+              "ref": "Proficient Study Journal:4",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "5": {
+      "name": "Advanced Codex",
+      "tier": 5,
+      "researches": [
+        {
+          "id": "Advanced Stone Research",
+          "tier": 5,
+          "inputs": [
+            {
+              "ref": "Refined Exquisite Brick:5",
+              "qty": 1
+            },
+            {
+              "ref": "Advanced Study Journal:5",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Advanced Wood Research",
+          "tier": 5,
+          "inputs": [
+            {
+              "ref": "Refined Exquisite Plank:5",
+              "qty": 1
+            },
+            {
+              "ref": "Advanced Study Journal:5",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Advanced Metal Research",
+          "tier": 5,
+          "inputs": [
+            {
+              "ref": "Refined Luminite Ingot:5",
+              "qty": 1
+            },
+            {
+              "ref": "Advanced Study Journal:5",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Advanced Leather Research",
+          "tier": 5,
+          "inputs": [
+            {
+              "ref": "Refined Exquisite Leather:5",
+              "qty": 1
+            },
+            {
+              "ref": "Advanced Study Journal:5",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Advanced Cloth Research",
+          "tier": 5,
+          "inputs": [
+            {
+              "ref": "Refined Exquisite Cloth:5",
+              "qty": 1
+            },
+            {
+              "ref": "Advanced Study Journal:5",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "6": {
+      "name": "Comprehensive Codex",
+      "tier": 6,
+      "researches": [
+        {
+          "id": "Comprehensive Stone Research",
+          "tier": 6,
+          "inputs": []
+        },
+        {
+          "id": "Comprehensive Wood Research",
+          "tier": 6,
+          "inputs": [
+            {
+              "ref": "Refined Peerless Plank:6",
+              "qty": 1
+            },
+            {
+              "ref": "Comprehensive Study Journal:6",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Comprehensive Metal Research",
+          "tier": 6,
+          "inputs": [
+            {
+              "ref": "Refined Rathium Ingot:6",
+              "qty": 1
+            },
+            {
+              "ref": "Comprehensive Study Journal:6",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Comprehensive Leather Research",
+          "tier": 6,
+          "inputs": [
+            {
+              "ref": "Refined Peerless Leather:6",
+              "qty": 1
+            },
+            {
+              "ref": "Comprehensive Study Journal:6",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Comprehensive Cloth Research",
+          "tier": 6,
+          "inputs": [
+            {
+              "ref": "Refined Peerless Cloth:6",
+              "qty": 1
+            },
+            {
+              "ref": "Comprehensive Study Journal:6",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "7": {
+      "name": "Ornate Codex",
+      "tier": 7,
+      "researches": [
+        {
+          "id": "Ornate Stone Research",
+          "tier": 7,
+          "inputs": [
+            {
+              "ref": "Refined Ornate Brick:7",
+              "qty": 1
+            },
+            {
+              "ref": "Ornate Study Journal:7",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Ornate Wood Research",
+          "tier": 7,
+          "inputs": [
+            {
+              "ref": "Refined Ornate Plank:7",
+              "qty": 1
+            },
+            {
+              "ref": "Ornate Study Journal:7",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Ornate Metal Research",
+          "tier": 7,
+          "inputs": [
+            {
+              "ref": "Refined Aurumite Ingot:7",
+              "qty": 1
+            },
+            {
+              "ref": "Ornate Study Journal:7",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Ornate Leather Research",
+          "tier": 7,
+          "inputs": [
+            {
+              "ref": "Refined Ornate Leather:7",
+              "qty": 1
+            },
+            {
+              "ref": "Ornate Study Journal:7",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Ornate Cloth Research",
+          "tier": 7,
+          "inputs": [
+            {
+              "ref": "Refined Ornate Cloth:7",
+              "qty": 1
+            },
+            {
+              "ref": "Ornate Study Journal:7",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "8": {
+      "name": "Pristine Codex",
+      "tier": 8,
+      "researches": [
+        {
+          "id": "Pristine Stone Research",
+          "tier": 8,
+          "inputs": [
+            {
+              "ref": "Refined Pristine Brick:8",
+              "qty": 1
+            },
+            {
+              "ref": "Pristine Study Journal:8",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Pristine Wood Research",
+          "tier": 8,
+          "inputs": [
+            {
+              "ref": "Refined Pristine Plank:8",
+              "qty": 1
+            },
+            {
+              "ref": "Pristine Study Journal:8",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Pristine Metal Research",
+          "tier": 8,
+          "inputs": [
+            {
+              "ref": "Refined Celestium Ingot:8",
+              "qty": 1
+            },
+            {
+              "ref": "Pristine Study Journal:8",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Pristine Leather Research",
+          "tier": 8,
+          "inputs": [
+            {
+              "ref": "Refined Pristine Leather:8",
+              "qty": 1
+            },
+            {
+              "ref": "Pristine Study Journal:8",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Pristine Cloth Research",
+          "tier": 8,
+          "inputs": [
+            {
+              "ref": "Refined Pristine Cloth:8",
+              "qty": 1
+            },
+            {
+              "ref": "Pristine Study Journal:8",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "9": {
+      "name": "Magnificient Codex",
+      "tier": 9,
+      "researches": [
+        {
+          "id": "Magnificient Stone Research",
+          "tier": 9,
+          "inputs": [
+            {
+              "ref": "Refined Magnificient Brick:9",
+              "qty": 1
+            },
+            {
+              "ref": "Magnificient Study Journal:9",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Magnificient Wood Research",
+          "tier": 9,
+          "inputs": [
+            {
+              "ref": "Refined Magnificient Plank:9",
+              "qty": 1
+            },
+            {
+              "ref": "Magnificient Study Journal:9",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Magnificient Metal Research",
+          "tier": 9,
+          "inputs": [
+            {
+              "ref": "Refined Umbracite Ingot:9",
+              "qty": 1
+            },
+            {
+              "ref": "Magnificient Study Journal:9",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Magnificient Leather Research",
+          "tier": 9,
+          "inputs": [
+            {
+              "ref": "Refined Magnificient Leather:9",
+              "qty": 1
+            },
+            {
+              "ref": "Magnificient Study Journal:9",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Magnificient Cloth Research",
+          "tier": 9,
+          "inputs": [
+            {
+              "ref": "Refined Magnificient Cloth:9",
+              "qty": 1
+            },
+            {
+              "ref": "Magnificient Study Journal:9",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
