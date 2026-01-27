@@ -1,20 +1,19 @@
 // Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
-import { CONFIG } from './config.js';
+import {CONFIG} from './config.js';
 import type {
-  InventoryProcessResult,
-  MaterialMatrix,
-  MaterialCategory,
-  FoodItems,
-  FoodItem,
-  ScholarByTier,
-  TierQuantities,
-  ProcessedInventory,
   CraftingStationsResult,
+  FoodItem,
+  FoodItems,
+  InventoryItem,
+  InventoryProcessResult,
+  MaterialCategory,
+  MaterialMatrix,
+  ProcessedInventory,
+  ScholarByTier,
   StationsByName,
   TagGroup,
-  InventoryItem,
-  BuildingBreakdown
+  TierQuantities
 } from './types.js';
 
 export const DashboardUI = {
@@ -46,7 +45,7 @@ export const DashboardUI = {
     let globalMax = 0;
     let grandTotal = 0;
     for (const cat of categories) {
-      for (let t = 1; t <= 7; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         const val = matrix[cat][t as keyof TierQuantities] || 0;
         if (val > globalMax) globalMax = val;
         grandTotal += val;
@@ -55,10 +54,10 @@ export const DashboardUI = {
 
     // Calculate row and column totals
     const rowTotals: Record<string, number> = {};
-    const colTotals: TierQuantities = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+    const colTotals: TierQuantities = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
     for (const cat of categories) {
       rowTotals[cat] = 0;
-      for (let t = 1; t <= 7; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         const tier = t as keyof TierQuantities;
         const val = matrix[cat][tier] || 0;
         rowTotals[cat] += val;
@@ -69,8 +68,8 @@ export const DashboardUI = {
     let html = '<div class="matrix-header"><h3>Raw Materials</h3><span class="total">' + grandTotal.toLocaleString() + ' total</span></div>';
     html += '<table class="material-matrix"><thead><tr>';
     html += '<th></th>';
-    for (let t = 1; t <= 7; t++) {
-      const label = t === 7 ? 'T7+' : `T${t}`;
+    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+      const label = t === CONFIG.MAX_TIER ? 'T10' : `T${t}`;
       html += `<th>${label}</th>`;
     }
     html += '<th class="row-total">Total</th>';
@@ -81,7 +80,7 @@ export const DashboardUI = {
       if (rowTotals[cat] === 0) continue;
 
       html += `<tr><td class="cat-label">${cat}</td>`;
-      for (let t = 1; t <= 7; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         const val = matrix[cat][t as keyof TierQuantities] || 0;
         const intensity = globalMax > 0 ? val / globalMax : 0;
         const bgStyle = val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
@@ -94,7 +93,7 @@ export const DashboardUI = {
 
     // Column totals row
     html += '<tr class="col-totals"><td class="cat-label">Total</td>';
-    for (let t = 1; t <= 7; t++) {
+    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
       const val = colTotals[t as keyof TierQuantities];
       const displayVal = val > 0 ? val.toLocaleString() : '-';
       html += `<td class="matrix-cell">${displayVal}</td>`;
@@ -154,10 +153,10 @@ export const DashboardUI = {
       <div class="quick-body">
       <table>
       `;
-      for (let t = 1; t <= 7; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         const qty = scholarByTier[t as keyof ScholarByTier] || 0;
         if (qty > 0) {
-          const label = t === 7 ? 'T7+' : `T${t}`;
+          const label = t === CONFIG.MAX_TIER ? 'T10' : `T${t}`;
           html += `<tr><td><span class="tier-badge">${label}</span> Items</td><td class="qty">${qty.toLocaleString()}</td></tr>`;
         }
       }
@@ -197,7 +196,7 @@ export const DashboardUI = {
       out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
       out += '<table class="material-matrix"><thead><tr>';
       out += '<th></th>';
-      for (let t = 1; t <= 7; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         out += `<th>T${t}</th>`;
       }
       out += '<th class="row-total">Total</th>';
@@ -206,7 +205,7 @@ export const DashboardUI = {
       for (const name of names) {
         const station = stations[name];
         out += `<tr><td class="cat-label">${name}</td>`;
-        for (let t = 1; t <= 7; t++) {
+        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
           const val = station.tiers[t as keyof TierQuantities] || 0;
           const displayVal = val > 0 ? String(val) : '—';
           const bgStyle = val > 0 ? 'background: rgba(88, 166, 255, 0.2);' : '';
