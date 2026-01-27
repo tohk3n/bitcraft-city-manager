@@ -575,3 +575,80 @@ export type StateMatrixEntry = {
     col: number;
     state: CELL_TYPE;
 };
+
+
+
+// =============================================================================
+// 11. NORMALIZED RECIPE DATA (v2)
+// =============================================================================
+
+// --- Recipe Format ---
+
+export interface RecipeInput {
+    ref: string;    // "Item Name:tier" format, e.g. "Exquisite Brick:5"
+    qty: number;
+}
+
+/**
+ * Recipe types determine node behavior in the crafting tree:
+ * - gathered: Raw resources, leaf nodes with no inputs
+ * - intermediate: Crafted items consumed in the same chain
+ * - refined: Target materials for research completion
+ * - research: Codex research goals (top-level nodes)
+ * - study: Study journals and stone carvings
+ */
+export type RecipeType =
+| 'gathered'
+| 'intermediate'
+| 'refined'
+| 'research'
+| 'study';
+
+export interface Recipe {
+    name: string;
+    tier: number;
+    type: RecipeType;
+    /**
+     * Number of items produced per craft.
+     * Critical for quantity calculations - e.g. 1 Stone Chunk yields 18 Pebbles.
+     * The old nested format baked this into every qty; normalized format states it once.
+     */
+    yields: number;
+    inputs: RecipeInput[];
+}
+
+export interface RecipesFile {
+    version: number;
+    generated: string;
+    description: string;
+    stats: {
+        totalRecipes: number;
+        gathered: number;
+        processed: number;
+        refined: number;
+        research: number;
+    };
+    recipes: Record<string, Recipe>;  // Keyed by "name:tier"
+}
+
+// --- Codex Format ---
+
+export interface CodexResearch {
+    id: string;     // e.g. "Beginner's Stone Research"
+    tier: number;
+    inputs: RecipeInput[];
+}
+
+export interface CodexTier {
+    name: string;   // e.g. "Beginner's Codex"
+    tier: number;
+    researches: CodexResearch[];
+}
+
+export interface CodexFile {
+    version: number;
+    generated: string;
+    description: string;
+    tiers: Record<string, CodexTier>;  // Keyed by tier number as string
+}
+

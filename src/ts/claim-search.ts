@@ -1,8 +1,5 @@
 /**
  * Claim Search - City name autocomplete
- *
- * Single responsibility: search for claims by name and handle selection.
- * Pure UI component with callback-based communication to parent.
  */
 import { createLogger } from './logger.js';
 import { API } from './api.js';
