@@ -390,7 +390,16 @@
         {
           "id": "Comprehensive Stone Research",
           "tier": 6,
-          "inputs": []
+          "inputs": [
+            {
+              "ref": "Refined Peerless Brick:6",
+              "qty": 1
+            },
+            {
+              "ref": "Comprehensive Study Journal:6",
+              "qty": 1
+            }
+          ]
         },
         {
           "id": "Comprehensive Wood Research",
@@ -603,39 +612,39 @@
       ]
     },
     "9": {
-      "name": "Magnificient Codex",
+      "name": "Magnificent Codex",
       "tier": 9,
       "researches": [
         {
-          "id": "Magnificient Stone Research",
+          "id": "Magnificent Stone Research",
           "tier": 9,
           "inputs": [
             {
-              "ref": "Refined Magnificient Brick:9",
+              "ref": "Refined Magnificent Brick:9",
               "qty": 1
             },
             {
-              "ref": "Magnificient Study Journal:9",
+              "ref": "Magnificent Study Journal:9",
               "qty": 1
             }
           ]
         },
         {
-          "id": "Magnificient Wood Research",
+          "id": "Magnificent Wood Research",
           "tier": 9,
           "inputs": [
             {
-              "ref": "Refined Magnificient Plank:9",
+              "ref": "Refined Magnificent Plank:9",
               "qty": 1
             },
             {
-              "ref": "Magnificient Study Journal:9",
+              "ref": "Magnificent Study Journal:9",
               "qty": 1
             }
           ]
         },
         {
-          "id": "Magnificient Metal Research",
+          "id": "Magnificent Metal Research",
           "tier": 9,
           "inputs": [
             {
@@ -643,35 +652,35 @@
               "qty": 1
             },
             {
-              "ref": "Magnificient Study Journal:9",
+              "ref": "Magnificent Study Journal:9",
               "qty": 1
             }
           ]
         },
         {
-          "id": "Magnificient Leather Research",
+          "id": "Magnificent Leather Research",
           "tier": 9,
           "inputs": [
             {
-              "ref": "Refined Magnificient Leather:9",
+              "ref": "Refined Magnificent Leather:9",
               "qty": 1
             },
             {
-              "ref": "Magnificient Study Journal:9",
+              "ref": "Magnificent Study Journal:9",
               "qty": 1
             }
           ]
         },
         {
-          "id": "Magnificient Cloth Research",
+          "id": "Magnificent Cloth Research",
           "tier": 9,
           "inputs": [
             {
-              "ref": "Refined Magnificient Cloth:9",
+              "ref": "Refined Magnificent Cloth:9",
               "qty": 1
             },
             {
-              "ref": "Magnificient Study Journal:9",
+              "ref": "Magnificent Study Journal:9",
               "qty": 1
             }
           ]

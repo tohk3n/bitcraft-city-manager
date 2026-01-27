@@ -7681,34 +7681,34 @@
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Stone Research:9": {
-      "name": "Magnificient Stone Research",
+    "Magnificent Stone Research:9": {
+      "name": "Magnificent Stone Research",
       "tier": 9,
       "type": "research",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Refined Magnificient Brick:9",
+          "ref": "Refined Magnificent Brick:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Study Journal:9",
+          "ref": "Magnificent Study Journal:9",
           "qty": 1
         }
       ]
     },
-    "Refined Magnificient Brick:9": {
-      "name": "Refined Magnificient Brick",
+    "Refined Magnificent Brick:9": {
+      "name": "Refined Magnificent Brick",
       "tier": 9,
       "type": "refined",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Brick:9",
+          "ref": "Magnificent Brick:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Firesand:9",
+          "ref": "Magnificent Firesand:9",
           "qty": 1
         },
         {
@@ -7717,18 +7717,18 @@
         }
       ]
     },
-    "Magnificient Brick:9": {
-      "name": "Magnificient Brick",
+    "Magnificent Brick:9": {
+      "name": "Magnificent Brick",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Unfired Magnificient Brick:9",
+          "ref": "Unfired Magnificent Brick:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Wood Log:9",
+          "ref": "Magnificent Wood Log:9",
           "qty": 1
         },
         {
@@ -7737,137 +7737,137 @@
         }
       ]
     },
-    "Unfired Magnificient Brick:9": {
-      "name": "Unfired Magnificient Brick",
+    "Unfired Magnificent Brick:9": {
+      "name": "Unfired Magnificent Brick",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Potter's Mix:9",
+          "ref": "Magnificent Potter's Mix:9",
           "qty": 5
         }
       ]
     },
-    "Magnificient Potter's Mix:9": {
-      "name": "Magnificient Potter's Mix",
+    "Magnificent Potter's Mix:9": {
+      "name": "Magnificent Potter's Mix",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Pebbles:9",
+          "ref": "Magnificent Pebbles:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Clay Lump:9",
+          "ref": "Magnificent Clay Lump:9",
           "qty": 2
         }
       ]
     },
-    "Magnificient Pebbles:9": {
-      "name": "Magnificient Pebbles",
+    "Magnificent Pebbles:9": {
+      "name": "Magnificent Pebbles",
       "tier": 9,
       "type": "intermediate",
       "yields": 18,
       "inputs": [
         {
-          "ref": "Magnificient Stone Chunk:9",
+          "ref": "Magnificent Stone Chunk:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Stone Chunk:9": {
-      "name": "Magnificient Stone Chunk",
+    "Magnificent Stone Chunk:9": {
+      "name": "Magnificent Stone Chunk",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Clay Lump:9": {
-      "name": "Magnificient Clay Lump",
+    "Magnificent Clay Lump:9": {
+      "name": "Magnificent Clay Lump",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Wood Log:9": {
-      "name": "Magnificient Wood Log",
+    "Magnificent Wood Log:9": {
+      "name": "Magnificent Wood Log",
       "tier": 9,
       "type": "intermediate",
       "yields": 6,
       "inputs": [
         {
-          "ref": "Magnificient Trunk:9",
+          "ref": "Magnificent Trunk:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Trunk:9": {
-      "name": "Magnificient Trunk",
+    "Magnificent Trunk:9": {
+      "name": "Magnificent Trunk",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Firesand:9": {
-      "name": "Magnificient Firesand",
+    "Magnificent Firesand:9": {
+      "name": "Magnificent Firesand",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Gypsite:9",
+          "ref": "Magnificent Gypsite:9",
           "qty": 1
         },
         {
-          "ref": "Crushed Magnificient Shells:9",
+          "ref": "Crushed Magnificent Shells:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Gypsite:9": {
-      "name": "Magnificient Gypsite",
+    "Magnificent Gypsite:9": {
+      "name": "Magnificent Gypsite",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Crushed Magnificient Shells:9": {
-      "name": "Crushed Magnificient Shells",
+    "Crushed Magnificent Shells:9": {
+      "name": "Crushed Magnificent Shells",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Baitfish:9",
+          "ref": "Magnificent Baitfish:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Baitfish:9": {
-      "name": "Magnificient Baitfish",
+    "Magnificent Baitfish:9": {
+      "name": "Magnificent Baitfish",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Study Journal:9": {
-      "name": "Magnificient Study Journal",
+    "Magnificent Study Journal:9": {
+      "name": "Magnificent Study Journal",
       "tier": 9,
       "type": "study",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Parchment:9",
+          "ref": "Magnificent Parchment:9",
           "qty": 2
         },
         {
-          "ref": "Magnificient Ink:9",
+          "ref": "Magnificent Ink:9",
           "qty": 2
         },
         {
-          "ref": "Magnificient Stone Carvings:9",
+          "ref": "Magnificent Stone Carvings:9",
           "qty": 1
         },
         {
@@ -7876,119 +7876,119 @@
         }
       ]
     },
-    "Magnificient Parchment:9": {
-      "name": "Magnificient Parchment",
+    "Magnificent Parchment:9": {
+      "name": "Magnificent Parchment",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Tree Bark:9",
+          "ref": "Magnificent Tree Bark:9",
           "qty": 2
         }
       ]
     },
-    "Magnificient Tree Bark:9": {
-      "name": "Magnificient Tree Bark",
+    "Magnificent Tree Bark:9": {
+      "name": "Magnificent Tree Bark",
       "tier": 9,
       "type": "intermediate",
       "yields": 4,
       "inputs": [
         {
-          "ref": "Magnificient Trunk:9",
+          "ref": "Magnificent Trunk:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Ink:9": {
-      "name": "Magnificient Ink",
+    "Magnificent Ink:9": {
+      "name": "Magnificent Ink",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Pigment:9",
+          "ref": "Magnificent Pigment:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Fish Oil:9",
+          "ref": "Magnificent Fish Oil:9",
           "qty": 2
         }
       ]
     },
-    "Magnificient Pigment:9": {
-      "name": "Magnificient Pigment",
+    "Magnificent Pigment:9": {
+      "name": "Magnificent Pigment",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Flower:9",
+          "ref": "Magnificent Flower:9",
           "qty": 5
         }
       ]
     },
-    "Magnificient Flower:9": {
-      "name": "Magnificient Flower",
+    "Magnificent Flower:9": {
+      "name": "Magnificent Flower",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Fish Oil:9": {
-      "name": "Magnificient Fish Oil",
+    "Magnificent Fish Oil:9": {
+      "name": "Magnificent Fish Oil",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Lakefish:9",
+          "ref": "Magnificent Lakefish:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Lakefish:9": {
-      "name": "Magnificient Lakefish",
+    "Magnificent Lakefish:9": {
+      "name": "Magnificent Lakefish",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Stone Carvings:9": {
-      "name": "Magnificient Stone Carvings",
+    "Magnificent Stone Carvings:9": {
+      "name": "Magnificent Stone Carvings",
       "tier": 9,
       "type": "study",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Wood Research:9": {
-      "name": "Magnificient Wood Research",
+    "Magnificent Wood Research:9": {
+      "name": "Magnificent Wood Research",
       "tier": 9,
       "type": "research",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Refined Magnificient Plank:9",
+          "ref": "Refined Magnificent Plank:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Study Journal:9",
+          "ref": "Magnificent Study Journal:9",
           "qty": 1
         }
       ]
     },
-    "Refined Magnificient Plank:9": {
-      "name": "Refined Magnificient Plank",
+    "Refined Magnificent Plank:9": {
+      "name": "Refined Magnificent Plank",
       "tier": 9,
       "type": "refined",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Plank:9",
+          "ref": "Magnificent Plank:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Wood Polish:9",
+          "ref": "Magnificent Wood Polish:9",
           "qty": 1
         },
         {
@@ -7997,14 +7997,14 @@
         }
       ]
     },
-    "Magnificient Plank:9": {
-      "name": "Magnificient Plank",
+    "Magnificent Plank:9": {
+      "name": "Magnificent Plank",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Stripped Wood:9",
+          "ref": "Magnificent Stripped Wood:9",
           "qty": 5
         },
         {
@@ -8013,30 +8013,30 @@
         }
       ]
     },
-    "Magnificient Stripped Wood:9": {
-      "name": "Magnificient Stripped Wood",
+    "Magnificent Stripped Wood:9": {
+      "name": "Magnificent Stripped Wood",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Wood Log:9",
+          "ref": "Magnificent Wood Log:9",
           "qty": 3
         }
       ]
     },
-    "Magnificient Wood Polish:9": {
-      "name": "Magnificient Wood Polish",
+    "Magnificent Wood Polish:9": {
+      "name": "Magnificent Wood Polish",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Amber Resin:9",
+          "ref": "Magnificent Amber Resin:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Crop Oil:9",
+          "ref": "Magnificent Crop Oil:9",
           "qty": 1
         },
         {
@@ -8044,47 +8044,47 @@
           "qty": 5
         },
         {
-          "ref": "Magnificient Glass Vial:9",
+          "ref": "Magnificent Glass Vial:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Amber Resin:9": {
-      "name": "Magnificient Amber Resin",
+    "Magnificent Amber Resin:9": {
+      "name": "Magnificent Amber Resin",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Trunk:9",
+          "ref": "Magnificent Trunk:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Crop Oil:9": {
-      "name": "Magnificient Crop Oil",
+    "Magnificent Crop Oil:9": {
+      "name": "Magnificent Crop Oil",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Starbulb Plant:9",
+          "ref": "Magnificent Starbulb Plant:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Starbulb Plant:9": {
-      "name": "Magnificient Starbulb Plant",
+    "Magnificent Starbulb Plant:9": {
+      "name": "Magnificent Starbulb Plant",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Starbulb Seeds:9",
+          "ref": "Magnificent Starbulb Seeds:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Fertilizer:9",
+          "ref": "Magnificent Fertilizer:9",
           "qty": 1
         },
         {
@@ -8093,65 +8093,65 @@
         }
       ]
     },
-    "Magnificient Starbulb Seeds:9": {
-      "name": "Magnificient Starbulb Seeds",
+    "Magnificent Starbulb Seeds:9": {
+      "name": "Magnificent Starbulb Seeds",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Fertilizer:9": {
-      "name": "Magnificient Fertilizer",
+    "Magnificent Fertilizer:9": {
+      "name": "Magnificent Fertilizer",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Berry:9",
+          "ref": "Magnificent Berry:9",
           "qty": 2
         }
       ]
     },
-    "Magnificient Berry:9": {
-      "name": "Magnificient Berry",
+    "Magnificent Berry:9": {
+      "name": "Magnificent Berry",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Glass Vial:9": {
-      "name": "Magnificient Glass Vial",
+    "Magnificent Glass Vial:9": {
+      "name": "Magnificent Glass Vial",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Glass:9",
+          "ref": "Magnificent Glass:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Glass:9": {
-      "name": "Magnificient Glass",
+    "Magnificent Glass:9": {
+      "name": "Magnificent Glass",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Sand:9",
+          "ref": "Magnificent Sand:9",
           "qty": 5
         }
       ]
     },
-    "Magnificient Sand:9": {
-      "name": "Magnificient Sand",
+    "Magnificent Sand:9": {
+      "name": "Magnificent Sand",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Metal Research:9": {
-      "name": "Magnificient Metal Research",
+    "Magnificent Metal Research:9": {
+      "name": "Magnificent Metal Research",
       "tier": 9,
       "type": "research",
       "yields": 1,
@@ -8161,7 +8161,7 @@
           "qty": 1
         },
         {
-          "ref": "Magnificient Study Journal:9",
+          "ref": "Magnificent Study Journal:9",
           "qty": 1
         }
       ]
@@ -8177,7 +8177,7 @@
           "qty": 5
         },
         {
-          "ref": "Magnificient Metal Solvent:9",
+          "ref": "Magnificent Metal Solvent:9",
           "qty": 1
         },
         {
@@ -8213,7 +8213,7 @@
           "qty": 5
         },
         {
-          "ref": "Magnificient Wood Log:9",
+          "ref": "Magnificent Wood Log:9",
           "qty": 1
         }
       ]
@@ -8249,22 +8249,22 @@
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Metal Solvent:9": {
-      "name": "Magnificient Metal Solvent",
+    "Magnificent Metal Solvent:9": {
+      "name": "Magnificent Metal Solvent",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Citric Berry:9",
+          "ref": "Magnificent Citric Berry:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Pebbles:9",
+          "ref": "Magnificent Pebbles:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Glass Vial:9",
+          "ref": "Magnificent Glass Vial:9",
           "qty": 1
         },
         {
@@ -8273,41 +8273,41 @@
         }
       ]
     },
-    "Magnificient Citric Berry:9": {
-      "name": "Magnificient Citric Berry",
+    "Magnificent Citric Berry:9": {
+      "name": "Magnificent Citric Berry",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Leather Research:9": {
-      "name": "Magnificient Leather Research",
+    "Magnificent Leather Research:9": {
+      "name": "Magnificent Leather Research",
       "tier": 9,
       "type": "research",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Refined Magnificient Leather:9",
+          "ref": "Refined Magnificent Leather:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Study Journal:9",
+          "ref": "Magnificent Study Journal:9",
           "qty": 1
         }
       ]
     },
-    "Refined Magnificient Leather:9": {
-      "name": "Refined Magnificient Leather",
+    "Refined Magnificent Leather:9": {
+      "name": "Refined Magnificent Leather",
       "tier": 9,
       "type": "refined",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Leather:9",
+          "ref": "Magnificent Leather:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Leather Treatment:9",
+          "ref": "Magnificent Leather Treatment:9",
           "qty": 1
         },
         {
@@ -8316,14 +8316,14 @@
         }
       ]
     },
-    "Magnificient Leather:9": {
-      "name": "Magnificient Leather",
+    "Magnificent Leather:9": {
+      "name": "Magnificent Leather",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Tanned Pelt:9",
+          "ref": "Magnificent Tanned Pelt:9",
           "qty": 1
         },
         {
@@ -8332,36 +8332,36 @@
         }
       ]
     },
-    "Magnificient Tanned Pelt:9": {
-      "name": "Magnificient Tanned Pelt",
+    "Magnificent Tanned Pelt:9": {
+      "name": "Magnificent Tanned Pelt",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Cleaned Pelt:9",
+          "ref": "Magnificent Cleaned Pelt:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Tannin:9",
+          "ref": "Magnificent Tannin:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Cleaned Pelt:9": {
-      "name": "Magnificient Cleaned Pelt",
+    "Magnificent Cleaned Pelt:9": {
+      "name": "Magnificent Cleaned Pelt",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Raw Pelt:9",
+          "ref": "Magnificent Raw Pelt:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Raw Pelt:9": {
-      "name": "Magnificient Raw Pelt",
+    "Magnificent Raw Pelt:9": {
+      "name": "Magnificent Raw Pelt",
       "tier": 9,
       "type": "intermediate",
       "yields": 3,
@@ -8379,14 +8379,14 @@
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Tannin:9": {
-      "name": "Magnificient Tannin",
+    "Magnificent Tannin:9": {
+      "name": "Magnificent Tannin",
       "tier": 9,
       "type": "intermediate",
       "yields": 2,
       "inputs": [
         {
-          "ref": "Magnificient Tree Bark:9",
+          "ref": "Magnificent Tree Bark:9",
           "qty": 1
         },
         {
@@ -8395,22 +8395,22 @@
         }
       ]
     },
-    "Magnificient Leather Treatment:9": {
-      "name": "Magnificient Leather Treatment",
+    "Magnificent Leather Treatment:9": {
+      "name": "Magnificent Leather Treatment",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Braxite:9",
+          "ref": "Magnificent Braxite:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Fish Oil:9",
+          "ref": "Magnificent Fish Oil:9",
           "qty": 2
         },
         {
-          "ref": "Magnificient Glass Vial:9",
+          "ref": "Magnificent Glass Vial:9",
           "qty": 1
         },
         {
@@ -8419,8 +8419,8 @@
         }
       ]
     },
-    "Magnificient Braxite:9": {
-      "name": "Magnificient Braxite",
+    "Magnificent Braxite:9": {
+      "name": "Magnificent Braxite",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
@@ -8431,34 +8431,34 @@
         }
       ]
     },
-    "Magnificient Cloth Research:9": {
-      "name": "Magnificient Cloth Research",
+    "Magnificent Cloth Research:9": {
+      "name": "Magnificent Cloth Research",
       "tier": 9,
       "type": "research",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Refined Magnificient Cloth:9",
+          "ref": "Refined Magnificent Cloth:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Study Journal:9",
+          "ref": "Magnificent Study Journal:9",
           "qty": 1
         }
       ]
     },
-    "Refined Magnificient Cloth:9": {
-      "name": "Refined Magnificient Cloth",
+    "Refined Magnificent Cloth:9": {
+      "name": "Refined Magnificent Cloth",
       "tier": 9,
       "type": "refined",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Cloth:9",
+          "ref": "Magnificent Cloth:9",
           "qty": 5
         },
         {
-          "ref": "Magnificient Textile:9",
+          "ref": "Magnificent Textile:9",
           "qty": 1
         },
         {
@@ -8467,18 +8467,18 @@
         }
       ]
     },
-    "Magnificient Cloth:9": {
-      "name": "Magnificient Cloth",
+    "Magnificent Cloth:9": {
+      "name": "Magnificent Cloth",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Cloth Strip:9",
+          "ref": "Magnificent Cloth Strip:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Wispweave Filament:9",
+          "ref": "Magnificent Wispweave Filament:9",
           "qty": 25
         },
         {
@@ -8487,49 +8487,49 @@
         }
       ]
     },
-    "Magnificient Cloth Strip:9": {
-      "name": "Magnificient Cloth Strip",
+    "Magnificent Cloth Strip:9": {
+      "name": "Magnificent Cloth Strip",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Spool Of Thread:9",
+          "ref": "Magnificent Spool Of Thread:9",
           "qty": 5
         }
       ]
     },
-    "Magnificient Spool Of Thread:9": {
-      "name": "Magnificient Spool Of Thread",
+    "Magnificent Spool Of Thread:9": {
+      "name": "Magnificent Spool Of Thread",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Wispweave Filament:9": {
-      "name": "Magnificient Wispweave Filament",
+    "Magnificent Wispweave Filament:9": {
+      "name": "Magnificent Wispweave Filament",
       "tier": 9,
       "type": "intermediate",
       "yields": 5,
       "inputs": [
         {
-          "ref": "Magnificient Wispweave Plant:9",
+          "ref": "Magnificent Wispweave Plant:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Wispweave Plant:9": {
-      "name": "Magnificient Wispweave Plant",
+    "Magnificent Wispweave Plant:9": {
+      "name": "Magnificent Wispweave Plant",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Wispweave Seeds:9",
+          "ref": "Magnificent Wispweave Seeds:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Fertilizer:9",
+          "ref": "Magnificent Fertilizer:9",
           "qty": 1
         },
         {
@@ -8538,31 +8538,31 @@
         }
       ]
     },
-    "Magnificient Wispweave Seeds:9": {
-      "name": "Magnificient Wispweave Seeds",
+    "Magnificent Wispweave Seeds:9": {
+      "name": "Magnificent Wispweave Seeds",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
       "inputs": []
     },
-    "Magnificient Textile:9": {
-      "name": "Magnificient Textile",
+    "Magnificent Textile:9": {
+      "name": "Magnificent Textile",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Animal Hair:9",
+          "ref": "Magnificent Animal Hair:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Straw:9",
+          "ref": "Magnificent Straw:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Animal Hair:9": {
-      "name": "Magnificient Animal Hair",
+    "Magnificent Animal Hair:9": {
+      "name": "Magnificent Animal Hair",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
@@ -8573,30 +8573,30 @@
         }
       ]
     },
-    "Magnificient Straw:9": {
-      "name": "Magnificient Straw",
+    "Magnificent Straw:9": {
+      "name": "Magnificent Straw",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Embergrain Plant:9",
+          "ref": "Magnificent Embergrain Plant:9",
           "qty": 1
         }
       ]
     },
-    "Magnificient Embergrain Plant:9": {
-      "name": "Magnificient Embergrain Plant",
+    "Magnificent Embergrain Plant:9": {
+      "name": "Magnificent Embergrain Plant",
       "tier": 9,
       "type": "intermediate",
       "yields": 1,
       "inputs": [
         {
-          "ref": "Magnificient Embergrain Seeds:9",
+          "ref": "Magnificent Embergrain Seeds:9",
           "qty": 1
         },
         {
-          "ref": "Magnificient Fertilizer:9",
+          "ref": "Magnificent Fertilizer:9",
           "qty": 1
         },
         {
@@ -8605,8 +8605,8 @@
         }
       ]
     },
-    "Magnificient Embergrain Seeds:9": {
-      "name": "Magnificient Embergrain Seeds",
+    "Magnificent Embergrain Seeds:9": {
+      "name": "Magnificent Embergrain Seeds",
       "tier": 9,
       "type": "gathered",
       "yields": 1,
@@ -8643,7 +8643,7 @@
           "qty": 1
         },
         {
-          "ref": "Refined Magnificient Brick:9",
+          "ref": "Refined Magnificent Brick:9",
           "qty": 2
         }
       ]
@@ -8923,7 +8923,7 @@
           "qty": 1
         },
         {
-          "ref": "Refined Magnificient Plank:9",
+          "ref": "Refined Magnificent Plank:9",
           "qty": 2
         }
       ]
@@ -9198,7 +9198,7 @@
           "qty": 1
         },
         {
-          "ref": "Refined Magnificient Leather:9",
+          "ref": "Refined Magnificent Leather:9",
           "qty": 2
         }
       ]
@@ -9349,7 +9349,7 @@
           "qty": 1
         },
         {
-          "ref": "Refined Magnificient Cloth:9",
+          "ref": "Refined Magnificent Cloth:9",
           "qty": 2
         }
       ]
