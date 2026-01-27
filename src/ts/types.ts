@@ -572,3 +572,18 @@ export type StateMatrixEntry = {
     col: number;
     state: CELL_TYPE;
 };
+
+
+// =============================================================================
+// 11. CLAIM SEARCH TYPES
+// =============================================================================
+
+export interface ClaimSearchElements {
+    input: HTMLInputElement;
+    suggestions: HTMLUListElement;
+}
+
+export interface ClaimSearchCallbacks {
+    onSelect: (claimId: string) => void;
+    onDirectLoad: (claimId: string) => void;
+}

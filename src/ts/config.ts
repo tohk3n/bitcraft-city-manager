@@ -272,3 +272,13 @@ export enum CELL_TYPE {
     PART= "part",
     NONE= "none"
 }
+
+/**
+ * Keyboard keys for navigation components
+ */
+export enum KeyboardKey {
+    ArrowDown = 'ArrowDown',
+    ArrowUp = 'ArrowUp',
+    Enter = 'Enter',
+    Escape = 'Escape'
+}

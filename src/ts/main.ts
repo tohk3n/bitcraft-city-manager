@@ -15,7 +15,6 @@ import {
 
 const log = createLogger('Main');
 
-const input = document.getElementById('claim-id') as HTMLInputElement | null;
 const loadBtn = document.getElementById('load-btn');
 
 // Store loaded data for switching views
@@ -35,10 +34,7 @@ const plannerState: PlannerState = {
   results: null
 };
 
-async function loadClaim(): Promise<void> {
-  if (!input) return;
-  const claimId = input.value.trim();
-
+async function loadClaim(claimId: string): Promise<void> {
   if (!claimId || !/^\d+$/.test(claimId)) {
     UI.showError('Please enter a valid claim ID (numbers only)');
     return;
@@ -297,17 +293,17 @@ function setupTabs(): void {
 
 // --- Initialization ---
 
-// Claim ID input handlers
-loadBtn?.addEventListener('click', loadClaim);
-input?.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') loadClaim();
+// Unified claim input (handles both city search and direct ID)
+ClaimSearch.init({
+  onSelect: (claimId) => loadClaim(claimId),
+  onDirectLoad: (claimId) => loadClaim(claimId)
 });
 
-// City name autocomplete
-ClaimSearch.init({
-  onSelect: (claimId) => {
-    if (input) input.value = claimId;
-    loadClaim();
+// Load button (reads from input field)
+loadBtn?.addEventListener('click', () => {
+  const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
+  if (input) {
+    loadClaim(input.value.trim());
   }
 });
 
@@ -316,7 +312,9 @@ setupTabs();
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);
 const claimParam: string | null = params.get('claim');
-if (claimParam && input) {
-  input.value = claimParam;
-  loadClaim();
+if (claimParam) {
+  // Pre-fill input and load
+  const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
+  if (input) input.value = claimParam;
+  loadClaim(claimParam);
 }

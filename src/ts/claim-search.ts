@@ -1,104 +1,152 @@
 /**
- * Claim Search - City name autocomplete
- *
- * Single responsibility: search for claims by name and handle selection.
- * Pure UI component with callback-based communication to parent.
+ * Claim Search - Intelligent city/ID input with autocomplete
+ * 
+ * Single responsibility: handle claim input that auto-detects intent.
+ * - All digits → Claim ID (direct load on Enter)
+ * - Contains letters → City name search (autocomplete)
+ * 
+ * Uses fresh DOM queries (no stale references).
+ * Communicates via callbacks only.
  */
 import { createLogger } from './logger.js';
 import { API } from './api.js';
-import type { ClaimSearchResult } from './types.js';
+import { KeyboardKey } from './config.js';
+import type { ClaimSearchResult, ClaimSearchElements, ClaimSearchCallbacks } from './types.js';
 
 const log = createLogger('ClaimSearch');
+
+// --- Configuration ---
 
 const DEBOUNCE_MS = 250;
 const MIN_QUERY_LENGTH = 2;
 const MAX_RESULTS = 10;
+const CLAIM_ID_PATTERN = /^\d+$/;
 
 // --- State ---
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 let highlightedIndex = -1;
 let currentResults: ClaimSearchResult[] = [];
+let callbacks: ClaimSearchCallbacks | null = null;
 
-// --- DOM References (set during init) ---
+// --- DOM Accessors (fresh queries, no stale refs) ---
 
-let searchInput: HTMLInputElement | null = null;
-let suggestionsEl: HTMLUListElement | null = null;
-let onSelectCallback: ((claimId: string) => void) | null = null;
+function getElements(): ClaimSearchElements | null {
+    const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
+    const suggestions = document.getElementById('claim-suggestions') as HTMLUListElement | null;
+    
+    if (!input || !suggestions) {
+        return null;
+    }
+    
+    return { input, suggestions };
+}
 
 // --- Public API ---
 
-export interface ClaimSearchOptions {
-    onSelect: (claimId: string) => void;
-}
-
 /**
- * Initialize the claim search autocomplete.
- * Attaches event listeners to existing DOM elements.
- *
- * @param options.onSelect - Called when user selects a claim
+ * Initialize the claim search component.
+ * 
+ * @param options.onSelect - Called when user selects a city from autocomplete
+ * @param options.onDirectLoad - Called when user enters a claim ID and presses Enter
  */
-export function init(options: ClaimSearchOptions): void {
-    searchInput = document.getElementById('claim-search') as HTMLInputElement | null;
-    suggestionsEl = document.getElementById('claim-suggestions') as HTMLUListElement | null;
-    onSelectCallback = options.onSelect;
-
-    if (!searchInput || !suggestionsEl) {
-        log.warn('Search elements not found, autocomplete disabled');
+export function init(options: ClaimSearchCallbacks): void {
+    callbacks = options;
+    
+    const elements = getElements();
+    if (!elements) {
+        log.warn('Claim search elements not found, feature disabled');
         return;
     }
-
-    attachEventListeners();
+    
+    attachEventListeners(elements);
     log.debug('Initialized');
+}
+
+// --- Event Setup ---
+
+function attachEventListeners(elements: ClaimSearchElements): void {
+    elements.input.addEventListener('input', handleInput);
+    elements.input.addEventListener('keydown', handleKeydown);
+    elements.suggestions.addEventListener('click', handleSuggestionClick);
+    document.addEventListener('click', handleClickOutside);
 }
 
 // --- Event Handlers ---
 
-function attachEventListeners(): void {
-    if (!searchInput || !suggestionsEl) return;
-
-    searchInput.addEventListener('input', handleInput);
-    searchInput.addEventListener('keydown', handleKeydown);
-    suggestionsEl.addEventListener('click', handleSuggestionClick);
-    document.addEventListener('click', handleClickOutside);
-}
-
 function handleInput(): void {
-    if (!searchInput) return;
-    const query = searchInput.value.trim();
-    debouncedSearch(query);
+    const elements = getElements();
+    if (!elements) return;
+    
+    const value = elements.input.value.trim();
+    
+    if (!value) {
+        hide();
+        return;
+    }
+    
+    // All digits = claim ID, no autocomplete needed
+    if (CLAIM_ID_PATTERN.test(value)) {
+        hide();
+        return;
+    }
+    
+    // Has letters = city name search
+    if (value.length >= MIN_QUERY_LENGTH) {
+        debouncedSearch(value);
+    } else {
+        hide();
+    }
 }
 
 function handleKeydown(e: KeyboardEvent): void {
-    // If dropdown not visible, allow Enter to trigger search
-    if (!suggestionsEl || suggestionsEl.classList.contains('hidden')) {
-        if (e.key === 'Enter' && searchInput && searchInput.value.trim().length >= MIN_QUERY_LENGTH) {
-            search(searchInput.value.trim());
+    const elements = getElements();
+    if (!elements) return;
+    
+    const value = elements.input.value.trim();
+    const isDropdownVisible = !elements.suggestions.classList.contains('hidden');
+    
+    // Enter with claim ID = direct load
+    if (e.key === KeyboardKey.Enter && CLAIM_ID_PATTERN.test(value)) {
+        e.preventDefault();
+        hide();
+        callbacks?.onDirectLoad(value);
+        return;
+    }
+    
+    // If dropdown not visible, Enter triggers search
+    if (!isDropdownVisible) {
+        if (e.key === KeyboardKey.Enter && value.length >= MIN_QUERY_LENGTH) {
+            search(value);
         }
         return;
     }
-
+    
+    // Dropdown navigation
     const itemCount = currentResults.length;
     if (itemCount === 0) return;
-
+    
     switch (e.key) {
-        case 'ArrowDown':
+        case KeyboardKey.ArrowDown:
             e.preventDefault();
             highlightedIndex = (highlightedIndex + 1) % itemCount;
             updateHighlight();
             break;
-        case 'ArrowUp':
+            
+        case KeyboardKey.ArrowUp:
             e.preventDefault();
             highlightedIndex = highlightedIndex <= 0 ? itemCount - 1 : highlightedIndex - 1;
             updateHighlight();
             break;
-        case 'Enter':
+            
+        case KeyboardKey.Enter:
             e.preventDefault();
             if (highlightedIndex >= 0 && highlightedIndex < currentResults.length) {
                 selectClaim(currentResults[highlightedIndex].entityId);
             }
             break;
-        case 'Escape':
+            
+        case KeyboardKey.Escape:
             e.preventDefault();
             hide();
             break;
@@ -114,8 +162,11 @@ function handleSuggestionClick(e: MouseEvent): void {
 }
 
 function handleClickOutside(e: MouseEvent): void {
+    const elements = getElements();
+    if (!elements) return;
+    
     const target = e.target as Node;
-    if (!searchInput?.contains(target) && !suggestionsEl?.contains(target)) {
+    if (!elements.input.contains(target) && !elements.suggestions.contains(target)) {
         hide();
     }
 }
@@ -128,13 +179,9 @@ function debouncedSearch(query: string): void {
 }
 
 async function search(query: string): Promise<void> {
-    if (!suggestionsEl) return;
-
-    if (query.length < MIN_QUERY_LENGTH) {
-        hide();
-        return;
-    }
-
+    const elements = getElements();
+    if (!elements) return;
+    
     try {
         const response = await API.searchClaims(query, MAX_RESULTS);
         currentResults = response.claims || [];
@@ -150,58 +197,66 @@ async function search(query: string): Promise<void> {
 // --- Rendering ---
 
 function render(): void {
-    if (!suggestionsEl) return;
-
+    const elements = getElements();
+    if (!elements) return;
+    
     if (currentResults.length === 0) {
-        suggestionsEl.innerHTML = '<li class="no-results">No cities found</li>';
+        elements.suggestions.innerHTML = '<li class="no-results">No cities found</li>';
         return;
     }
-
-    suggestionsEl.innerHTML = currentResults
-    .map((claim, i) => renderSuggestion(claim, i))
-    .join('');
+    
+    elements.suggestions.innerHTML = currentResults
+        .map((claim, i) => renderSuggestion(claim, i))
+        .join('');
 }
 
 function renderSuggestion(claim: ClaimSearchResult, index: number): string {
     const regionHtml = claim.regionName
-    ? `<span class="suggestion-region">${escapeHtml(claim.regionName)}</span>`
-    : '';
-
+        ? `<span class="suggestion-region">${escapeHtml(claim.regionName)}</span>`
+        : '';
+    
     return `
-    <li role="option" data-index="${index}" data-id="${claim.entityId}" id="suggestion-${index}">
-    <span class="suggestion-name">${escapeHtml(claim.name)}</span>
-    <span class="suggestion-tier tier-${claim.tier}">T${claim.tier}</span>
-    ${regionHtml}
-    </li>
+        <li role="option" data-index="${index}" data-id="${claim.entityId}" id="suggestion-${index}">
+            <span class="suggestion-name">${escapeHtml(claim.name)}</span>
+            <span class="suggestion-tier tier-${claim.tier}">T${claim.tier}</span>
+            ${regionHtml}
+        </li>
     `;
 }
 
 function updateHighlight(): void {
-    if (!suggestionsEl) return;
-
-    const items = suggestionsEl.querySelectorAll<HTMLElement>('li[role="option"]');
+    const elements = getElements();
+    if (!elements) return;
+    
+    const items = elements.suggestions.querySelectorAll<HTMLElement>('li[role="option"]');
     items.forEach((item, i) => {
         item.classList.toggle('highlighted', i === highlightedIndex);
     });
-
-    // ARIA: announce active descendant to screen readers
-    if (highlightedIndex >= 0 && searchInput) {
-        searchInput.setAttribute('aria-activedescendant', `suggestion-${highlightedIndex}`);
+    
+    // ARIA: announce active descendant
+    if (highlightedIndex >= 0) {
+        elements.input.setAttribute('aria-activedescendant', `suggestion-${highlightedIndex}`);
     } else {
-        searchInput?.removeAttribute('aria-activedescendant');
+        elements.input.removeAttribute('aria-activedescendant');
     }
 }
 
 // --- Visibility ---
 
 function show(): void {
-    suggestionsEl?.classList.remove('hidden');
-    searchInput?.setAttribute('aria-expanded', 'true');
+    const elements = getElements();
+    if (!elements) return;
+    
+    elements.suggestions.classList.remove('hidden');
+    elements.input.setAttribute('aria-expanded', 'true');
 }
 
 function hide(): void {
-    suggestionsEl?.classList.add('hidden');
-    searchInput?.setAttribute('aria-expanded', 'false');
+    const elements = getElements();
+    if (!elements) return;
+    
+    elements.suggestions.classList.add('hidden');
+    elements.input.setAttribute('aria-expanded', 'false');
     highlightedIndex = -1;
     currentResults = [];
 }
@@ -209,9 +264,12 @@ function hide(): void {
 // --- Selection ---
 
 function selectClaim(claimId: string): void {
-    if (searchInput) searchInput.value = '';
+    const elements = getElements();
+    if (elements) {
+        elements.input.value = '';
+    }
     hide();
-    onSelectCallback?.(claimId);
+    callbacks?.onSelect(claimId);
 }
 
 // --- Utilities ---
