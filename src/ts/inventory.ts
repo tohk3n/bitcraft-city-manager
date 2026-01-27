@@ -2,7 +2,6 @@
 import { CONFIG } from './config.js';
 import type {
   ClaimInventoriesResponse,
-  ClaimBuildingsResponse,
   ApiItem,
   ApiCargo,
   Building,
@@ -13,16 +12,13 @@ import type {
   FoodItems,
   ScholarByTier,
   TierQuantities,
-  TagGroup,
-  InventoryItem,
   CraftingStationsResult,
   StationsByName,
-  StationSummary
 } from './types.js';
 
 // Helper to create fresh tier quantities object
 function createTierQuantities(): TierQuantities {
-  return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0 };
+  return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10:0 };
 }
 
 // Process raw API response into structured inventory
@@ -63,7 +59,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       const tag = meta.tag || 'Other';
       const category = CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
       const tier = meta.tier > 0 ? meta.tier : 1;
-      const tierKey = Math.min(tier, 7) as keyof TierQuantities;
+      const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
 
       // Aggregate raw materials into matrix by category and tier
       if (CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
@@ -136,7 +132,7 @@ export function processCraftingStations(buildings: Building[]): CraftingStations
     if (!func) continue;
 
     const tier = func.level || 1;
-    const tierKey = Math.min(tier, 7) as keyof TierQuantities;
+    const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
     const name = building.buildingName;
 
     // Active: has crafting slots
