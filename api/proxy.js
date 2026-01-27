@@ -1,5 +1,6 @@
 // Proxy to bitjita.com API - whitelisted endpoints only
 const ALLOWED_PATHS = [
+  /^\/claims(\?.*)?$/,                 // claims search (with optional query params)
   /^\/claims\/\d+$/,
 /^\/claims\/\d+\/citizens$/,
 /^\/claims\/\d+\/inventories$/,
