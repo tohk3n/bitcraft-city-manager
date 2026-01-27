@@ -3,82 +3,6 @@
   "generated": "2026-01-27",
   "description": "Codex tier requirements parsed from source text files",
   "tiers": {
-    "10": {
-      "name": "Flawless Codex",
-      "tier": 10,
-      "researches": [
-        {
-          "id": "Flawless Stone Research",
-          "tier": 10,
-          "inputs": [
-            {
-              "ref": "Refined Flawless Brick:10",
-              "qty": 1
-            },
-            {
-              "ref": "Flawless Study Journal:10",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "id": "Flawless Wood Research",
-          "tier": 10,
-          "inputs": [
-            {
-              "ref": "Refined Flawless Plank:10",
-              "qty": 1
-            },
-            {
-              "ref": "Flawless Study Journal:10",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "id": "Flawless Metal Research",
-          "tier": 10,
-          "inputs": [
-            {
-              "ref": "Refined Astralite Ingot:10",
-              "qty": 1
-            },
-            {
-              "ref": "Flawless Study Journal:10",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "id": "Flawless Leather Research",
-          "tier": 10,
-          "inputs": [
-            {
-              "ref": "Refined Flawless Leather:10",
-              "qty": 1
-            },
-            {
-              "ref": "Flawless Study Journal:10",
-              "qty": 1
-            }
-          ]
-        },
-        {
-          "id": "Flawless Cloth Research",
-          "tier": 10,
-          "inputs": [
-            {
-              "ref": "Refined Flawless Cloth:10",
-              "qty": 1
-            },
-            {
-              "ref": "Flawless Study Journal:10",
-              "qty": 1
-            }
-          ]
-        }
-      ]
-    },
     "1": {
       "name": "Beginner's Codex",
       "tier": 1,
@@ -748,6 +672,82 @@
             },
             {
               "ref": "Magnificient Study Journal:9",
+              "qty": 1
+            }
+          ]
+        }
+      ]
+    },
+    "10": {
+      "name": "Flawless Codex",
+      "tier": 10,
+      "researches": [
+        {
+          "id": "Flawless Stone Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Brick:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Wood Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Plank:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Metal Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Astralite Ingot:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Leather Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Leather:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
+              "qty": 1
+            }
+          ]
+        },
+        {
+          "id": "Flawless Cloth Research",
+          "tier": 10,
+          "inputs": [
+            {
+              "ref": "Refined Flawless Cloth:10",
+              "qty": 1
+            },
+            {
+              "ref": "Flawless Study Journal:10",
               "qty": 1
             }
           ]
