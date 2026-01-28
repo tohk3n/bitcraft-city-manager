@@ -51,30 +51,29 @@ header h1 {
   align-items: center;
 }
 
-#claim-input label {
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-/* Search wrapper for Autocomplete */
-.claim-search-wrapper {
+/* Input wrapper for autocomplete positioning */
+.claim-input-wrapper {
   position: relative;
 }
 
-#claim-seach {
+#claim-input-field {
   padding: 8px 12px;
   font-size: 0.95rem;
   border: 1px solid var(--border);
   border-radius: 6px;
-  width: 220px;
+  width: 240px;
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
-#claim-search:focus {
+#claim-input-field:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+#claim-input-field::placeholder {
+  color: var(--text-muted);
 }
 
 /* Autocomplete suggestions dropdown */
@@ -103,8 +102,8 @@ header h1 {
   gap: 10px;
 }
 
-.sugestions li:hover,
-.suggestions li:highlighted {
+.suggestions li:hover,
+.suggestions li.highlighted {
   background: var(--bg-tertiary);
 }
 
@@ -130,6 +129,9 @@ header h1 {
 .suggestions li .suggestion-tier.tier-5 { background: #a02820; color: #fff; }
 .suggestions li .suggestion-tier.tier-6 { background: #6a00a0; color: #fff; }
 .suggestions li .suggestion-tier.tier-7 { background: #00a0a0; color: #fff; }
+.suggestions li .suggestion-tier.tier-8 { background: #a06000; color: #fff; }
+.suggestions li .suggestion-tier.tier-9 { background: #600040; color: #fff; }
+.suggestions li .suggestion-tier.tier-10 { background: #004060; color: #fff; }
 
 .suggestions li .suggestion-region {
   font-size: 0.8rem;
@@ -146,28 +148,6 @@ header h1 {
 
 .suggestions .no-results:hover {
   background: transparent;
-}
-
-/* Divider between search and ID input */
-.input-divider {
-  color: var(--text-muted);
-  font-size: 0.85rem;
-}
-
-#claim-input input {
-  padding: 8px 12px;
-  font-size: 0.95rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  width: 200px;
-  background: var(--bg-secondary);
-  color: var(--text-primary);
-}
-
-#claim-input input:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
 }
 
 #claim-input button {
