@@ -4,6 +4,7 @@ import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
 import * as Planner from './planner/planner.js';
+import * as ClaimSearch from './claim-search.js';
 import {
   ClaimData,
   PlannerState,
@@ -14,7 +15,6 @@ import {
 
 const log = createLogger('Main');
 
-const input = document.getElementById('claim-id') as HTMLInputElement | null;
 const loadBtn = document.getElementById('load-btn');
 
 // Store loaded data for switching views
@@ -34,10 +34,7 @@ const plannerState: PlannerState = {
   results: null
 };
 
-async function loadClaim(): Promise<void> {
-  if (!input) return;
-  const claimId = input.value.trim();
-
+async function loadClaim(claimId: string): Promise<void> {
   if (!claimId || !/^\d+$/.test(claimId)) {
     UI.showError('Please enter a valid claim ID (numbers only)');
     return;
@@ -294,18 +291,30 @@ function setupTabs(): void {
   });
 }
 
-// Event listeners
-loadBtn?.addEventListener('click', loadClaim);
-input?.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') loadClaim();
+// --- Initialization ---
+
+// Unified claim input (handles both city search and direct ID)
+ClaimSearch.init({
+  onSelect: (claimId) => loadClaim(claimId),
+  onDirectLoad: (claimId) => loadClaim(claimId)
+});
+
+// Load button (reads from input field)
+loadBtn?.addEventListener('click', () => {
+  const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
+  if (input) {
+    loadClaim(input.value.trim());
+  }
 });
 
 setupTabs();
 
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);
-const claimParam:string|null = params.get('claim');
-if (claimParam && input) {
-  input.value = claimParam;
-  loadClaim();
+const claimParam: string | null = params.get('claim');
+if (claimParam) {
+  // Pre-fill input and load
+  const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
+  if (input) input.value = claimParam;
+  loadClaim(claimParam);
 }

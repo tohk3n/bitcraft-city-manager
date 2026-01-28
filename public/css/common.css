@@ -51,25 +51,103 @@ header h1 {
   align-items: center;
 }
 
-#claim-input label {
-  font-weight: 500;
-  color: var(--text-secondary);
+/* Input wrapper for autocomplete positioning */
+.claim-input-wrapper {
+  position: relative;
 }
 
-#claim-input input {
+#claim-input-field {
   padding: 8px 12px;
   font-size: 0.95rem;
   border: 1px solid var(--border);
   border-radius: 6px;
-  width: 200px;
+  width: 240px;
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
 
-#claim-input input:focus {
+#claim-input-field:focus {
   outline: none;
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+}
+
+#claim-input-field::placeholder {
+  color: var(--text-muted);
+}
+
+/* Autocomplete suggestions dropdown */
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  max-height: 280px;
+  overflow-y: auto;
+  z-index: 100;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  list-style: none;
+  padding: 4px 0;
+}
+
+.suggestions li {
+  padding: 10px 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.suggestions li:hover,
+.suggestions li.highlighted {
+  background: var(--bg-tertiary);
+}
+
+.suggestions li .suggestion-name {
+  flex: 1;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.suggestions li .suggestion-tier {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+.suggestions li .suggestion-tier.tier-1 { background: #555; color: #fff; }
+.suggestions li .suggestion-tier.tier-2 { background: #5a7a00; color: #fff; }
+.suggestions li .suggestion-tier.tier-3 { background: #1a5cb8; color: #fff; }
+.suggestions li .suggestion-tier.tier-4 { background: #9a7800; color: #fff; }
+.suggestions li .suggestion-tier.tier-5 { background: #a02820; color: #fff; }
+.suggestions li .suggestion-tier.tier-6 { background: #6a00a0; color: #fff; }
+.suggestions li .suggestion-tier.tier-7 { background: #00a0a0; color: #fff; }
+.suggestions li .suggestion-tier.tier-8 { background: #a06000; color: #fff; }
+.suggestions li .suggestion-tier.tier-9 { background: #600040; color: #fff; }
+.suggestions li .suggestion-tier.tier-10 { background: #004060; color: #fff; }
+
+.suggestions li .suggestion-region {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.suggestions .no-results {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  cursor: default;
+}
+
+.suggestions .no-results:hover {
+  background: transparent;
 }
 
 #claim-input button {

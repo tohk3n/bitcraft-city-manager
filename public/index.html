@@ -18,8 +18,17 @@
   <header>
     <h1>Bitcraft City Manager</h1>
     <section id="claim-input">
-      <label for="claim-id">Claim ID</label>
-      <input type="text" id="claim-id" placeholder="504403158284115406">
+      <div class="claim-input-wrapper">
+        <input type="text" id="claim-input-field" 
+               placeholder="City name or Claim ID" 
+               autocomplete="off" 
+               aria-label="Search by city name or enter claim ID" 
+               aria-expanded="false" 
+               aria-controls="claim-suggestions" 
+               aria-autocomplete="list"
+               role="combobox">
+        <ul id="claim-suggestions" class="suggestions hidden" role="listbox" aria-label="City suggestions"></ul>
+      </div>
       <button id="load-btn">Load</button>
     </section>
   </header>

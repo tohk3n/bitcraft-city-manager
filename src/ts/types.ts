@@ -47,6 +47,22 @@ export interface ClaimResponse {
     claim?: ClaimDetails;
 }
 
+// -- Claim Search Endpoint --
+
+export interface ClaimSearchResult {
+    entityId: string;
+    name: string;
+    tier: number;
+    regionName?: string;
+}
+
+export interface ClaimSearchResponse {
+    claims: ClaimSearchResult[];
+    count: number;
+}
+
+// -- Inventory --
+
 export interface InventorySlotContents {
     item_id: number;
     item_type: 'item' | 'cargo';
@@ -559,3 +575,18 @@ export type StateMatrixEntry = {
     col: number;
     state: CELL_TYPE;
 };
+
+
+// =============================================================================
+// 11. CLAIM SEARCH TYPES
+// =============================================================================
+
+export interface ClaimSearchElements {
+    input: HTMLInputElement;
+    suggestions: HTMLUListElement;
+}
+
+export interface ClaimSearchCallbacks {
+    onSelect: (claimId: string) => void;
+    onDirectLoad: (claimId: string) => void;
+}
