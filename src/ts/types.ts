@@ -6,7 +6,7 @@
  * 2. Codex Types (recipe structures)
  * 3. Internal Domain Types (processed data)
  */
-import {CELL_TYPE} from "./config";
+import {CELL_TYPE} from "./configuration/config";
 
 // =============================================================================
 // 1. API RESPONSE TYPES

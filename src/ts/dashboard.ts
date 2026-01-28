@@ -1,6 +1,6 @@
 // Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
-import {CONFIG} from './config.js';
+import {CONFIG} from './configuration/config.js';
 import type {
   CraftingStationsResult,
   FoodItem,

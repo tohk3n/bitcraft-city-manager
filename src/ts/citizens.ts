@@ -1,6 +1,6 @@
 // Citizens view rendering
 // Handles: citizen table, equipment display, vault loading
-import { CONFIG } from './config.js';
+import { CONFIG } from './configuration/config.js';
 import { API } from './api.js';
 import type {
   ClaimCitizensResponse,

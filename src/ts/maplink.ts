@@ -1,5 +1,5 @@
 // Map link composer functionality
-import {CELL_TYPE, CONFIG} from './config.js';
+import {CELL_TYPE, CONFIG} from './configuration/config.js';
 import {ResourceIdMatrix, ResourceRowName, StateMatrixEntry} from './types.js';
 
 interface LinkDataMap {

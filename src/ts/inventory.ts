@@ -1,5 +1,5 @@
 // Process inventory data using API-provided item/cargo metadata
-import { CONFIG } from './config.js';
+import { CONFIG } from './configuration/config.js';
 import type {
   ClaimInventoriesResponse,
   ApiItem,
