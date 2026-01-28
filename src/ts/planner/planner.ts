@@ -2,7 +2,7 @@
  * Planner - Codex Requirement Calculator
  *
  * Orchestrates data loading and calculation pipeline.
- * UI rendering is delegated to task-list.js and flowchart.js.
+ * UI rendering is delegated to planner-view.js (unified dashboard/flowchart).
  */
 
 import { API } from '../api.js';
@@ -10,8 +10,7 @@ import { buildInventoryLookup, buildMetaLookups } from './lib/inventory-matcher.
 import { expandRecipes } from './lib/recipe-expander.js';
 import { applyCascade } from './lib/cascade-calc.js';
 import { generateProgressReport, formatCompact } from './lib/progress-calc.js';
-import * as TaskList from './task-list.js';
-import * as Flowchart from './flowchart.js';
+import * as PlannerView from './planner-view.js';
 import type {
     CodexFile,
     RecipesFile,
@@ -139,7 +138,7 @@ export function renderControls(
         const req = TIER_REQUIREMENTS[tier];
         if (!req) return;
         const custom = count !== req.count ? ' (custom)' : '';
-        infoEl.innerHTML = `Requires: <strong>${count}× T${req.codexTier} Codex</strong>${custom}`;
+        infoEl.innerHTML = `Requires: <strong>${count}&times; T${req.codexTier} Codex</strong>${custom}`;
     };
 
     tierSelect.addEventListener('change', () => {
@@ -160,35 +159,27 @@ export function renderControls(
     updateInfo(currentTier, defaultCount);
 }
 
-export function renderDeficitSummary(
-    container: HTMLElement,
-    summary: SecondLevelItem[]
-): void {
-    if (!lastReport) {
-        container.innerHTML = '<div class="task-empty">No data</div>';
-        return;
-    }
-    TaskList.render(container, lastReport.firstTrackable);
-}
-
-export function renderResearchTree(
+/**
+ * Render the unified planner view (dashboard + flowchart tabs)
+ */
+export function renderPlannerView(
     container: HTMLElement,
     researches: ProcessedNode[],
     studyJournals: ProcessedNode | null = null
 ): void {
     if (!lastReport) {
-        container.innerHTML = '<div class="fc-empty">No data</div>';
+        container.innerHTML = '<div class="pv-empty">No data</div>';
         return;
     }
-    Flowchart.render(container, researches, lastReport, studyJournals);
+    PlannerView.render(container, researches, lastReport, studyJournals);
 }
 
 export function renderLoading(container: HTMLElement): void {
-    container.innerHTML = '<div class="planner-loading">Calculating requirements</div>';
+    PlannerView.renderLoading(container);
 }
 
 export function renderEmpty(container: HTMLElement): void {
-    container.innerHTML = '<div class="planner-empty">Load a claim and select a target tier to see codex requirements</div>';
+    PlannerView.renderEmpty(container);
 }
 
 export { formatCompact };

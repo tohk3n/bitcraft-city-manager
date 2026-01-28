@@ -12,7 +12,6 @@ import {
   CalculateOptions
 } from './types.js';
 
-
 const log = createLogger('Main');
 
 const loadBtn = document.getElementById('load-btn');
@@ -105,10 +104,9 @@ async function loadClaim(claimId: string): Promise<void> {
 // Initialize planner UI
 function initPlanner(): void {
   const controlsContainer = document.getElementById('planner-controls');
-  const summaryContainer = document.getElementById('deficit-summary');
-  const treeContainer = document.getElementById('research-tree');
+  const plannerContainer = document.getElementById('planner-content');
 
-  if (!controlsContainer || !treeContainer) return;
+  if (!controlsContainer || !plannerContainer) return;
 
   Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier: number, newCount: number | null) => {
     plannerState.targetTier = newTier;
@@ -116,20 +114,17 @@ function initPlanner(): void {
     await loadPlanner();
   });
 
-  Planner.renderEmpty(treeContainer);
-  if (summaryContainer) summaryContainer.innerHTML = '';
+  Planner.renderEmpty(plannerContainer);
 }
 
 // Load planner data
 async function loadPlanner(): Promise<void> {
   if (!claimData.claimId) return;
 
-  const summaryContainer = document.getElementById('deficit-summary');
-  const treeContainer = document.getElementById('research-tree');
+  const plannerContainer = document.getElementById('planner-content');
+  if (!plannerContainer) return;
 
-  if (!treeContainer) return;
-
-  Planner.renderLoading(treeContainer);
+  Planner.renderLoading(plannerContainer);
 
   try {
     const options: CalculateOptions = plannerState.codexCount ? { customCount: plannerState.codexCount } : {};
@@ -140,18 +135,16 @@ async function loadPlanner(): Promise<void> {
     );
     plannerState.results = results;
 
-    if (summaryContainer) {
-      Planner.renderDeficitSummary(summaryContainer, results.summary);
-    }
-    Planner.renderResearchTree(treeContainer, results.researches, results.studyJournals);
+    // Render unified planner view (dashboard + flowchart tabs)
+    Planner.renderPlannerView(plannerContainer, results.researches, results.studyJournals);
 
   } catch (err) {
     const error = err as Error;
     log.error('Planner error:', error.message);
-    treeContainer.innerHTML = `
-    <div class="planner-empty">
-    Failed to calculate requirements: ${error.message}
-    </div>
+    plannerContainer.innerHTML = `
+      <div class="pv-empty">
+        Failed to calculate requirements: ${error.message}
+      </div>
     `;
   }
 }
