@@ -1,12 +1,18 @@
 /**
  * Dashboard Styles
  * Dense, scannable, activity-grouped layout
+ * 
+ * Design principles:
+ * - Tight spacing, not cramped
+ * - Color carries meaning, not decoration  
+ * - Typography creates hierarchy
+ * - Whitespace is intentional
  */
 
 .dash {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 .dash-empty,
@@ -20,42 +26,103 @@
     color: var(--status-complete);
 }
 
-.dash-controls {
-    padding: 4px 0;
+/* ============================================
+   Toolbar - filters, options, sort
+   ============================================ */
+
+.dash-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 14px;
+    background: var(--bg-secondary);
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    flex-wrap: wrap;
+}
+
+.dash-filters {
+    display: flex;
+    gap: 8px;
+}
+
+.dash-options {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.dash-sort {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.dash-select {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.dash-select:hover {
+    border-color: var(--text-muted);
+}
+
+.dash-select:focus {
+    outline: none;
+    border-color: var(--accent);
 }
 
 .dash-toggle {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--text-secondary);
     cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
 }
 
 .dash-toggle input {
     cursor: pointer;
+    accent-color: var(--accent);
 }
 
-/* Activity Groups */
+.dash-toggle:hover {
+    color: var(--text-primary);
+}
+
+/* ============================================
+   Activity Groups
+   ============================================ */
+
 .dash-groups {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
 }
 
 .dash-group {
     background: var(--bg-secondary);
     border-radius: 6px;
+    border: 1px solid var(--border);
     overflow: hidden;
 }
 
 /* Group Header */
 .dash-group-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 16px auto 1fr 80px 48px 32px;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
+    padding: 10px 14px;
     cursor: pointer;
     user-select: none;
     transition: background 0.1s;
@@ -66,28 +133,34 @@
 }
 
 .dash-group-toggle {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     color: var(--text-muted);
-    width: 12px;
+    text-align: center;
+    transition: transform 0.15s;
+}
+
+.dash-group.collapsed .dash-group-toggle {
+    transform: rotate(-90deg);
 }
 
 .dash-group-name {
     font-weight: 600;
     font-size: 0.85rem;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.03em;
     color: var(--text-primary);
 }
 
 .dash-group-stats {
     font-size: 0.8rem;
     color: var(--text-muted);
-    margin-right: auto;
+    font-variant-numeric: tabular-nums;
 }
 
+/* Group progress bar */
 .dash-group-bar {
-    width: 60px;
+    width: 80px;
     height: 4px;
-    background: var(--bg-tertiary);
+    background: var(--bg-primary);
     border-radius: 2px;
     overflow: hidden;
 }
@@ -95,62 +168,74 @@
 .dash-group-bar-fill {
     height: 100%;
     background: var(--status-complete);
-    transition: width 0.2s;
+    transition: width 0.25s ease-out;
 }
 
 .dash-group-pct {
     font-size: 0.8rem;
+    font-weight: 500;
     font-variant-numeric: tabular-nums;
     color: var(--text-secondary);
-    min-width: 32px;
     text-align: right;
 }
 
+/* Copy button in header */
 .dash-copy-group {
     padding: 4px 8px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     background: transparent;
-    border: 1px solid transparent;
+    border: none;
     border-radius: 4px;
     cursor: pointer;
-    opacity: 0.5;
+    opacity: 0;
     transition: opacity 0.15s, background 0.15s;
+    color: var(--text-muted);
 }
 
 .dash-group-header:hover .dash-copy-group {
-    opacity: 1;
+    opacity: 0.7;
 }
 
 .dash-copy-group:hover {
+    opacity: 1 !important;
     background: var(--bg-primary);
-    border-color: var(--border);
+    color: var(--text-primary);
 }
 
 /* Group Items Container */
 .dash-group-items {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 6px;
     padding: 8px 12px 12px;
-    border-top: 1px solid var(--border);
+    background: var(--bg-primary);
 }
 
 .dash-group.collapsed .dash-group-items {
     display: none;
 }
 
-/* Item Chips */
+/* ============================================
+   Item Chips
+   ============================================ */
+
 .dash-item {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto auto;
     align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: var(--bg-primary);
+    gap: 6px;
+    padding: 7px 10px;
+    background: var(--bg-secondary);
     border-radius: 4px;
-    font-size: 0.85rem;
-    min-width: 180px;
+    font-size: 0.8rem;
     position: relative;
     overflow: hidden;
+    transition: background 0.1s;
+    min-width: 0; /* Allow grid items to shrink */
+}
+
+.dash-item:hover {
+    background: var(--bg-tertiary);
 }
 
 .dash-item-name {
@@ -158,24 +243,30 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    flex: 1;
+    font-weight: 500;
+    min-width: 0; /* Allow text to truncate */
 }
 
 .dash-item-tier {
-    font-size: 0.75rem;
+    font-size: 0.65rem;
+    font-weight: 600;
     color: var(--text-muted);
-    padding: 1px 4px;
-    background: var(--bg-tertiary);
-    border-radius: 2px;
+    padding: 2px 4px;
+    background: var(--bg-primary);
+    border-radius: 3px;
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
 }
 
 .dash-item-deficit {
     font-weight: 600;
     font-variant-numeric: tabular-nums;
-    min-width: 48px;
+    min-width: 44px;
     text-align: right;
+    flex-shrink: 0;
 }
 
+/* Status colors - only on deficit */
 .dash-item.missing .dash-item-deficit { color: var(--status-missing); }
 .dash-item.partial .dash-item-deficit { color: var(--status-partial); }
 .dash-item.complete .dash-item-deficit { color: var(--status-complete); }
@@ -187,7 +278,7 @@
     left: 0;
     right: 0;
     height: 2px;
-    background: var(--bg-tertiary);
+    background: transparent;
 }
 
 .dash-item-bar-fill {
@@ -195,22 +286,69 @@
     transition: width 0.2s;
 }
 
-.dash-item.missing .dash-item-bar-fill { background: var(--status-missing); }
-.dash-item.partial .dash-item-bar-fill { background: var(--status-partial); }
-.dash-item.complete .dash-item-bar-fill { background: var(--status-complete); }
+.dash-item.missing .dash-item-bar-fill { background: var(--status-missing); opacity: 0.4; }
+.dash-item.partial .dash-item-bar-fill { background: var(--status-partial); opacity: 0.4; }
+.dash-item.complete .dash-item-bar-fill { background: var(--status-complete); opacity: 0.3; }
 
 /* Completed items are subtle */
 .dash-item.complete {
     opacity: 0.5;
 }
 
-/* Responsive - stack items on narrow screens */
-@media (max-width: 480px) {
-    .dash-item {
-        min-width: 100%;
+.dash-item.complete:hover {
+    opacity: 0.7;
+}
+
+/* Tooltip styling (native title works, but this adds hover indication) */
+.dash-item[title] {
+    cursor: help;
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 600px) {
+    .dash-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
     }
     
-    .dash-group-bar {
+    .dash-filters {
+        width: 100%;
+    }
+    
+    .dash-filters .dash-select {
+        flex: 1;
+    }
+    
+    .dash-options {
+        margin-left: 0;
+        justify-content: space-between;
+    }
+    
+    .dash-sort {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .dash-group-items {
+        grid-template-columns: 1fr;
+    }
+    
+    .dash-group-header {
+        grid-template-columns: 16px auto 1fr 32px;
+    }
+    
+    .dash-group-bar,
+    .dash-group-pct {
+        display: none;
+    }
+}
+
+@media (max-width: 400px) {
+    .dash-group-stats {
         display: none;
     }
 }

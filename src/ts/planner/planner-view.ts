@@ -2,6 +2,7 @@
  * Planner View - Orchestrates dashboard and flowchart tabs
  * 
  * Simple coordinator: manages tab state and delegates rendering.
+ * Provides both filtered and full copy options.
  */
 
 import { formatCompact, generateExportText } from './lib/progress-calc.js';
@@ -43,13 +44,18 @@ export function render(
             <div class="pv-header">
                 <div class="pv-summary">
                     <span class="pv-pct">${overall.percent}%</span>
-                    <span class="pv-stats">${overall.completeCount}/${overall.totalItems} ready${remaining > 0 ? ` · ${remaining} to go` : ''}</span>
+                    <span class="pv-stats">${overall.completeCount}/${overall.totalItems} ready${remaining > 0 ? ` &middot; ${remaining} to go` : ''}</span>
                 </div>
-                <div class="pv-tabs">
-                    <button class="pv-tab ${currentView === 'dashboard' ? 'active' : ''}" data-view="dashboard">Tasks</button>
-                    <button class="pv-tab ${currentView === 'flowchart' ? 'active' : ''}" data-view="flowchart">Tree</button>
+                <div class="pv-actions">
+                    <div class="pv-tabs">
+                        <button class="pv-tab ${currentView === 'dashboard' ? 'active' : ''}" data-view="dashboard">Tasks</button>
+                        <button class="pv-tab ${currentView === 'flowchart' ? 'active' : ''}" data-view="flowchart">Tree</button>
+                    </div>
+                    <div class="pv-copy-group">
+                        <button class="pv-copy" id="pv-copy-view" title="Copy current view (with filters)">&#128203; Copy View</button>
+                        <button class="pv-copy pv-copy-secondary" id="pv-copy-all" title="Copy full list (no filters)">Copy All</button>
+                    </div>
                 </div>
-                <button class="pv-copy" id="pv-copy" title="Copy task list">&#128203; Copy</button>
             </div>
             <div class="pv-content" id="pv-content"></div>
         </div>
@@ -70,18 +76,46 @@ export function render(
         });
     });
 
-    // Copy button
-    container.querySelector('#pv-copy')?.addEventListener('click', () => {
-        const text = generateExportText(report, report.targetTier);
-        const btn = container.querySelector('#pv-copy') as HTMLElement;
-        navigator.clipboard.writeText(text).then(() => {
-            const original = btn.innerHTML;
-            btn.innerHTML = '✓ Copied';
-            setTimeout(() => btn.innerHTML = original, 1500);
-        });
+    // Copy View button - respects current filters
+    container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
+        let text: string;
+        if (currentView === 'dashboard') {
+            text = PlannerDashboard.generateDashboardText(report.targetTier);
+        } else {
+            text = generateExportText(report, report.targetTier);
+        }
+        const btn = container.querySelector('#pv-copy-view') as HTMLElement;
+        copyWithFeedback(text, btn, '&#10003; Copied');
+    });
+
+    // Copy All button - ignores filters, gives full list
+    container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
+        let text: string;
+        if (currentView === 'dashboard') {
+            text = PlannerDashboard.generateFullText(report.targetTier);
+        } else {
+            text = generateExportText(report, report.targetTier);
+        }
+        const btn = container.querySelector('#pv-copy-all') as HTMLElement;
+        copyWithFeedback(text, btn, '&#10003;');
     });
 
     renderContent(contentEl);
+}
+
+/**
+ * Copy text and show feedback.
+ */
+function copyWithFeedback(text: string, btn: HTMLElement, successText: string): void {
+    navigator.clipboard.writeText(text).then(() => {
+        const original = btn.innerHTML;
+        btn.innerHTML = successText;
+        btn.classList.add('copied');
+        setTimeout(() => {
+            btn.innerHTML = original;
+            btn.classList.remove('copied');
+        }, 1500);
+    });
 }
 
 /**
