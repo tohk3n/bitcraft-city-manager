@@ -1,226 +1,105 @@
 /**
  * Recipe Expander
- *
- * Expands codex recipe trees to calculate ideal quantities.
- * Pure function - no inventory awareness, no side effects.
- *
- * Phase 1 of the cascade algorithm: determine what's needed
- * assuming we start from zero inventory.
+ * 
+ * Expands a codex tier into a full crafting tree with calculated quantities.
+ * Pure function, no side effects. Phase 1 of the cascade algorithm.
  */
 
-import { isTrackable, getMappingType } from './inventory-matcher.js';
 import type {
-    Codex,
-    CodexNode,
     ExpandedCodex,
     ExpandedNode,
-    ItemMappingsFile,
-    MappingType,
-    FlattenedItem,
-    AggregatedItem,
-    FirstTrackableResult
+    Recipe,
+    RecipesFile,
+    CodexFile,
+    CodexResearch
 } from '../../types.js';
+import { getCodexTier, toMappingType, isTrackable } from './recipe-graph.js';
 
-interface AggregatedItemInternal {
-    name: string;
-    tier: number;
-    idealQty: number;
-    trackable: boolean;
-    mappingType: MappingType;
-    sources: Set<string>;
-}
-
-/**
- * Expand a codex to calculate ideal quantities for each item.
- * Creates a deep clone with idealQty calculated on each node.
- */
 export function expandRecipes(
-    codex: Codex,
-    targetCount: number,
-    mappings: ItemMappingsFile | null = null
+    codexFile: CodexFile,
+    recipesFile: RecipesFile,
+    tier: number,
+    targetCount: number
 ): ExpandedCodex {
+    const codexTier = getCodexTier(codexFile, tier);
+    if (!codexTier) {
+        throw new Error(`Codex tier ${tier} not found`);
+    }
+
     return {
-        name: codex.name,
-        tier: codex.tier,
+        name: codexTier.name,
+        tier: codexTier.tier,
         targetCount,
-        researches: codex.researches.map(research =>
-        expandNode(research, targetCount, mappings)
+        researches: codexTier.researches.map(research =>
+            expandResearch(research, recipesFile.recipes, targetCount)
         )
     };
 }
 
-/**
- * Expand a single node and its children recursively.
- * Calculates idealQty based on recipeQty and batch count.
- */
-function expandNode(
-    node: CodexNode,
-    batchCount: number,
-    mappings: ItemMappingsFile | null
+function expandResearch(
+    research: CodexResearch,
+    recipes: Record<string, Recipe>,
+    targetCount: number
 ): ExpandedNode {
-    const recipeQty = node.qty || 1;
-    // idealQty is simply the qty needed for N completions
-    const idealQty = recipeQty * batchCount;
+    const visited = new Set<string>();
+    
+    return {
+        name: research.id,
+        tier: research.tier,
+        recipeQty: 1,
+        idealQty: targetCount,
+        trackable: false,
+        mappingType: 'research',
+        children: research.inputs.map(input =>
+            expandRecipe(
+                input.ref,
+                recipes,
+                input.qty * targetCount,
+                input.qty,
+                visited
+            )
+        )
+    };
+}
 
-    const trackable = isTrackable(node.name, mappings);
-    const mappingType = getMappingType(node.name, mappings);
+function expandRecipe(
+    recipeKey: string,
+    recipes: Record<string, Recipe>,
+    totalNeeded: number,
+    recipeQty: number,
+    visited: Set<string>
+): ExpandedNode {
+    if (visited.has(recipeKey)) {
+        throw new Error(`Cycle detected: ${recipeKey}`);
+    }
+
+    const recipe = recipes[recipeKey];
+    if (!recipe) {
+        throw new Error(`Recipe not found: ${recipeKey}`);
+    }
+
+    visited.add(recipeKey);
+
+    // yields determines how many items one craft produces
+    const craftsNeeded = Math.ceil(totalNeeded / recipe.yields);
+    const idealQty = craftsNeeded * recipe.yields;
 
     return {
-        name: node.name,
-        tier: node.tier,
+        name: recipe.name,
+        tier: recipe.tier,
         recipeQty,
         idealQty,
-        trackable,
-        mappingType,
-        // Children also get the batch count, not the accumulated qty
-        children: (node.children || []).map(child =>
-        expandNode(child, batchCount, mappings)
-        )
+        trackable: isTrackable(recipe.type),
+        mappingType: toMappingType(recipe.type),
+        children: recipe.inputs.map(input => {
+            const branchVisited = new Set(visited);
+            return expandRecipe(
+                input.ref,
+                recipes,
+                input.qty * craftsNeeded,
+                input.qty,
+                branchVisited
+            );
+        })
     };
-}
-
-/**
- * Get a flat list of all items from an expanded tree.
- * Useful for debugging or alternate calculations.
- */
-export function flattenExpanded(expandedCodex: ExpandedCodex): FlattenedItem[] {
-    const items: FlattenedItem[] = [];
-
-    function collect(node: ExpandedNode, researchName: string): void {
-        items.push({
-            name: node.name,
-            tier: node.tier,
-            idealQty: node.idealQty,
-            trackable: node.trackable,
-            mappingType: node.mappingType,
-            research: researchName
-        });
-
-        for (const child of node.children || []) {
-            collect(child, researchName);
-        }
-    }
-
-    for (const research of expandedCodex.researches) {
-        collect(research, research.name);
-    }
-
-    return items;
-}
-
-interface AggregateOptions {
-    trackableOnly?: boolean;
-}
-
-/**
- * Aggregate expanded items by key (name:tier).
- * Sums idealQty for items appearing in multiple branches.
- */
-export function aggregateExpanded(
-    expandedCodex: ExpandedCodex,
-    options: AggregateOptions = {}
-): Map<string, AggregatedItem> {
-    const { trackableOnly = false } = options;
-    const aggregated = new Map<string, AggregatedItemInternal>();
-
-    function collect(node: ExpandedNode, sources: Set<string>): void {
-        if (trackableOnly && !node.trackable) {
-            // Skip non-trackable, but still process children
-            for (const child of node.children || []) {
-                collect(child, sources);
-            }
-            return;
-        }
-
-        const key = `${node.name}:${node.tier}`;
-
-        if (!aggregated.has(key)) {
-            aggregated.set(key, {
-                name: node.name,
-                tier: node.tier,
-                idealQty: 0,
-                trackable: node.trackable,
-                mappingType: node.mappingType,
-                sources: new Set()
-            });
-        }
-
-        const item = aggregated.get(key)!;
-        item.idealQty += node.idealQty;
-        sources.forEach(s => item.sources.add(s));
-
-        for (const child of node.children || []) {
-            collect(child, sources);
-        }
-    }
-
-    for (const research of expandedCodex.researches) {
-        collect(research, new Set([research.name]));
-    }
-
-    // Convert source Sets to arrays for JSON serialization
-    const result = new Map<string, AggregatedItem>();
-    for (const [key, item] of aggregated) {
-        result.set(key, {
-            ...item,
-            sources: Array.from(item.sources)
-        });
-    }
-
-    return result;
-}
-
-/**
- * Find the first trackable items in each branch.
- * These are the items that actually exist in inventory at the highest level.
- */
-export function findFirstTrackable(expandedCodex: ExpandedCodex): FirstTrackableResult[] {
-    const results: FirstTrackableResult[] = [];
-
-    function findInBranch(
-        node: ExpandedNode,
-        parentName: string | null = null
-    ): FirstTrackableResult | FirstTrackableResult[] | null {
-        if (node.trackable) {
-            // Found first trackable - don't go deeper
-            return {
-                name: node.name,
-                tier: node.tier,
-                idealQty: node.idealQty,
-                mappingType: node.mappingType,
-                parent: parentName
-            };
-        }
-
-        // Not trackable - check children
-        const found: FirstTrackableResult[] = [];
-        for (const child of node.children || []) {
-            const result = findInBranch(child, node.name);
-            if (result) {
-                if (Array.isArray(result)) {
-                    found.push(...result);
-                } else {
-                    found.push(result);
-                }
-            }
-        }
-
-        return found.length > 0 ? found : null;
-    }
-
-    for (const research of expandedCodex.researches) {
-        // Research itself is not trackable, find first trackable in its children
-        for (const child of research.children || []) {
-            const found = findInBranch(child, research.name);
-            if (found) {
-                if (Array.isArray(found)) {
-                    results.push(...found);
-                } else {
-                    results.push(found);
-                }
-            }
-        }
-    }
-
-    return results;
 }

@@ -1,15 +1,17 @@
 /**
  * Cascade Calculator
  *
- * Each node has:
- * - satisfied: boolean, true if this item's global need is fully met
- * - scale: 0-1, what fraction of this node's requirement is still needed
- *
- * If satisfied, scale = 0 and children inherit satisfied = true.
- * If not satisfied, scale = globalDeficit / globalRequired, children use this scale.
+ * Applies inventory to an expanded codex tree, propagating satisfaction down.
+ * 
+ * Each node gets:
+ * - satisfied: true if this item's global need is fully met
+ * - scale: fraction of requirement still needed (0 if satisfied)
+ * 
+ * Children inherit satisfaction from parents - if a parent item is complete,
+ * we don't need to gather its ingredients.
  */
 
-import { getItemQuantity, createKey } from './inventory-matcher.js';
+import { createKey } from './inventory-matcher.js';
 import type {
     ExpandedCodex,
     ExpandedNode,
@@ -17,18 +19,15 @@ import type {
     ProcessedNode,
     NodeStatus,
     InventoryLookup,
-    ItemMappingsFile,
     MappingType,
     TrackableItem,
     FirstTrackableItem,
     SecondLevelItem
 } from '../../types.js';
 
-// Pattern to identify Study Journal nodes
 const STUDY_JOURNAL_PATTERN = /Study Journal$/;
 
-// Internal aggregation types
-interface AggregatedItemInternal {
+interface AggregatedItem {
     name: string;
     tier: number;
     required: number;
@@ -51,26 +50,27 @@ interface FirstTrackableInternal {
 
 export function applyCascade(
     expandedCodex: ExpandedCodex,
-    inventoryLookup: InventoryLookup,
-    mappings: ItemMappingsFile | null = null
+    inventoryLookup: InventoryLookup
 ): ProcessedCodex {
-    // Pass 1: Aggregate and compute satisfaction
-    const items = new Map<string, AggregatedItemInternal>();
+    // Pass 1: Aggregate requirements and inventory across all nodes
+    const items = new Map<string, AggregatedItem>();
     for (const research of expandedCodex.researches) {
-        aggregateNode(research, items, inventoryLookup, mappings);
+        aggregateNode(research, items, inventoryLookup);
     }
 
-    // Compute satisfaction and scale for each item
+    // Compute satisfaction and scale
     for (const item of items.values()) {
         item.deficit = Math.max(0, item.required - item.have);
         item.satisfied = item.deficit === 0;
         item.scale = item.required > 0 ? item.deficit / item.required : 0;
     }
 
-    // Pass 2: Build tree
-    const fullResearches = expandedCodex.researches.map(r => buildNode(r, items, false, 1.0));
+    // Pass 2: Build processed tree with satisfaction propagation
+    const fullResearches = expandedCodex.researches.map(r => 
+        buildNode(r, items, false, 1.0)
+    );
 
-    // Pass 3: Extract Study Journals into separate tab
+    // Pass 3: Extract Study Journals into separate aggregated node
     const { researches, studyJournals } = extractStudyJournals(fullResearches);
 
     return {
@@ -84,14 +84,13 @@ export function applyCascade(
 
 function aggregateNode(
     node: ExpandedNode,
-    items: Map<string, AggregatedItemInternal>,
-    inventoryLookup: InventoryLookup,
-    mappings: ItemMappingsFile | null
+    items: Map<string, AggregatedItem>,
+    inventoryLookup: InventoryLookup
 ): void {
     const key = createKey(node.name, node.tier);
 
     if (!items.has(key)) {
-        const { qty } = getItemQuantity(inventoryLookup, node.name, node.tier, mappings);
+        const qty = inventoryLookup.get(key) ?? 0;
         items.set(key, {
             name: node.name,
             tier: node.tier,
@@ -107,36 +106,30 @@ function aggregateNode(
 
     items.get(key)!.required += node.idealQty;
 
-    for (const child of node.children || []) {
-        aggregateNode(child, items, inventoryLookup, mappings);
+    for (const child of node.children) {
+        aggregateNode(child, items, inventoryLookup);
     }
 }
 
 function buildNode(
     node: ExpandedNode,
-    items: Map<string, AggregatedItemInternal>,
+    items: Map<string, AggregatedItem>,
     parentSatisfied: boolean,
     parentScale: number
 ): ProcessedNode {
     const key = createKey(node.name, node.tier);
     const item = items.get(key)!;
 
-    // If parent is satisfied, we're satisfied too (don't need to gather)
     const satisfied = parentSatisfied || item.satisfied;
-
-    // Effective requirement after parent's scale
     const required = Math.ceil(node.idealQty * parentScale);
-
-    // Our deficit: if satisfied, 0. Otherwise, apply our scale to required.
     const deficit = satisfied ? 0 : Math.ceil(required * item.scale);
     const contribution = required - deficit;
     const pctComplete = required > 0 ? Math.round((contribution / required) * 100) : 100;
 
     const status: NodeStatus = satisfied ? 'complete'
-    : contribution > 0 ? 'partial'
-    : 'missing';
+        : contribution > 0 ? 'partial'
+        : 'missing';
 
-    // Children's scale: if we're satisfied, 0. Otherwise, our scale.
     const childScale = satisfied ? 0 : item.scale * parentScale;
 
     return {
@@ -154,7 +147,7 @@ function buildNode(
         satisfiedByParent: parentSatisfied,
         trackable: node.trackable,
         mappingType: node.mappingType,
-        children: (node.children || []).map(c => buildNode(c, items, satisfied, childScale))
+        children: node.children.map(c => buildNode(c, items, satisfied, childScale))
     };
 }
 
@@ -163,83 +156,61 @@ interface ExtractResult {
     studyJournals: ProcessedNode | null;
 }
 
-/**
- * Extract Study Journal subtrees from researches into a dedicated synthetic research.
- * Journals are identified by name pattern and aggregated since they're identical across branches.
- */
 function extractStudyJournals(researches: ProcessedNode[]): ExtractResult {
     const extracted: ProcessedNode[] = [];
     const pruned: ProcessedNode[] = [];
 
     for (const research of researches) {
-        const children = research.children || [];
-        const journalChild = children.find(c => STUDY_JOURNAL_PATTERN.test(c.name));
-        const otherChildren = children.filter(c => !STUDY_JOURNAL_PATTERN.test(c.name));
+        const journalChild = research.children.find(c => STUDY_JOURNAL_PATTERN.test(c.name));
+        const otherChildren = research.children.filter(c => !STUDY_JOURNAL_PATTERN.test(c.name));
 
         if (journalChild) {
             extracted.push(journalChild);
         }
 
-        // Create pruned research with journal removed
-        pruned.push({
-            ...research,
-            children: otherChildren
-        });
+        pruned.push({ ...research, children: otherChildren });
     }
 
-    // If no journals found, return original
     if (extracted.length === 0) {
         return { researches, studyJournals: null };
     }
 
-    // Aggregate journals - they're identical trees, so take first and multiply quantities
     const multiplier = extracted.length;
     const aggregated = aggregateJournalNode(extracted[0], multiplier);
-
-    // Compute overall status for the aggregated journal
     aggregated.status = computeOverallStatus(aggregated);
 
-    return {
-        researches: pruned,
-        studyJournals: aggregated
-    };
+    return { researches: pruned, studyJournals: aggregated };
 }
 
-/**
- * Recursively multiply quantities in a journal node tree.
- */
 function aggregateJournalNode(node: ProcessedNode, multiplier: number): ProcessedNode {
+    const required = node.required * multiplier;
+    const contribution = node.contribution * multiplier;
+    
     return {
         ...node,
-        required: node.required * multiplier,
+        required,
         deficit: node.deficit * multiplier,
-        contribution: node.contribution * multiplier,
-        // Recalculate percentage based on new totals
-        pctComplete: (node.required * multiplier) > 0
-        ? Math.round((node.contribution * multiplier) / (node.required * multiplier) * 100)
-        : 100,
-        children: (node.children || []).map(c => aggregateJournalNode(c, multiplier))
+        contribution,
+        pctComplete: required > 0 ? Math.round((contribution / required) * 100) : 100,
+        children: node.children.map(c => aggregateJournalNode(c, multiplier))
     };
 }
 
-/**
- * Compute overall status for a node based on its own status and children.
- */
 function computeOverallStatus(node: ProcessedNode): NodeStatus {
     if (node.status === 'missing') return 'missing';
     if (node.status === 'partial') return 'partial';
 
-    // Check children recursively
-    for (const child of node.children || []) {
+    for (const child of node.children) {
         const childStatus = computeOverallStatus(child);
-        if (childStatus === 'missing') return 'partial';
-        if (childStatus === 'partial') return 'partial';
+        if (childStatus !== 'complete') return 'partial';
     }
 
     return node.status;
 }
 
-// --- Collection functions ---
+// =============================================================================
+// COLLECTION FUNCTIONS
+// =============================================================================
 
 export function collectTrackableItems(processedCodex: ProcessedCodex): TrackableItem[] {
     const items = new Map<string, {
@@ -264,20 +235,20 @@ export function collectTrackableItems(processedCodex: ProcessedCodex): Trackable
             }
             items.get(key)!.required += node.required;
         }
-        for (const child of node.children || []) collect(child);
+        for (const child of node.children) collect(child);
     }
 
     for (const research of processedCodex.researches) collect(research);
 
     return Array.from(items.values())
-    .map(item => ({
-        ...item,
-        deficit: Math.max(0, item.required - item.have),
-                  pctComplete: item.required > 0
-                  ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
-                  : 100
-    }))
-    .sort((a, b) => b.deficit - a.deficit);
+        .map(item => ({
+            ...item,
+            deficit: Math.max(0, item.required - item.have),
+            pctComplete: item.required > 0
+                ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
+                : 100
+        }))
+        .sort((a, b) => b.deficit - a.deficit);
 }
 
 export function collectFirstTrackable(processedCodex: ProcessedCodex): FirstTrackableItem[] {
@@ -302,25 +273,25 @@ export function collectFirstTrackable(processedCodex: ProcessedCodex): FirstTrac
             items.get(key)!.sources.add(source);
             return;
         }
-        for (const child of node.children || []) findFirst(child, source);
+        for (const child of node.children) findFirst(child, source);
     }
 
     for (const research of processedCodex.researches) {
-        for (const child of research.children || []) {
+        for (const child of research.children) {
             findFirst(child, research.name);
         }
     }
 
     return Array.from(items.values())
-    .map(item => ({
-        ...item,
-        sources: Array.from(item.sources),
-                  deficit: Math.max(0, item.required - item.have),
-                  pctComplete: item.required > 0
-                  ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
-                  : 100
-    }))
-    .sort((a, b) => b.deficit - a.deficit);
+        .map(item => ({
+            ...item,
+            sources: Array.from(item.sources),
+            deficit: Math.max(0, item.required - item.have),
+            pctComplete: item.required > 0
+                ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
+                : 100
+        }))
+        .sort((a, b) => b.deficit - a.deficit);
 }
 
 export function collectSecondLevel(processedCodex: ProcessedCodex): SecondLevelItem[] {
@@ -334,7 +305,7 @@ export function collectSecondLevel(processedCodex: ProcessedCodex): SecondLevelI
     }>();
 
     for (const research of processedCodex.researches) {
-        for (const child of research.children || []) {
+        for (const child of research.children) {
             if (child.satisfiedByParent) continue;
 
             const key = createKey(child.name, child.tier);
@@ -353,9 +324,6 @@ export function collectSecondLevel(processedCodex: ProcessedCodex): SecondLevelI
     }
 
     return Array.from(items.values())
-    .map(item => ({
-        ...item,
-        deficit: Math.max(0, item.required - item.have)
-    }))
-    .sort((a, b) => b.deficit - a.deficit);
+        .map(item => ({ ...item, deficit: Math.max(0, item.required - item.have) }))
+        .sort((a, b) => b.deficit - a.deficit);
 }

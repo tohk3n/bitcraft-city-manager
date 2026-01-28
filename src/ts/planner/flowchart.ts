@@ -16,6 +16,7 @@ interface TabNode extends ProcessedNode {
 // Module state
 let hideComplete = false;
 let zoomLevel = 1;
+let collapsedNodes = new Set<string>();  // Track collapsed nodes by "name:tier" key
 
 /**
  * Render the flowchart view.
@@ -74,7 +75,7 @@ export function render(
         </div>
         <div class="fc-viewport" id="fc-viewport">
         <div class="fc-zoom-controls">
-        <button class="fc-zoom-btn" id="fc-zoom-out" title="Zoom out">−</button>
+        <button class="fc-zoom-btn" id="fc-zoom-out" title="Zoom out">&minus;</button>
         <span class="fc-zoom-level" id="fc-zoom-level">100%</span>
         <button class="fc-zoom-btn" id="fc-zoom-in" title="Zoom in">+</button>
         <button class="fc-zoom-btn fc-zoom-reset" id="fc-zoom-reset" title="Reset zoom">Reset</button>
@@ -109,6 +110,23 @@ export function render(
 
         const renderTree = (): void => {
             treeEl.innerHTML = renderNode(allTabs[activeIndex], true, hideComplete);
+            
+            // Attach click handlers for collapsible nodes
+            treeEl.querySelectorAll<HTMLElement>('.fc-node[data-key]').forEach(nodeEl => {
+                nodeEl.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const key = nodeEl.dataset.key;
+                    if (!key) return;
+                    
+                    if (collapsedNodes.has(key)) {
+                        collapsedNodes.delete(key);
+                    } else {
+                        collapsedNodes.add(key);
+                    }
+                    renderTree();
+                });
+            });
+            
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => drawConnections(container));
             });
@@ -232,14 +250,18 @@ function formatTabName(name: string): string {
  * Render a node recursively.
  */
 function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): string {
-    // Collapse completed non-root branches
+    const nodeKey = `${node.name}:${node.tier}`;
+    const children = node.children || [];
+    const hasChildren = children.length > 0;
+    
+    // Collapse completed non-root branches (existing behavior)
     if (hideComplete && node.status === 'complete' && !isRoot) {
         return `
         <div class="fc-node complete collapsed">
         <div class="fc-node-name">${node.name}</div>
         <div class="fc-node-meta">
         <span class="fc-node-tier">T${node.tier}</span>
-        <span class="fc-node-check">✔</span>
+        <span class="fc-node-check">&check;</span>
         </div>
         </div>
         `;
@@ -249,11 +271,31 @@ function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): 
     ? Math.round((Math.min(node.have, node.required) / node.required) * 100)
     : 100;
     const deficit = Math.max(0, node.required - node.have);
+    
+    // Check if this node is manually collapsed
+    const isCollapsed = hasChildren && collapsedNodes.has(nodeKey);
+    
+    // Build classes and attributes
+    const classes = [
+        'fc-node',
+        node.status,
+        isRoot ? 'root' : '',
+        !node.trackable ? 'non-trackable' : '',
+        hasChildren ? 'collapsible' : '',
+        isCollapsed ? 'is-collapsed' : ''
+    ].filter(Boolean).join(' ');
+    
+    const dataAttr = hasChildren ? `data-key="${nodeKey}"` : '';
+    
+    // Collapse indicator for nodes with children
+    const collapseIndicator = hasChildren 
+        ? `<span class="fc-collapse-indicator">${isCollapsed ? '&#9654;' : '&#9660;'}</span>`
+        : '';
 
     const nodeHtml = `
-    <div class="fc-node ${node.status} ${isRoot ? 'root' : ''} ${!node.trackable ? 'non-trackable' : ''}">
+    <div class="${classes}" ${dataAttr}>
     ${deficit > 0 ? `<div class="fc-node-deficit">-${formatCompact(deficit)}</div>` : ''}
-    <div class="fc-node-name">${node.name}</div>
+    <div class="fc-node-name">${collapseIndicator}${node.name}</div>
     <div class="fc-node-meta">
     <span class="fc-node-tier">T${node.tier}</span>
     <span class="fc-node-qty">
@@ -268,18 +310,30 @@ function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): 
     </div>
     `;
 
-    const children = node.children || [];
-    if (children.length === 0) {
+    if (!hasChildren) {
         return nodeHtml;
     }
 
     // Filter children if hiding complete
-    const visible = hideComplete
+    let visible = hideComplete
     ? children.filter(c => c.status !== 'complete' || hasIncompleteDescendant(c))
     : children;
 
     if (visible.length === 0) {
         return nodeHtml;
+    }
+
+    // If collapsed, show summary cluster instead of children
+    if (isCollapsed) {
+        const summary = aggregateCollapsedChildren(visible);
+        return `
+        <div class="fc-group">
+        ${nodeHtml}
+        <div class="fc-children">
+        ${renderCollapsedCluster(summary)}
+        </div>
+        </div>
+        `;
     }
 
     return `
@@ -298,6 +352,87 @@ function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): 
 function hasIncompleteDescendant(node: ProcessedNode): boolean {
     if (node.status !== 'complete') return true;
     return (node.children || []).some(c => hasIncompleteDescendant(c));
+}
+
+/**
+ * Aggregate stats from collapsed children for summary display.
+ */
+interface CollapsedSummary {
+    totalItems: number;
+    completeItems: number;
+    totalRequired: number;
+    totalHave: number;
+    status: 'complete' | 'partial' | 'missing';
+    types: Set<string>;
+}
+
+function aggregateCollapsedChildren(nodes: ProcessedNode[]): CollapsedSummary {
+    const summary: CollapsedSummary = {
+        totalItems: 0,
+        completeItems: 0,
+        totalRequired: 0,
+        totalHave: 0,
+        status: 'complete',
+        types: new Set()
+    };
+
+    function collect(node: ProcessedNode): void {
+        summary.totalItems++;
+        summary.totalRequired += node.required;
+        summary.totalHave += Math.min(node.have, node.required);
+        summary.types.add(node.mappingType || 'unknown');
+        
+        if (node.status === 'complete') {
+            summary.completeItems++;
+        } else if (node.status === 'missing') {
+            summary.status = 'missing';
+        } else if (node.status === 'partial' && summary.status !== 'missing') {
+            summary.status = 'partial';
+        }
+
+        for (const child of node.children || []) {
+            collect(child);
+        }
+    }
+
+    for (const node of nodes) {
+        collect(node);
+    }
+
+    // Determine final status
+    if (summary.completeItems === summary.totalItems) {
+        summary.status = 'complete';
+    } else if (summary.totalHave > 0) {
+        summary.status = 'partial';
+    }
+
+    return summary;
+}
+
+/**
+ * Render a collapsed cluster summary node.
+ */
+function renderCollapsedCluster(summary: CollapsedSummary): string {
+    const pct = summary.totalRequired > 0
+        ? Math.round((summary.totalHave / summary.totalRequired) * 100)
+        : 100;
+    
+    const typeLabel = summary.types.has('gathered') 
+        ? (summary.types.has('intermediate') ? 'Materials' : 'Gathered')
+        : 'Intermediate';
+
+    return `
+    <div class="fc-node fc-cluster ${summary.status}">
+    <div class="fc-cluster-icon">&hellip;</div>
+    <div class="fc-node-name">${summary.totalItems} ${typeLabel}</div>
+    <div class="fc-node-meta">
+    <span class="fc-node-qty">${summary.completeItems}/${summary.totalItems} ready</span>
+    </div>
+    <div class="fc-node-progress">
+    <div class="fc-node-progress-fill" style="width: ${pct}%"></div>
+    </div>
+    </div>
+    `;
 }
 
 /**
@@ -327,21 +462,29 @@ function drawConnections(container: HTMLElement): void {
         const parentRect = parent.getBoundingClientRect();
         const px = (parentRect.left + parentRect.width / 2 - canvasRect.left) / scale;
         const py = (parentRect.bottom - canvasRect.top) / scale;
+        
+        // Check if parent is collapsed
+        const isParentCollapsed = parent.classList.contains('is-collapsed');
 
         children.forEach(child => {
             const childRect = child.getBoundingClientRect();
             const cx = (childRect.left + childRect.width / 2 - canvasRect.left) / scale;
             const cy = (childRect.top - canvasRect.top) / scale;
 
-            const statusClass = child.classList.contains('complete') ? 'complete'
+            // Determine connector class based on child status and collapse state
+            let statusClass = child.classList.contains('complete') ? 'complete'
             : child.classList.contains('partial') ? 'partial'
             : '';
+            
+            // Add collapsed class if parent is collapsed
+            const collapsedClass = isParentCollapsed ? 'collapsed-connector' : '';
 
             const midY = (py + cy) / 2;
             const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             path.setAttribute('d', `M ${px} ${py} C ${px} ${midY}, ${cx} ${midY}, ${cx} ${cy}`);
             path.classList.add('fc-connector');
             if (statusClass) path.classList.add(statusClass);
+            if (collapsedClass) path.classList.add(collapsedClass);
             svg.appendChild(path);
         });
     });

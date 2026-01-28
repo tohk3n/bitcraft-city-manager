@@ -144,6 +144,57 @@
     cursor: pointer;
 }
 
+/* Collapsible nodes */
+.fc-node.collapsible {
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.fc-node.collapsible:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.fc-node.is-collapsed {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.fc-node.is-collapsed .fc-node-name,
+.fc-node.is-collapsed .fc-node-tier,
+.fc-node.is-collapsed .fc-node-qty,
+.fc-node.is-collapsed .fc-have,
+.fc-node.is-collapsed .fc-need {
+    color: #fff;
+}
+
+.fc-node.is-collapsed .fc-sep {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.fc-node.is-collapsed .fc-node-tier {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.fc-node.is-collapsed .fc-node-progress {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.fc-node.is-collapsed .fc-node-progress-fill {
+    background: #fff;
+}
+
+.fc-collapse-indicator {
+    font-size: 0.6rem;
+    margin-right: 4px;
+    opacity: 0.7;
+}
+
+.fc-node.is-collapsed .fc-collapse-indicator {
+    opacity: 1;
+}
+
 /* Viewport */
 .fc-viewport {
     background: var(--bg-secondary);
@@ -256,6 +307,12 @@
 
 .fc-connector.complete { stroke: var(--status-complete); }
 .fc-connector.partial { stroke: var(--status-partial); }
+
+.fc-connector.collapsed-connector {
+    stroke: var(--accent);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+}
 
 /* Node groups */
 .fc-group {
@@ -387,6 +444,19 @@
 }
 
 .fc-node.complete .fc-node-deficit { display: none; }
+
+/* Collapsed cluster node */
+.fc-cluster {
+    min-width: 120px;
+    background: var(--bg-tertiary);
+    border-style: dashed;
+}
+
+.fc-cluster-icon {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
 
 /* Legend */
 .fc-legend {
