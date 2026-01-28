@@ -5,7 +5,7 @@
  */
 
 import { formatCompact, generateExportText } from './lib/progress-calc.js';
-import * as Dashboard from './dashboard.js';
+import * as PlannerDashboard from './planner-dashboard.js';
 import * as Flowchart from './flowchart.js';
 import type { ProcessedNode, ProgressReport } from '../types.js';
 
@@ -89,7 +89,7 @@ export function render(
  */
 function renderContent(container: HTMLElement): void {
     if (currentView === 'dashboard') {
-        Dashboard.render(container, cachedResearches, cachedStudyJournals);
+        PlannerDashboard.render(container, cachedResearches, cachedStudyJournals);
     } else {
         if (cachedReport) {
             Flowchart.render(container, cachedResearches, cachedReport, cachedStudyJournals);

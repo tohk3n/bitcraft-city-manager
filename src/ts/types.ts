@@ -576,9 +576,66 @@ export type StateMatrixEntry = {
     state: CELL_TYPE;
 };
 
+// =============================================================================
+// 11. NORMALIZED RECIPE DATA (v2)
+// =============================================================================
+
+// --- Recipe Format ---
+
+export interface RecipeInput {
+    ref: string;    // "Item Name:tier" format, e.g. "Exquisite Brick:5"
+    qty: number;
+}
+
+
+/**
+ * Recipe types determine node behavior in the crafting tree:
+ * - gathered: Raw resources, leaf nodes with no inputs
+ * - intermediate: Crafted items consumed in the same chain
+ * - refined: Target materials for research completion
+ * - research: Codex research goals (top-level nodes)
+ * - study: Study journals and stone carvings
+ */
+export type RecipeType = 'gathered' | 'intermediate' | 'refined' | 'research' | 'study';
+
+export interface Recipe {
+    name: string;          // Item name
+    tier: number;          // Item tier
+    type: RecipeType;
+    qty: number;           // Output quantity per craft (alias for yields)
+    yields: number;        // Output quantity per craft
+    inputs: RecipeInput[]; // Empty for gathered items
+}
+
+export interface RecipesFile {
+    version: number;
+    generated: string;
+    recipes: Record<string, Recipe>;  // Key: "Item Name:tier"
+}
+
+// --- Codex Format ---
+
+export interface CodexResearch {
+    id: string;      // Research name, e.g. "Apprentice Stone Research"
+    tier: number;
+    inputs: RecipeInput[];  // Direct inputs for research completion
+}
+
+export interface CodexTier {
+    name: string;    // e.g. "Apprentice Codex"
+    tier: number;
+    researches: CodexResearch[];
+}
+
+export interface CodexFile {
+    version: number;
+    generated: string;
+    tiers: Record<string, CodexTier>;  // Key: tier number as string
+}
+
 
 // =============================================================================
-// 11. CLAIM SEARCH TYPES
+// 12. CLAIM SEARCH TYPES
 // =============================================================================
 
 export interface ClaimSearchElements {

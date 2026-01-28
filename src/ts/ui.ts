@@ -1,7 +1,7 @@
 // Core UI - combines base utilities with view-specific modules
 import {CELL_TYPE, CONFIG} from './config.js';
 import { MAP_LINK } from './maplink.js';
-import { UI } from './ui.js';
+import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
 import type { ResourceIdMatrix } from './types.js';
