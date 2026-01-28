@@ -40,6 +40,7 @@ export const DASHBOARD_CONFIG = {
     ],
     // Categories excluded from inventory grid (shown in quick stats instead)
     INVENTORY_GRID_EXCLUDE: ['Food', 'Scholar'],
+
     //TODO check if this can not be done with css
     BG_CONST : 'background: rgba(88, 166, 255, 0.2);'
 }
