@@ -1,5 +1,7 @@
 // Process inventory data using API-provided item/cargo metadata
 import { CONFIG } from './configuration/config.js';
+import { DASHBOARD_CONFIG } from './configuration/dashboardconfig.js';
+
 import type {
   ClaimInventoriesResponse,
   ApiItem,
@@ -13,7 +15,7 @@ import type {
   ScholarByTier,
   TierQuantities,
   CraftingStationsResult,
-  StationsByName,
+  StationsByName, BuildingBreakdown, BuildingFunction, InventorySlotContents, TagGroup,
 } from './types.js';
 
 // Helper to create fresh tier quantities object
@@ -23,16 +25,16 @@ function createTierQuantities(): TierQuantities {
 
 // Process raw API response into structured inventory
 export function processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
-  const buildings = data.buildings || [];
-  const itemMeta = buildMetaLookup(data.items || []);
-  const cargoMeta = buildMetaLookup(data.cargos || []);
+  const buildings: Building[] = data.buildings || [];
+  const itemMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.items || []);
+  const cargoMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.cargos || []);
 
   // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
   const inventory: ProcessedInventory = {};
 
   // Material matrix: category -> tier -> quantity
   const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
-  for (const cat of CONFIG.MATRIX_CATEGORIES) {
+  for (const cat of DASHBOARD_CONFIG.MATRIX_CATEGORIES) {
     materialMatrix[cat as MaterialCategory] = createTierQuantities();
   }
 
@@ -43,26 +45,26 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
   const scholarByTier: ScholarByTier = createTierQuantities();
 
   for (const building of buildings) {
-    const buildingName = building.buildingNickname || building.buildingName;
+    const buildingName:string = building.buildingNickname || building.buildingName;
 
     for (const slot of building.inventory || []) {
-      const contents = slot.contents;
+      const contents:InventorySlotContents|null = slot.contents;
       if (!contents) continue;
 
-      const id = contents.item_id;
-      const qty = contents.quantity;
-      const isItem = contents.item_type === 'item';
+      const id:number = contents.item_id;
+      const qty:number = contents.quantity;
+      const isItem:boolean = contents.item_type === 'item';
 
-      const meta = isItem ? itemMeta[id] : cargoMeta[id];
+      const meta:ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
       if (!meta) continue;
 
-      const tag = meta.tag || 'Other';
-      const category = CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
-      const tier = meta.tier > 0 ? meta.tier : 1;
+      const tag:string = meta.tag || 'Other';
+      const category:string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
+      const tier:number = meta.tier > 0 ? meta.tier : 1;
       const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
 
       // Aggregate raw materials into matrix by category and tier
-      if (CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
+      if (DASHBOARD_CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
         materialMatrix[category as MaterialCategory][tierKey] += qty;
       }
 
@@ -85,7 +87,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
         inventory[category][tag] = { items: {}, total: 0 };
       }
 
-      const tagGroup = inventory[category][tag];
+      const tagGroup:TagGroup = inventory[category][tag];
 
       if (!tagGroup.items[id]) {
         tagGroup.items[id] = {
@@ -101,7 +103,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       tagGroup.total += qty;
 
       // Track per-building breakdown
-      const existing = tagGroup.items[id].buildings.find(b => b.name === buildingName);
+      const existing = tagGroup.items[id].buildings.find(b => b.name === buildingName) as BuildingBreakdown | undefined;
       if (existing) {
         existing.qty += qty;
       } else {
@@ -128,12 +130,12 @@ export function processCraftingStations(buildings: Building[]): CraftingStations
   const passive: StationsByName = {};
 
   for (const building of buildings) {
-    const func = building.functions?.[0];
+    const func:BuildingFunction|undefined = building.functions?.[0];
     if (!func) continue;
 
-    const tier = func.level || 1;
+    const tier:number = func.level || 1;
     const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
-    const name = building.buildingName;
+    const name:string = building.buildingName;
 
     // Active: has crafting slots
     if (func.crafting_slots && func.crafting_slots > 0) {
