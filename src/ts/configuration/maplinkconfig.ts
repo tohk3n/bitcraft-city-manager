@@ -168,16 +168,3 @@ export const MAP_CONFIG = {
     BASE_URL: 'https://bitcraftmap.com/'
 
 };
-
-export enum CELL_TYPE {
-    FULL= "full",
-    PART= "part",
-    NONE= "none"
-}
-
-export enum LINK_PARAM{
-    REGION_ID = "regionId",
-    RESOURCE_ID = "resourceId",
-    PLAYER_ID = "playerId",
-    ENEMY_ID = "enemyId"
-}
