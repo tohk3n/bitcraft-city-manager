@@ -11,7 +11,7 @@ import type {
     Building,
     InventoryLookup,
     MetaLookups
-} from '../../types.js';
+} from '../../types/index.js';
 
 const PACKAGE_MULTIPLIERS: Record<string, number> = {
     default: 100,

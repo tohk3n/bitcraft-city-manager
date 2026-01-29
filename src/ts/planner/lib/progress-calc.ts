@@ -15,7 +15,7 @@ import type {
     ProgressReport,
     ActivityGroup,
     ResearchProgress
-} from '../../types.js';
+} from '../../types/index.js';
 
 /**
  * Activity categories for grouping items.

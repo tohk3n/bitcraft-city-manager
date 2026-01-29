@@ -4,7 +4,7 @@ So you want to touch the planner code. Godspeed.
 
 ## The Pipeline
 
-```
+```text
 recipe-expander  →  cascade-calc  →  progress-calc
      ↓                   ↓               ↓
   "raw math"      "subtract your     "percentages
@@ -19,7 +19,7 @@ Data in, data out. No state. No surprises. Mostly.
 
 Study Journals show up in ALL FIVE research branches. You have 350. You need 1340.
 
-Old broken code: each branch looks at inventory, sees 350, says "I'm good!" 
+Old broken code: each branch looks at inventory, sees 350, says "I'm good!"
 Result: carvings show 0 needed. LIES.
 
 Fixed code: first branch grabs what it can from the pile. Next branch gets leftovers. Sorry branch #5, the cupboard is bare.
@@ -28,7 +28,7 @@ This is `cascade-calc.js`. The `consumed` map tracks who took what. Don't remove
 
 ## Codex Files
 
-The `qty` values are totals, not multipliers. 
+The `qty` values are totals, not multipliers.
 
 ```javascript
 { name: "Refined Cloth", qty: 1 }  // need 1 per codex
@@ -56,8 +56,8 @@ If you start multiplying qty × parent qty × grandparent qty you will get numbe
 
 ## File Layout
 
-```
-planner.js, task-list.js, flowchart.js    # UI
+```bash
+planner.js, task-list.js, flowchart.js     # UI
 lib/recipe-expander.js                     # math
 lib/cascade-calc.js                        # math + inventory
 lib/progress-calc.js                       # aggregation  

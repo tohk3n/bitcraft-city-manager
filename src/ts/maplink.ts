@@ -1,6 +1,7 @@
 // Map link composer functionality
-import {CELL_TYPE, CONFIG} from './config.js';
-import {ResourceIdMatrix, ResourceRowName, StateMatrixEntry} from './types.js';
+import { MAP_CONFIG } from './configuration/index.js';
+
+import { CELL_TYPE, LINK_PARAM, ResourceIdMatrix, ResourceRowName, StateMatrixEntry } from './types/index.js';
 
 interface LinkDataMap {
   regionId?: string;
@@ -50,7 +51,7 @@ export const MAP_LINK = {
             dataMap.playerId = playerIds;
         }
 
-        let displayUrl = CONFIG.MAP_BASE_URL;
+        let displayUrl = MAP_CONFIG.BASE_URL;
         let first = true;
 
     // First value has ? prefix, subsequent use &
@@ -64,15 +65,15 @@ export const MAP_LINK = {
 
   // Generate link to bitcraft map from provided data
   generateLink(regions: string[], resourceIds: string, playerIds: string): URL {
-    const url = new URL(CONFIG.MAP_BASE_URL);
+    const url = new URL(MAP_CONFIG.BASE_URL);
     if (regions.length > 0) {
-      url.searchParams.set("regionId", regions.join(','));
+      url.searchParams.set(LINK_PARAM.REGION_ID, regions.join(','));
     }
     if (resourceIds !== '') {
-      url.searchParams.set("resourceId", resourceIds);
+      url.searchParams.set(LINK_PARAM.RESOURCE_ID, resourceIds);
     }
     if (playerIds !== '') {
-      url.searchParams.set("playerId", playerIds);
+      url.searchParams.set(LINK_PARAM.PLAYER_ID, playerIds);
     }
 
     return url;
@@ -129,7 +130,7 @@ export const MAP_LINK = {
 
         const idSet = new Set(idsToCheck.map(Number));
         const result: StateMatrixEntry[] = [];
-        const matrix:ResourceIdMatrix = CONFIG.RESOURCE_ID_MATRIX;
+        const matrix:ResourceIdMatrix = MAP_CONFIG.RESOURCE_ID_MATRIX;
 
         for (const [category, arrayOfArrays] of Object.entries(matrix)) {
             arrayOfArrays.forEach((ids:number[], index:number):void => {
@@ -160,7 +161,7 @@ export const MAP_LINK = {
         const index:number = tier - 1;
 
         //get corresponding ids for this row/tier
-        const idValues:number[] = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[index];
+        const idValues:number[] = MAP_CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[index];
         if(!idValues)return;
         //update input field
         idValues.forEach(id => this.syncInputValue(id, !isActive))

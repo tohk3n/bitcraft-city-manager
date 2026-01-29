@@ -10,7 +10,7 @@ import {
   PlannerState,
   EquipmentSlot,
   CalculateOptions
-} from './types.js';
+} from './types/index.js';
 
 const log = createLogger('Main');
 
