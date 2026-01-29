@@ -1,6 +1,6 @@
 # Logger
 
-Something broke. Was it the API? The cascade math? The inventory lookup? 
+Something broke. Was it the API? The cascade math? The inventory lookup?
 
 **GOOD LUCK FINDING OUT** with `console.log` confetti.
 
@@ -21,7 +21,7 @@ log.error('not fine');
 
 Output has timestamps and namespaces so you can actually trace what happened:
 
-```
+```typescript
 +125ms [API] Fetching /claims/123/inventories
 +187ms [PERF] API:fetch 62.0ms
 +190ms [Planner] Calculating T6 requirements
@@ -32,7 +32,7 @@ Output has timestamps and namespaces so you can actually trace what happened:
 
 Add `?debug` to the URL. That's it.
 
-```
+```typescript
 https://yoursite.com/?claim=123&debug
 ```
 
@@ -135,7 +135,7 @@ log.error('Item not found');  // No. Expected conditions aren't errors.
 From noisy to quiet: `debug` → `info` → `warn` → `error` → `none`
 
 | Level | When |
-|-------|------|
+| ------- | ------ |
 | `debug` | Troubleshooting. API payloads. Internal state. The stuff you need once a month. |
 | `info` | Operations completed. Counts loaded. Things worth knowing. |
 | `warn` | Degraded but functional. Missing optional data. Fallbacks triggered. |

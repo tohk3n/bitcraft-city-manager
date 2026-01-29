@@ -3,7 +3,7 @@
  */
 
 import { formatCompact, categorizeByActivity } from './lib/progress-calc.js';
-import type { FirstTrackableItem } from '../types.js';
+import type { FirstTrackableItem } from '../types/index.js';
 
 // Sort options
 type SortOption = 'deficit' | 'deficit-asc' | 'tier' | 'tier-asc' | 'activity' | 'name';

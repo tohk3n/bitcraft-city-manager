@@ -20,7 +20,7 @@ import type {
     TierRequirements,
     CalculateOptions,
     SecondLevelItem
-} from '../types.js';
+} from '../types/index.js';
 
 // Tier upgrade requirements: target tier -> { codexTier, count }
 const TIER_REQUIREMENTS: TierRequirements = {

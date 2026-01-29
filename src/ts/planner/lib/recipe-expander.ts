@@ -12,7 +12,7 @@ import type {
     RecipesFile,
     CodexFile,
     CodexResearch
-} from '../../types.js';
+} from '../../types/index.js';
 import { getCodexTier, toMappingType, isTrackable } from './recipe-graph.js';
 
 export function expandRecipes(

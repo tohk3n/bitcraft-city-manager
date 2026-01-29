@@ -10,7 +10,7 @@ import type {
   ItemResponse,
   PlayerEquipmentResponse,
   PlayerVaultResponse
-} from './types.js';
+} from './types/index.js';
 
 const log = createLogger('API');
 

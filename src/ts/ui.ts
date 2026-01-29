@@ -1,11 +1,13 @@
 // Core UI - combines base utilities with view-specific modules
-import {CELL_TYPE, CONFIG} from './config.js';
+import { CONFIG} from './configuration/config.js';
 import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
-import type { ResourceIdMatrix } from './types.js';
-import {createLogger} from "./logger.js";
+import { CELL_TYPE } from './types/index.js';
+import type { ResourceIdMatrix } from './types/index.js';
+import {createLogger } from "./logger.js";
+import { MAP_CONFIG } from "./configuration/maplinkconfig";
 
 const log = createLogger('UI');
 // Base UI utilities
@@ -187,7 +189,7 @@ const BaseUI = {
     if(!matrixBtn)return;
     const matrixWrapper:HTMLElement|null = document.getElementById('id-matrix');
     if(!matrixWrapper)return;
-    this.renderResourceMatrix('id-matrix', CONFIG.RESOURCE_ID_MATRIX);
+    this.renderResourceMatrix('id-matrix', MAP_CONFIG.RESOURCE_ID_MATRIX);
 
     btn?.addEventListener("click", ():void => MAP_LINK.generateLinkEvent());
 
@@ -252,7 +254,7 @@ const BaseUI = {
           cellArea.dataset.row = rowName;
           cellArea.dataset.tier = String(t);
           const currentIndex:number = t-1;
-          const idValues:number[] = CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
+          const idValues:number[] = MAP_CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[currentIndex] ?? [];
           if(idValues.length > 0){
             const cellButton = document.createElement('button') as HTMLButtonElement;
             cellButton.textContent = '';

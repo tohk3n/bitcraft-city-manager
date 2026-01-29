@@ -12,7 +12,7 @@ import type {
     CodexFile,
     CodexTier,
     MappingType
-} from '../../types.js';
+} from '../../types/index.js';
 
 // =============================================================================
 // KEY UTILITIES

@@ -10,8 +10,8 @@
  */
 import { createLogger } from './logger.js';
 import { API } from './api.js';
-import { KeyboardKey } from './config.js';
-import type { ClaimSearchResult, ClaimSearchElements, ClaimSearchCallbacks } from './types.js';
+import { KeyboardKey } from './types/index.js';
+import type { ClaimSearchResult, ClaimSearchElements, ClaimSearchCallbacks } from './types/index.js';
 
 const log = createLogger('ClaimSearch');
 
