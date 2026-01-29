@@ -1,5 +1,19 @@
 export const MAP_CONFIG = {
-
+    // Matrix containing IDs for huntable animals
+    ENEMY_ID_MATRIX: {
+        Animals: [
+            [2],
+            [5],
+            [7, 8],
+            [4, 9, 10, 11],
+            [3, 13],
+            [6],
+            [15],
+            [12],
+            [14],
+            [16]
+        ]
+    },
     // Matrix to show resource IDs
     RESOURCE_ID_MATRIX: {
         Trees: [

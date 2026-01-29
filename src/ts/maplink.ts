@@ -7,6 +7,7 @@ interface LinkDataMap {
   regionId?: string;
   resourceId?: string;
   playerId?: string;
+  enemyId?: string;
 }
 
 export const MAP_LINK = {
@@ -18,16 +19,19 @@ export const MAP_LINK = {
 
       const resIdsEl = document.getElementById("res-ids") as HTMLInputElement | null;
       const playerIdsEl = document.getElementById("player-ids") as HTMLInputElement | null;
+      const enemyIdsEl = document.getElementById("enemy-ids") as HTMLInputElement | null;
 
-      let resourceIdInput = resIdsEl?.value || '';
-      let playerIdInput = playerIdsEl?.value || '';
+      let resourceIdInput:string = resIdsEl?.value || '';
+      let playerIdInput:string = playerIdsEl?.value || '';
+      let enemyIdInput:string = enemyIdsEl?.value || '';
         // Remove possible trailing comma
         resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
         playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
+        enemyIdInput = MAP_LINK.finalizeCommaNumberInput(enemyIdInput);
 
     // Build the link
-    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput);
-    const displayLink = MAP_LINK.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput);
+    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput, enemyIdInput);
+    const displayLink = MAP_LINK.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput, enemyIdInput);
 
     // Show link in UI
     const linkEl = document.getElementById("map-link") as HTMLAnchorElement | null;
@@ -37,8 +41,8 @@ export const MAP_LINK = {
     }
   },
 
-  // ONLY for display, its not a correct link (so it might not work)
-  generateDisplayLink(regions: string[], resourceIds: string, playerIds: string): string {
+  // ONLY for display, it's not a correct link (so it might not work)
+  generateDisplayLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): string {
     const dataMap: LinkDataMap = {};
 
         if (regions.length > 0) {
@@ -49,6 +53,9 @@ export const MAP_LINK = {
         }
         if (playerIds !== '') {
             dataMap.playerId = playerIds;
+        }
+        if (enemyIds !== '') {
+            dataMap.enemyId = enemyIds;
         }
 
         let displayUrl = MAP_CONFIG.BASE_URL;
@@ -64,7 +71,7 @@ export const MAP_LINK = {
   },
 
   // Generate link to bitcraft map from provided data
-  generateLink(regions: string[], resourceIds: string, playerIds: string): URL {
+  generateLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): URL {
     const url = new URL(MAP_CONFIG.BASE_URL);
     if (regions.length > 0) {
       url.searchParams.set(LINK_PARAM.REGION_ID, regions.join(','));
@@ -74,6 +81,9 @@ export const MAP_LINK = {
     }
     if (playerIds !== '') {
       url.searchParams.set(LINK_PARAM.PLAYER_ID, playerIds);
+    }
+    if (enemyIds !== '') {
+      url.searchParams.set(LINK_PARAM.ENEMY_ID, playerIds);
     }
 
     return url;
