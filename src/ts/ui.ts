@@ -4,9 +4,10 @@ import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
-import type { ResourceIdMatrix } from './types.js';
-import {createLogger} from "./logger.js";
-import {CELL_TYPE, MAP_CONFIG} from "./configuration/maplinkconfig";
+import { CELL_TYPE } from './types/index.js';
+import type { ResourceIdMatrix } from './types/index.js';
+import {createLogger } from "./logger.js";
+import { MAP_CONFIG } from "./configuration/maplinkconfig";
 
 const log = createLogger('UI');
 // Base UI utilities

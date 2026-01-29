@@ -1,7 +1,7 @@
 // Map link composer functionality
-import {CELL_TYPE, LINK_PARAM, MAP_CONFIG} from './configuration/maplinkconfig.js';
+import { MAP_CONFIG } from './configuration/index.js';
 
-import {ResourceIdMatrix, ResourceRowName, StateMatrixEntry} from './types.js';
+import { CELL_TYPE, LINK_PARAM, ResourceIdMatrix, ResourceRowName, StateMatrixEntry } from './types/index.js';
 
 interface LinkDataMap {
   regionId?: string;

@@ -16,7 +16,7 @@ import type {
   TierQuantities,
   CraftingStationsResult,
   StationsByName, BuildingBreakdown, BuildingFunction, InventorySlotContents, TagGroup,
-} from './types.js';
+} from './types/index.js';
 
 // Helper to create fresh tier quantities object
 function createTierQuantities(): TierQuantities {

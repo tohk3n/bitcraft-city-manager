@@ -8,7 +8,7 @@ import type {
   EquipmentSlotName,
   GearType,
   VaultCache, Citizen, PlayerVaultResponse
-} from './types.js';
+} from './types/index.js';
 import {CITIZEN_CONFIG} from "./configuration/citizenconfig";
 
 // Internal state for citizens module

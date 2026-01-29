@@ -16,7 +16,7 @@ import type {
   StationsByName, StationSummary,
   TagGroup,
   TierQuantities
-} from './types.js';
+} from './types/index.js';
 import {DASHBOARD_CONFIG} from "./configuration/dashboardconfig";
 import {CONFIG} from "./configuration/config";
 

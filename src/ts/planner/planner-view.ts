@@ -8,7 +8,7 @@
 import { formatCompact, generateExportText } from './lib/progress-calc.js';
 import * as PlannerDashboard from './planner-dashboard.js';
 import * as Flowchart from './flowchart.js';
-import type { ProcessedNode, ProgressReport } from '../types.js';
+import type { ProcessedNode, ProgressReport } from '../types/index.js';
 
 type ViewMode = 'dashboard' | 'flowchart';
 

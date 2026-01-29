@@ -12,7 +12,7 @@
  */
 
 import { formatCompact, categorizeByActivity } from './lib/progress-calc.js';
-import type { ProcessedNode, MappingType } from '../types.js';
+import type { ProcessedNode, MappingType } from '../types/index.js';
 
 // Collected item with computed fields
 interface DashboardItem {
