@@ -53,7 +53,7 @@ PRs welcome. Keep it simple. No frameworks.
 
 - Bitjita for the API
 - Lomacil for the original work
-- The Ardent City for testing
+- The Ardent City and The Randy Ribbit Ranch for testing
 - Caffeine
 
 ## License
