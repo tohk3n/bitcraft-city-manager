@@ -45,7 +45,7 @@ export function toMappingType(type: RecipeType): MappingType {
 }
 
 export function isTrackable(type: RecipeType): boolean {
-    return type === 'gathered' || type === 'refined' || type === 'study';
+    return type !== 'research';
 }
 
 // =============================================================================

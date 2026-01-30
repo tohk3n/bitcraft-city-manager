@@ -43,7 +43,7 @@ export interface TrackableItem {
 }
 
 export interface FirstTrackableItem extends TrackableItem {
-    sources: string[];
+    sources: string[];  // which research branches need this item
 }
 
 export interface SecondLevelItem {
