@@ -5,12 +5,13 @@ So you want to touch the planner code. Godspeed.
 ## The Pipeline
 
 ```text
-recipe-expander  →  cascade-calc  →  progress-calc
-     ↓                   ↓               ↓
-  "raw math"      "subtract your     "percentages
-                   hoard"             for Discord"
+recipe-expander  →  cascade-calc  →  progress-calc  →  planner-view
+     ↓                   ↓               ↓                 ↓
+  "raw math"      "subtract your     "percentages"     "pixels on
+                   hoard"                               screen"
 
 inventory-matcher (figures out where you put things)
+recipe-graph (knows what makes what)
 ```
 
 Data in, data out. No state. No surprises. Mostly.
@@ -24,64 +25,138 @@ Result: carvings show 0 needed. LIES.
 
 Fixed code: first branch grabs what it can from the pile. Next branch gets leftovers. Sorry branch #5, the cupboard is bare.
 
-This is `cascade-calc.js`. The `consumed` map tracks who took what. Don't remove it or Lomacil will find you.
+This is `cascade-calc.ts`. The `consumed` map tracks who took what. Don't remove it or Lomacil will find you.
 
-## Codex Files
+## Data Files
 
-The `qty` values are totals, not multipliers.
+Two files. That's it. THE GREAT DATA DIET succeeded.
+
+**codex.json** — Tier metadata and research entry points. "To get T6, complete these 5 researches."
+
+**recipes.json** — The normalized recipe graph. Every craftable item, what it needs, what it yields. Referenced by `"Name:tier"` keys.
 
 ```javascript
-{ name: "Refined Cloth", qty: 1 }  // need 1 per codex
+// codex.json structure
+{
+  "tiers": {
+    "5": {
+      "name": "Advanced Codex",
+      "tier": 5,
+      "researches": [
+        { "id": "Advanced Stone Research", "tier": 5, "inputs": [...] }
+      ]
+    }
+  }
+}
+
+// recipes.json structure  
+{
+  "recipes": {
+    "Advanced Brick:5": {
+      "name": "Advanced Brick",
+      "tier": 5,
+      "type": "intermediate",
+      "yields": 1,
+      "inputs": [
+        { "ref": "Unfired Advanced Brick:5", "qty": 1 },
+        { "ref": "Advanced Wood Log:5", "qty": 1 }
+      ]
+    }
+  }
+}
 ```
 
-If you start multiplying qty × parent qty × grandparent qty you will get numbers in the billions and then you will open an issue and I will point you to this paragraph.
+The `qty` values are per-craft, not totals. The expander handles multiplication.
+
+## Package Multipliers
+
+THE SACRED TABLE. Packages contain multiple items. The math must account for this.
+
+| Package Type | Items per Package |
+| -------------- | ------------------- |
+| Default (wood, metal, etc.) | 100 |
+| Pebbles | 500 |
+| Flowers | 500 |
+| Fibers | 1000 |
+
+Detection is by name/tag containing the keyword. "Package of Fine Pebbles" → pebble → 500×.
+
+If you add a new package type, update `PACKAGE_MULTIPLIERS` in `inventory-matcher.ts` AND this table. Future you will thank past you. THE PACKAGES HAVE DECEIVED BEFORE.
 
 ## The Modules
 
-**recipe-expander.js** — Multiplies everything by batch count. That's it. 20 codexes means 20× the berries.
+### Data Layer (`lib/`)
 
-**cascade-calc.js** — The inventory subtraction. Tracks consumption. Does the "if parent has 74% deficit, children only need 74%" thing. This is where the bugs live.
+**recipe-graph.ts** — Data access utilities. `getCodexTier()`, `isTrackable()`, `toMappingType()`. Knows the shape of the JSON. Doesn't do math.
 
-**inventory-matcher.js** — Packages are 100 items. Except flowers (500). Except fiber (1000). Some items don't exist in inventory at all (research goals). This module handles the pain.
+**recipe-expander.ts** — Expands a codex tier into a full crafting tree. Input: tier + count. Output: tree with `idealQty` on every node. Pure math, no inventory awareness.
 
-**progress-calc.js** — Turns the tree into percentages and categories. Makes the Discord export. Least likely to break.
+**cascade-calc.ts** — The inventory subtraction. Tracks consumption across shared resources. Does the "if parent has 74% deficit, children only need 74%" thing. Extracts Study Journals into their own aggregated node. This is where the bugs live.
 
-## UI Modules
+**inventory-matcher.ts** — Builds the inventory lookup from API data. Handles package expansion and name normalization. `"fine brick:4"` → quantity.
 
-**task-list.js** — The card grid with filters. Yes you can filter by tier. Yes you can sort. Yes there's a copy button. You're welcome.
+**progress-calc.ts** — Aggregates the processed tree into progress stats. Groups by activity (Mining, Logging, etc.). Generates Discord export text.
 
-**flowchart.js** — The big draggy tree. Tabs, connectors, collapse toggle. It gets wide. Deal with it.
+### UI Layer
 
-**planner.js** — Loads data, calls the other modules. The coordinator. Doesn't do much itself anymore.
+**planner.ts** — The coordinator. Loads data, wires up controls, calls the pipeline. Caches codex/recipes. Doesn't render anything itself anymore.
+
+**planner-view.ts** — Tab container for dashboard/flowchart. Manages view switching and copy buttons. Delegates actual rendering.
+
+**planner-dashboard.ts** — The task list grouped by activity. Filters, sort, collapse. "Copy View" vs "Copy All". What leaders actually use.
+
+**flowchart.ts** — The big draggy tree. Research tabs, SVG connectors, collapse toggle. It gets wide. Deal with it.
+
+**task-list.ts** — Legacy card grid. Still exists, may be removed. Dashboard is the primary view now.
 
 ## File Layout
 
 ```bash
-planner.js, task-list.js, flowchart.js     # UI
-lib/recipe-expander.js                     # math
-lib/cascade-calc.js                        # math + inventory
-lib/progress-calc.js                       # aggregation  
-lib/inventory-matcher.js                   # inventory lookups
+planner/
+├── planner.ts              # Coordinator, data loading
+├── planner-view.ts         # Tab container (dashboard/flowchart)
+├── planner-dashboard.ts    # Activity-grouped task list
+├── flowchart.ts            # Tree visualization
+├── task-list.ts            # Legacy card grid
+├── PLANNER_INTERNALS.md    # You are here
+└── lib/
+    ├── recipe-graph.ts     # Data access utilities
+    ├── recipe-expander.ts  # Tree expansion (phase 1)
+    ├── cascade-calc.ts     # Inventory application (phase 2)
+    ├── inventory-matcher.ts # Inventory lookup builder
+    └── progress-calc.ts    # Stats aggregation (phase 3)
 
-/data/t*-codex.json                        # the recipe trees
-/data/item-mappings.json                   # name weirdness
+/data/
+├── codex.json              # Tier metadata + research entry points
+└── recipes.json            # Normalized recipe graph
 ```
 
 ## Debugging
 
-Numbers too big? You're multiplying through the tree. Stop that. Children get `batchCount`, not `parent.qty × batchCount`.
+**Numbers too big?** You're multiplying through the tree. Stop that. Children get their own `qty`, not `parent.qty × child.qty × grandparent.qty`. The expander handles this.
 
-Numbers not changing when you add inventory? Check `inventory-matcher`. Probably a tier mismatch or the item is marked non-trackable.
+**Numbers not changing when you add inventory?** Check `inventory-matcher`. Probably a tier mismatch, name normalization issue, or the item is marked non-trackable.
 
-Carvings showing 0 when journals show deficit? You broke cascade-calc. The `consumed` map is gone or the branches aren't sharing properly.
+**Carvings showing 0 when journals show deficit?** You broke cascade-calc. The `consumed` map is gone or the branches aren't sharing properly.
 
-## JS Stuff
+**Pebbles showing way less than expected?** Check `getPackageMultiplier()`. Pebbles are 500, not 100.
 
-```javascript
+**Progress stuck at weird percentage?** Study Journals are shared across all 5 researches. They get extracted and aggregated. If that extraction breaks, the math goes sideways.
+
+## TypeScript Stuff
+
+```typescript
 lookup.get(key)              // undefined if missing
 options.count ?? default     // only replaces null/undefined, 0 is fine
-mappings?.items?.[name]      // won't explode
+mappings?.items?.[name]      // won't explode (optional chaining)
 const { qty: have } = fn()   // rename during destructure
 ```
 
 If you're from Java, `?.` is your new best friend. No more NPEs.
+
+The types live in `types/codex.ts` and `types/planner.ts`. Key ones:
+
+- `ExpandedNode` — After recipe-expander, before inventory
+- `ProcessedNode` — After cascade-calc, has `have`/`deficit`/`status`
+- `ProgressReport` — The stats object for UI consumption
+- `InventoryLookup` — `Map<string, number>` keyed by `"name:tier"`

@@ -15,6 +15,7 @@ import type {
 
 const PACKAGE_MULTIPLIERS: Record<string, number> = {
     default: 100,
+    pebble: 500,
     flower: 500,
     fiber: 1000
 };
