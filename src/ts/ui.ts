@@ -1,13 +1,12 @@
 // Core UI - combines base utilities with view-specific modules
-import { CONFIG} from './configuration/config.js';
-import { MAP_LINK } from './maplink.js';
-import { DashboardUI } from './dashboard.js';
-import { CitizensUI } from './citizens.js';
-import { IdsUI } from './ids.js';
-import { CELL_TYPE } from './types/index.js';
-import type { ResourceIdMatrix } from './types/index.js';
-import {createLogger } from "./logger.js";
-import { MAP_CONFIG } from "./configuration/maplinkconfig.js";
+import {CONFIG} from './configuration/config.js';
+import {MAP_LINK} from './maplink.js';
+import {DashboardUI} from './dashboard.js';
+import {CitizensUI} from './citizens.js';
+import {IdsUI} from './ids.js';
+import {CELL_TYPE} from './types/index.js';
+import {createLogger} from "./logger.js";
+import {MAP_CONFIG} from "./configuration/maplinkconfig.js";
 
 const log = createLogger('UI');
 // Base UI utilities
@@ -276,6 +275,14 @@ const BaseUI = {
               }
               if (resourceName !== undefined && resourceName in MAP_CONFIG.ENEMY_ID_MATRIX) {
                 MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.ENEMY_ID_MATRIX, t);
+              }
+              const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
+              const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement|null;
+              if(resInputField){
+                resInputField.dispatchEvent(new Event('input', { bubbles: true }));
+              }
+              if(enemyInputField){
+                enemyInputField.dispatchEvent(new Event('input', { bubbles: true }));
               }
             });
             cellArea.appendChild(cellButton);

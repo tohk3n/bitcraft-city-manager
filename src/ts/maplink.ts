@@ -111,7 +111,8 @@ export const MAP_LINK = {
 
     // Clean up trailing commas from input
     finalizeCommaNumberInput(value: string): string {
-    return value.replace(/,+$/, '');
+    return value.replace(/,+$/, '')
+        .replace(/,{2,}/g, ',');  // no duplicate commas;
   },
 
     // Add or remove new value to input field, separates by comma, leaves the rest intact
