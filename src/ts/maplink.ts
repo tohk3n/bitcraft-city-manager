@@ -176,7 +176,7 @@ export const MAP_LINK = {
           this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.ENEMY_ID_MATRIX,'enemy-ids');
       }
     },
-    resourceCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:any, htmlId:string):void {
+    resourceCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:NamedMatrix, htmlId:string):void {
       if(!entryKey){
           return;
       }
@@ -188,7 +188,7 @@ export const MAP_LINK = {
       const index:number = tier - 1;
 
       //get corresponding ids for this row/tier
-      const idValues:number[] = matrix[entryKey]?.[index];
+      const idValues:number[] = matrix.map[entryKey]?.[index];
       if(!idValues)return;
       //update input field
       idValues.forEach(id => this.syncInputValue(id, !isActive,htmlId))
