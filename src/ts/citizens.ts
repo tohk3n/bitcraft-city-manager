@@ -9,7 +9,7 @@ import type {
   GearType,
   VaultCache, Citizen, PlayerVaultResponse
 } from './types/index.js';
-import {CITIZEN_CONFIG} from "./configuration/citizenconfig";
+import {CITIZEN_CONFIG} from "./configuration/citizenconfig.js";
 
 // Internal state for citizens module
 let _citizensData: ClaimCitizensResponse | null = null;
