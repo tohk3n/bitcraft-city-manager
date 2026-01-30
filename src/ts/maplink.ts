@@ -169,13 +169,13 @@ export const MAP_LINK = {
     cellButtonEvent(entryKey:ResourceRowName, tier:number):void {
       if(!entryKey)return;
       if(entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX){
-          this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.RESOURCE_ID_MATRIX);
+          this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.RESOURCE_ID_MATRIX,'res-ids');
       }
       if(entryKey in MAP_CONFIG.ENEMY_ID_MATRIX){
-          this.enemyCellButtonEvent(entryKey,tier,MAP_CONFIG.ENEMY_ID_MATRIX);
+          this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.ENEMY_ID_MATRIX,'enemy-ids');
       }
     },
-    resourceCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:any):void {
+    resourceCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:any, htmlId:string):void {
       if(!entryKey){
           return;
       }
@@ -190,36 +190,14 @@ export const MAP_LINK = {
       const idValues:number[] = matrix[entryKey]?.[index];
       if(!idValues)return;
       //update input field
-      idValues.forEach(id => this.syncInputValue(id, !isActive,'res-ids'))
+      idValues.forEach(id => this.syncInputValue(id, !isActive,htmlId))
       //update matrix state
-      const inputField = document.getElementById('res-ids') as HTMLInputElement | null;
+      const inputField = document.getElementById(htmlId) as HTMLInputElement | null;
       if(!inputField) return;
       const fieldValues:string = inputField.value;
       MAP_LINK.syncMatrixState(fieldValues,matrix);
     },
-    //event called on selecting enemies
-    enemyCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:any):void{
-        if(!entryKey){
-            return;
-        }
 
-        const cellArea:Element|null = document.querySelector(`[data-row="${entryKey.toString()}"][data-tier="${tier}"]`);
-        if(!cellArea)return;
-        const isActive:boolean | undefined = cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
-        if(isActive===undefined)return;
-        const index:number = tier - 1;
-
-        //get corresponding ids for this row/tier
-        const idValues:number[] = matrix[entryKey]?.[index];
-        if(!idValues)return;
-        //update input field
-        idValues.forEach(id => this.syncInputValue(id, !isActive,'enemy-ids'))
-        //update matrix state
-        const inputField = document.getElementById('enemy-ids') as HTMLInputElement | null;
-        if(!inputField) return;
-        const fieldValues:string = inputField.value;
-        MAP_LINK.syncMatrixState(fieldValues,matrix);
-    },
     // Uses an array of stateMatrixEntries to set states for all cells
     setMatrixState(stateObjectArray:StateMatrixEntry[]):void {
         const table:HTMLElement|null = document.getElementById("id-matrix");
