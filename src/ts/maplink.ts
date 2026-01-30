@@ -1,7 +1,7 @@
 // Map link composer functionality
-import { MAP_CONFIG } from './configuration/index.js';
-
-import { CELL_TYPE, LINK_PARAM, ResourceIdMatrix, ResourceRowName, StateMatrixEntry } from './types/index.js';
+import {MAP_CONFIG} from './configuration/index.js';
+import {createLogger} from "./logger.js";
+import {CELL_TYPE, LINK_PARAM, ResourceIdMatrix, ResourceRowName, StateMatrixEntry} from './types/index.js';
 
 interface LinkDataMap {
   regionId?: string;
@@ -9,26 +9,27 @@ interface LinkDataMap {
   playerId?: string;
   enemyId?: string;
 }
-
+const log = createLogger('maplink');
 export const MAP_LINK = {
-  // Gets values from checkboxes and input fields to generate link
-  generateLinkEvent(): void {
+
+    // Gets values from checkboxes and input fields to generate link
+    generateLinkEvent(): void {
     const checkboxes = Array
     .from(document.querySelectorAll<HTMLInputElement>('#checkbox-row input[type="checkbox"]:checked'))
     .map(cb => cb.value);
 
-      const resIdsEl = document.getElementById("res-ids") as HTMLInputElement | null;
-      const playerIdsEl = document.getElementById("player-ids") as HTMLInputElement | null;
-      const enemyIdsEl = document.getElementById("enemy-ids") as HTMLInputElement | null;
+    const resIdsEl = document.getElementById("res-ids") as HTMLInputElement | null;
+    const playerIdsEl = document.getElementById("player-ids") as HTMLInputElement | null;
+    const enemyIdsEl = document.getElementById("enemy-ids") as HTMLInputElement | null;
 
-      let resourceIdInput:string = resIdsEl?.value || '';
-      let playerIdInput:string = playerIdsEl?.value || '';
-      let enemyIdInput:string = enemyIdsEl?.value || '';
-        // Remove possible trailing comma
-        resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
-        playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
-        enemyIdInput = MAP_LINK.finalizeCommaNumberInput(enemyIdInput);
-
+    let resourceIdInput:string = resIdsEl?.value || '';
+    let playerIdInput:string = playerIdsEl?.value || '';
+    let enemyIdInput:string = enemyIdsEl?.value || '';
+    // Remove possible trailing comma
+    resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
+    playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
+    enemyIdInput = MAP_LINK.finalizeCommaNumberInput(enemyIdInput);
+    log.info('enemyIdInput: ',enemyIdInput);
     // Build the link
     const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput, enemyIdInput);
     const displayLink = MAP_LINK.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput, enemyIdInput);
@@ -41,8 +42,8 @@ export const MAP_LINK = {
     }
   },
 
-  // ONLY for display, it's not a correct link (so it might not work)
-  generateDisplayLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): string {
+    // ONLY for display, it's not a correct link (so it might not work)
+    generateDisplayLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): string {
     const dataMap: LinkDataMap = {};
 
         if (regions.length > 0) {
@@ -58,8 +59,8 @@ export const MAP_LINK = {
             dataMap.enemyId = enemyIds;
         }
 
-        let displayUrl = MAP_CONFIG.BASE_URL;
-        let first = true;
+        let displayUrl:string = MAP_CONFIG.BASE_URL;
+        let first:boolean = true;
 
     // First value has ? prefix, subsequent use &
     for (const [key, value] of Object.entries(dataMap)) {
@@ -70,8 +71,9 @@ export const MAP_LINK = {
     return displayUrl;
   },
 
-  // Generate link to bitcraft map from provided data
-  generateLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): URL {
+    // Generate link to bitcraft map from provided data
+    generateLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): URL {
+      log.info('enemy ids, generate link: ',enemyIds,playerIds,resourceIds);
     const url = new URL(MAP_CONFIG.BASE_URL);
     if (regions.length > 0) {
       url.searchParams.set(LINK_PARAM.REGION_ID, regions.join(','));
@@ -83,14 +85,14 @@ export const MAP_LINK = {
       url.searchParams.set(LINK_PARAM.PLAYER_ID, playerIds);
     }
     if (enemyIds !== '') {
-      url.searchParams.set(LINK_PARAM.ENEMY_ID, playerIds);
+      url.searchParams.set(LINK_PARAM.ENEMY_ID, enemyIds);
     }
 
     return url;
   },
 
-  // Add input validation for comma-separated number fields
-  addCommaNumberValidation(inputId: string): void {
+    // Add input validation for comma-separated number fields
+    addCommaNumberValidation(inputId: string): void {
     const field = document.getElementById(inputId) as HTMLInputElement | null;
     if (!field) return;
 
@@ -107,15 +109,15 @@ export const MAP_LINK = {
     });
   },
 
-  // Clean up trailing commas from input
-  finalizeCommaNumberInput(value: string): string {
+    // Clean up trailing commas from input
+    finalizeCommaNumberInput(value: string): string {
     return value.replace(/,+$/, '');
   },
 
-  // Add or remove new value to input field, separates by comma, leaves the rest intact
-  syncInputValue(value: string | number, activated: boolean): void {
-    const strValue = String(value);
-    const inputField = document.getElementById('res-ids') as HTMLInputElement | null;
+    // Add or remove new value to input field, separates by comma, leaves the rest intact
+    syncInputValue(value: string | number, activated: boolean, elementName:string): void {
+    const strValue:string = String(value);
+    const inputField = document.getElementById(elementName) as HTMLInputElement | null;
     if (!inputField) return;
 
     const resultValue = inputField.value.trim();
@@ -131,16 +133,17 @@ export const MAP_LINK = {
     inputField.value = Array.from(values).join(',');
   },
     // Synchronize the resource ID matrix to match the input
-    syncMatrixState(resourceIdInput: string ):void {
+    syncMatrixState(resourceIdInput: string, matrix:any):void {
         const inputIds:string[] = resourceIdInput.split(',');
-        const stateObject:StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds);
+        if(!matrix)return;
+        const stateObject:StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds, matrix);
         MAP_LINK.setMatrixState(stateObject);
     },
-    buildStateMatrix(idsToCheck: string[]): StateMatrixEntry[]  {
+    buildStateMatrix(idsToCheck: string[],inputMatrix:any): StateMatrixEntry[]  {
 
         const idSet = new Set(idsToCheck.map(Number));
         const result: StateMatrixEntry[] = [];
-        const matrix:ResourceIdMatrix = MAP_CONFIG.RESOURCE_ID_MATRIX;
+        const matrix:ResourceIdMatrix = inputMatrix;
 
         for (const [category, arrayOfArrays] of Object.entries(matrix)) {
             arrayOfArrays.forEach((ids:number[], index:number):void => {
@@ -163,23 +166,59 @@ export const MAP_LINK = {
         }
         return result;
     },
-    cellButtonEvent(rowName:ResourceRowName, tier:number):void {
-        const cellArea:Element|null = document.querySelector(`[data-row="${rowName}"][data-tier="${tier}"]`);
+    cellButtonEvent(entryKey:ResourceRowName, tier:number):void {
+      if(!entryKey)return;
+      if(entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX){
+          this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.RESOURCE_ID_MATRIX);
+      }
+      if(entryKey in MAP_CONFIG.ENEMY_ID_MATRIX){
+          this.enemyCellButtonEvent(entryKey,tier,MAP_CONFIG.ENEMY_ID_MATRIX);
+      }
+    },
+    resourceCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:any):void {
+      if(!entryKey){
+          return;
+      }
+
+      const cellArea:Element|null = document.querySelector(`[data-row="${entryKey.toString()}"][data-tier="${tier}"]`);
+      if(!cellArea)return;
+      const isActive:boolean | undefined = cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
+      if(isActive===undefined)return;
+      const index:number = tier - 1;
+
+      //get corresponding ids for this row/tier
+      const idValues:number[] = matrix[entryKey]?.[index];
+      if(!idValues)return;
+      //update input field
+      idValues.forEach(id => this.syncInputValue(id, !isActive,'res-ids'))
+      //update matrix state
+      const inputField = document.getElementById('res-ids') as HTMLInputElement | null;
+      if(!inputField) return;
+      const fieldValues:string = inputField.value;
+      MAP_LINK.syncMatrixState(fieldValues,matrix);
+    },
+    //event called on selecting enemies
+    enemyCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:any):void{
+        if(!entryKey){
+            return;
+        }
+
+        const cellArea:Element|null = document.querySelector(`[data-row="${entryKey.toString()}"][data-tier="${tier}"]`);
         if(!cellArea)return;
         const isActive:boolean | undefined = cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
         if(isActive===undefined)return;
         const index:number = tier - 1;
 
         //get corresponding ids for this row/tier
-        const idValues:number[] = MAP_CONFIG.RESOURCE_ID_MATRIX?.[rowName]?.[index];
+        const idValues:number[] = matrix[entryKey]?.[index];
         if(!idValues)return;
         //update input field
-        idValues.forEach(id => this.syncInputValue(id, !isActive))
+        idValues.forEach(id => this.syncInputValue(id, !isActive,'enemy-ids'))
         //update matrix state
-        const inputField = document.getElementById('res-ids') as HTMLInputElement | null;
+        const inputField = document.getElementById('enemy-ids') as HTMLInputElement | null;
         if(!inputField) return;
         const fieldValues:string = inputField.value;
-        MAP_LINK.syncMatrixState(fieldValues);
+        MAP_LINK.syncMatrixState(fieldValues,matrix);
     },
     // Uses an array of stateMatrixEntries to set states for all cells
     setMatrixState(stateObjectArray:StateMatrixEntry[]):void {
