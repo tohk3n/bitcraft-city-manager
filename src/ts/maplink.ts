@@ -1,7 +1,7 @@
 // Map link composer functionality
 import {MAP_CONFIG} from './configuration/index.js';
 import {createLogger} from "./logger.js";
-import {CELL_TYPE, LINK_PARAM, ResourceIdMatrix, ResourceRowName, StateMatrixEntry} from './types/index.js';
+import {CELL_TYPE, LINK_PARAM, StateMatrixEntry} from './types/index.js';
 
 interface LinkDataMap {
   regionId?: string;
@@ -134,19 +134,18 @@ export const MAP_LINK = {
     inputField.value = Array.from(values).join(',');
   },
     // Synchronize the resource ID matrix to match the input
-    syncMatrixState(resourceIdInput: string, matrix:any):void {
+    syncMatrixState(resourceIdInput: string, matrix:NamedMatrix):void {
         const inputIds:string[] = resourceIdInput.split(',');
         if(!matrix)return;
         const stateObject:StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds, matrix);
         MAP_LINK.setMatrixState(stateObject);
     },
-    buildStateMatrix(idsToCheck: string[],inputMatrix:any): StateMatrixEntry[]  {
+    buildStateMatrix(idsToCheck: string[],inputMatrix:NamedMatrix): StateMatrixEntry[]  {
 
         const idSet = new Set(idsToCheck.map(Number));
         const result: StateMatrixEntry[] = [];
-        const matrix:ResourceIdMatrix = inputMatrix;
 
-        for (const [category, arrayOfArrays] of Object.entries(matrix)) {
+        for (const [category, arrayOfArrays] of Object.entries(inputMatrix.map)) {
             arrayOfArrays.forEach((ids:number[], index:number):void => {
                 const matches:number = ids.filter(id => idSet.has(id)).length;
                 let state;
@@ -167,21 +166,21 @@ export const MAP_LINK = {
         }
         return result;
     },
-    cellButtonEvent(entryKey:ResourceRowName, tier:number):void {
+    cellButtonEvent(entryKey:string, tier:number):void {
       if(!entryKey)return;
-      if(entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX){
+      if(entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX.map){
           this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.RESOURCE_ID_MATRIX,'res-ids');
       }
-      if(entryKey in MAP_CONFIG.ENEMY_ID_MATRIX){
+      if(entryKey in MAP_CONFIG.ENEMY_ID_MATRIX.map){
           this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.ENEMY_ID_MATRIX,'enemy-ids');
       }
     },
-    resourceCellButtonEvent(entryKey:ResourceRowName, tier:number, matrix:NamedMatrix, htmlId:string):void {
+    resourceCellButtonEvent(entryKey:string, tier:number, matrix:NamedMatrix, htmlId:string):void {
       if(!entryKey){
           return;
       }
 
-      const cellArea:Element|null = document.querySelector(`[data-row="${entryKey.toString()}"][data-tier="${tier}"]`);
+      const cellArea:Element|null = document.querySelector(`[data-row="${entryKey}"][data-tier="${tier}"]`);
       if(!cellArea)return;
       const isActive:boolean | undefined = cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
       if(isActive===undefined)return;

@@ -208,7 +208,7 @@ const BaseUI = {
   },
 
   // Generates table with clickable fields to add to input field for resource selection
-  renderResourceMatrix(containerId: string, resourceMatrix: ResourceMatrix[], addHeader:boolean): void {
+  renderResourceMatrix(containerId: string, resourceMatrix: NamedMatrix[], addHeader:boolean): void {
     const table:HTMLElement|null = document.getElementById(containerId);
     if (!table) return;
 
@@ -236,11 +236,10 @@ const BaseUI = {
 
     /* ---------- Body ---------- */
     const body = document.createElement('tbody') as HTMLTableSectionElement;
-    (Object.values(resourceMatrix)).forEach(resMap=>{
-      let index = 0;
-      (Object.keys(resMap)).forEach(resourceName => {
+    (Object.values(resourceMatrix)).forEach(namedResMatrix=>{
+      (Object.keys(namedResMatrix.map)).forEach(resourceName => {
 
-        const matrix:number[][] = resMap[resourceName];
+        const matrix:number[][] = namedResMatrix.map[resourceName];
         log.info("row",resourceName);
         const tr = document.createElement('tr') as HTMLTableRowElement;
 
@@ -270,11 +269,11 @@ const BaseUI = {
             cellButton.textContent = '';
             cellButton.classList.add('matrix-cell-btn');
             cellButton.addEventListener('click', ():void => {
-              if (resourceName !== undefined && resourceName in MAP_CONFIG.RESOURCE_ID_MATRIX) {
-                MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.RESOURCE_ID_MATRIX, t);
+              if (resourceName !== undefined && resourceName in MAP_CONFIG.RESOURCE_ID_MATRIX.map) {
+                MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.ENEMY_ID_MATRIX.map, t);
               }
-              if (resourceName !== undefined && resourceName in MAP_CONFIG.ENEMY_ID_MATRIX) {
-                MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.ENEMY_ID_MATRIX, t);
+              if (resourceName !== undefined && resourceName in MAP_CONFIG.ENEMY_ID_MATRIX.map) {
+                MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.ENEMY_ID_MATRIX.map, t);
               }
               const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
               const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement|null;
