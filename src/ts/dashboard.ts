@@ -17,8 +17,7 @@ import type {
   TagGroup,
   TierQuantities
 } from './types/index.js';
-import {DASHBOARD_CONFIG} from "./configuration/dashboardconfig";
-import {CONFIG} from "./configuration/config";
+import {CONFIG, DASHBOARD_CONFIG} from "./configuration/index.js";
 
 export const DashboardUI = {
   // Main render entry point for inventory view
