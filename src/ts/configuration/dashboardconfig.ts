@@ -40,7 +40,11 @@ export const DASHBOARD_CONFIG = {
     ],
     // Categories excluded from inventory grid (shown in quick stats instead)
     INVENTORY_GRID_EXCLUDE: ['Food', 'Scholar'],
-
+    // Actual food to be shown in the food tab
+    FRIDGE: [
+        'Fine Deluxe Ocean Fish Sticks',
+        "Succulent Ocean Fish Sticks"
+    ],
     //TODO check if this can not be done with css
     BG_CONST : 'background: rgba(88, 166, 255, 0.2);'
 }

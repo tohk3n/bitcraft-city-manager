@@ -7,6 +7,7 @@ export interface ApiItem {
     name: string;
     tier: number;
     tag?: string;
+    rarity?: number;
 }
 
 export interface ApiCargo {
@@ -14,6 +15,7 @@ export interface ApiCargo {
     name: string;
     tier: number;
     tag?: string;
+    rarity?: number;
 }
 
 // --- Claim Endpoints ---
@@ -55,6 +57,7 @@ export interface InventorySlotContents {
     item_id: number;
     item_type: 'item' | 'cargo';
     quantity: number;
+    rarity: number;
 }
 
 export interface InventorySlot {

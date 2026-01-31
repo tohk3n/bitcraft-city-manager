@@ -17,7 +17,8 @@ import type {
   CraftingStationsResult,
   StationsByName, BuildingBreakdown, BuildingFunction, InventorySlotContents, TagGroup,
 } from './types/index.js';
-
+import {createLogger} from "./logger.js";
+const log = createLogger('inventory');
 // Helper to create fresh tier quantities object
 function createTierQuantities(): TierQuantities {
   return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10:0 };
@@ -53,6 +54,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
 
       const id:number = contents.item_id;
       const qty:number = contents.quantity;
+      const rarity:number = contents.rarity;
       const isItem:boolean = contents.item_type === 'item';
 
       const meta:ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
@@ -71,7 +73,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       // Track food items
       if (category === 'Food') {
         if (!foodItems[id]) {
-          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 };
+          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 , rarity};
         }
         foodItems[id].qty += qty;
       }
@@ -111,7 +113,6 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       }
     }
   }
-
   return { inventory, materialMatrix, foodItems, scholarByTier };
 }
 

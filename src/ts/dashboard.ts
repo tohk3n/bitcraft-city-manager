@@ -1,10 +1,11 @@
 // Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
 
-import type {
+import {
   BuildingBreakdown,
   CategoryInventory,
   CraftingStationsResult,
+  FILTER_TYPE,
   FoodItem,
   FoodItems,
   InventoryItem,
@@ -13,7 +14,8 @@ import type {
   MaterialMatrix,
   ProcessedInventory,
   ScholarByTier,
-  StationsByName, StationSummary,
+  StationsByName,
+  StationSummary,
   TagGroup,
   TierQuantities
 } from './types/index.js';
@@ -23,14 +25,32 @@ export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
     const { inventory, materialMatrix, foodItems, scholarByTier } = data;
-
+    let foods:FoodItems = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
     this.renderMaterialMatrix(materialMatrix);
-    this.renderQuickStats(foodItems, scholarByTier);
+    this.renderQuickStats(foods, scholarByTier);
     this.renderInventory(inventory);
 
     this.show('dashboard');
   },
+  filterFridge(food: FoodItems, fridge: string[], filter:FILTER_TYPE): FoodItems {
+    // defines what we show in the food tab
+    switch(filter){
+      case FILTER_TYPE.FRIDGE:
+        return Object.fromEntries(
+            Object.entries(food).filter(([_, item]) =>
+                fridge.includes(item.name)
+            )) as FoodItems;
+      case FILTER_TYPE.RARITY_RARE:
+        return Object.fromEntries(
+            Object.entries(food).filter(([_, item]) =>
+                item.rarity>1
+            )) as FoodItems;
+      default:
+        return food;
+    }
 
+
+  },
   // Helper to show a section
   show(sectionId: string): void {
     const el:HTMLElement|null = document.getElementById(sectionId);
