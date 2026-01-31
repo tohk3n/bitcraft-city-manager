@@ -1,5 +1,6 @@
 // Map link composer functionality
 import {MAP_CONFIG} from './configuration/index.js';
+import {NamedMatrix} from './types/index.js';
 import {createLogger} from "./logger.js";
 import {CELL_TYPE, LINK_PARAM, StateMatrixEntry} from './types/index.js';
 

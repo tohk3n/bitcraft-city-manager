@@ -1,3 +1,5 @@
+import {NamedMatrix} from "../types/index.js";
+
 export const MAP_CONFIG = {
 
     // Matrix containing IDs for huntable animals

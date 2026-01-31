@@ -4,7 +4,7 @@ import {MAP_LINK} from './maplink.js';
 import {DashboardUI} from './dashboard.js';
 import {CitizensUI} from './citizens.js';
 import {IdsUI} from './ids.js';
-import {CELL_TYPE} from './types/index.js';
+import {CELL_TYPE,NamedMatrix} from './types/index.js';
 import {createLogger} from "./logger.js";
 import {MAP_CONFIG} from "./configuration/maplinkconfig.js";
 
