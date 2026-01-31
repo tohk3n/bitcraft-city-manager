@@ -39,7 +39,7 @@ export interface FoodItem {
     name: string;
     tier: number;
     qty: number;
-    rarity: number;
+    rarity?: number;
 }
 
 export type FoodItems = Record<number, FoodItem>;  // keyed by item ID

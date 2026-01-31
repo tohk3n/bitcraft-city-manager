@@ -43,7 +43,7 @@ export const DashboardUI = {
       case FILTER_TYPE.RARITY_RARE:
         return Object.fromEntries(
             Object.entries(food).filter(([_, item]) =>
-                item.rarity>1
+                  item.rarity && item.rarity>1
             )) as FoodItems;
       default:
         return food;

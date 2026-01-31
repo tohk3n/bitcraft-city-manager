@@ -27,6 +27,7 @@ function createTierQuantities(): TierQuantities {
 // Process raw API response into structured inventory
 export function processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
   const buildings: Building[] = data.buildings || [];
+
   const itemMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.items || []);
   const cargoMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.cargos || []);
 
@@ -54,7 +55,6 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
 
       const id:number = contents.item_id;
       const qty:number = contents.quantity;
-      const rarity:number = contents.rarity;
       const isItem:boolean = contents.item_type === 'item';
 
       const meta:ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
@@ -73,7 +73,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       // Track food items
       if (category === 'Food') {
         if (!foodItems[id]) {
-          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 , rarity};
+          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 , rarity:meta.rarity};
         }
         foodItems[id].qty += qty;
       }
