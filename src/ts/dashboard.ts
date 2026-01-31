@@ -26,8 +26,8 @@ export const DashboardUI = {
   renderDashboard(data: InventoryProcessResult): void {
     const { inventory, materialMatrix, foodItems, scholarByTier } = data;
     let foods:FoodItems = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
-    this.renderMaterialMatrix(materialMatrix);
     this.renderQuickStats(foods, scholarByTier);
+    this.renderMaterialMatrix(materialMatrix);
     this.renderInventory(inventory);
 
     this.show('dashboard');
