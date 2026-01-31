@@ -165,8 +165,8 @@ export const DashboardUI = {
     let lastCat:FOOD_BUFF|undefined = undefined;
 
     for (const item of foodList.slice(0, 10)) {
-      let name:string = item.name.toLowerCase();
-      let cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
+      const name:string = item.name.toLowerCase();
+      const cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
 
       if(!lastCat || lastCat!==cat) {
         lastCat = cat;
