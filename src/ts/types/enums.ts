@@ -28,3 +28,11 @@ export enum FILTER_TYPE {
     RARITY_RARE,
     NONE
 }
+
+export enum FOOD_BUFF{
+    COMBAT = 'Combat',
+    CRAFTING = 'Crafting',
+    MOVEMENT = 'Movement',
+    STAMINA = 'Stamina',
+    NONE = 'none'
+}

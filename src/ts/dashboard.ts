@@ -6,10 +6,11 @@ import {
   CategoryInventory,
   CraftingStationsResult,
   FILTER_TYPE,
-  Item,
-  Items,
+  FOOD_BUFF,
   InventoryItem,
   InventoryProcessResult,
+  Item,
+  Items,
   MaterialCategory,
   MaterialMatrix,
   ProcessedInventory,
@@ -133,14 +134,33 @@ export const DashboardUI = {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
 
+    const priority = (name: string): number => {
+      const n = name.toLowerCase();
+
+      if (n.includes('fish')) return 0;
+      if (n.includes('meat')) return 1;
+      if (n.includes('mushroom') || n.includes('berry')) return 2;
+
+      return 3;
+    };
+
     let html:string = '';
 
     // Food section
-    const foodList:Item[] = (Object.values(foodItems) as Item[]).sort((a, b) => b.qty - a.qty);
+    const foodList:Item[] = Object.values(foodItems).sort((a, b) => {
+      const pA = priority(a.name);
+      const pB = priority(b.name);
+
+      // 1️⃣ Kategorie-Sortierung
+      if (pA !== pB) {
+        return pA - pB;
+      }
+
+      // 2️⃣ innerhalb der Kategorie: tier ↓
+      return b.tier - a.tier;
+    });
     let foodTotal:number = 0;
     for (const f of foodList) foodTotal += f.qty;
-
-    if (foodTotal > 0) {
       html += `
       <div class="quick-card">
       <div class="quick-header">
@@ -151,7 +171,24 @@ export const DashboardUI = {
       <div class="quick-body">
       <table>
       `;
+      let lastCat:FOOD_BUFF|undefined = undefined;
+
       for (const item of foodList.slice(0, 10)) {
+        let cat
+        let name = item.name.toLowerCase();
+        if(name.includes('fish')){
+          cat = FOOD_BUFF.CRAFTING;
+        }else if(name.includes('meat')){
+          cat = FOOD_BUFF.COMBAT;
+        }else if(name.includes('mushroom')||name.includes('berry')){
+          cat = FOOD_BUFF.MOVEMENT;
+        }else {
+          cat = FOOD_BUFF.NONE;
+        }
+        if(!lastCat || lastCat!==cat) {
+          lastCat = cat;
+          html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
+        }
         const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
         html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
       }
@@ -159,7 +196,7 @@ export const DashboardUI = {
         html += `<tr class="more"><td colspan="2">+${foodList.length - 10} more</td></tr>`;
       }
       html += '</table></div></div>';
-    }
+
 
     // Scholar section
     let scholarTotal:number = 0;
