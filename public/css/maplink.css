@@ -69,7 +69,8 @@
 }
 
 #res-ids,
-#player-ids {
+#player-ids,
+#enemy-ids{
   width: 100%;
   padding: 6px 8px;
   font-size: 0.95rem;
