@@ -23,12 +23,12 @@ import type {
 const ACTIVITIES = {
     MINING: 'Mining',
     LOGGING: 'Logging',
+    FORAGING: 'Foraging',
     FARMING: 'Farming',
     FISHING: 'Fishing',
     HUNTING: 'Hunting',
     CRAFTING: 'Crafting'
 } as const;
-
 type Activity = typeof ACTIVITIES[keyof typeof ACTIVITIES];
 
 /**
@@ -43,31 +43,36 @@ export function categorizeByActivity(name: string): Activity {
         return ACTIVITIES.MINING;
         }
 
-        // Logging - raw wood materials
-        if (lower.includes('trunk') || lower.includes('bark') || lower.includes('log')) {
-            return ACTIVITIES.LOGGING;
-        }
+    // Logging - raw wood materials
+    if (lower.includes('trunk') || lower.includes('bark') || lower.includes('log')) {
+        return ACTIVITIES.LOGGING;
+    }
 
-        // Farming - plants and crops
-        if (lower.includes('flower') || lower.includes('fiber') || lower.includes('berry') ||
-            lower.includes('roots') || lower.includes('seed') || lower.includes('grain')) {
-            return ACTIVITIES.FARMING;
-            }
+            // Foraging - wild plants gathered from the world
+    if (lower.includes('flower') || lower.includes('berry') || 
+        lower.includes('roots') || lower.includes('plant fiber')) {
+        return ACTIVITIES.FORAGING;
+    }
 
-            // Fishing - aquatic creatures
-            if (lower.includes('fish') || lower.includes('crawfish') || lower.includes('crawdad') ||
-                lower.includes('lobster') || lower.includes('crab') || lower.includes('darter') ||
-                lower.includes('chub') || lower.includes('shiner')) {
-                return ACTIVITIES.FISHING;
-                }
+    // Farming - plants and crops
+    if (lower.includes('seed') || lower.includes('grain') || lower.includes('vegetable')) {
+        return ACTIVITIES.FARMING;
+    }
 
-                // Hunting - animal materials
-                if (lower.includes('pelt') || lower.includes('hide')) {
-                    return ACTIVITIES.HUNTING;
-                }
+    // Fishing - aquatic creatures
+    if (lower.includes('fish') || lower.includes('crawfish') || lower.includes('crawdad') ||
+        lower.includes('lobster') || lower.includes('crab') || lower.includes('darter') ||
+        lower.includes('chub') || lower.includes('shiner')) {
+        return ACTIVITIES.FISHING;
+    }
 
-                // Everything else is crafting
-                return ACTIVITIES.CRAFTING;
+    // Hunting - animal materials
+    if (lower.includes('pelt') || lower.includes('hide')) {
+        return ACTIVITIES.HUNTING;
+    }
+
+    // Everything else is crafting
+    return ACTIVITIES.CRAFTING;
 }
 
 interface ProgressSummary {
@@ -76,7 +81,7 @@ interface ProgressSummary {
     totalContribution: number;
     totalItems: number;
     completeCount: number;
-    items: FirstTrackableItem[];
+    items: TrackableItem[];
 }
 
 /**
@@ -84,31 +89,30 @@ interface ProgressSummary {
  * Uses first trackable items as the progress metric.
  */
 export function calculateProgress(processedCodex: ProcessedCodex): ProgressSummary {
-    const firstTrackable = collectFirstTrackable(processedCodex);
+    // Use all trackable items, not just first trackable
+    const trackable = collectTrackableItems(processedCodex);
 
-    // Calculate totals from first trackable items
     let totalRequired = 0;
     let totalContribution = 0;
 
-    for (const item of firstTrackable) {
+    for (const item of trackable) {
         totalRequired += item.required;
         totalContribution += Math.min(item.have, item.required);
     }
 
     const percent = totalRequired > 0
-    ? Math.round((totalContribution / totalRequired) * 100)
-    : 100;
+        ? Math.round((totalContribution / totalRequired) * 100)
+        : 100;
 
-    // Count complete items
-    const completeCount = firstTrackable.filter(item => item.deficit === 0).length;
+    const completeCount = trackable.filter(item => item.deficit === 0).length;
 
     return {
         percent,
         totalRequired,
         totalContribution,
-        totalItems: firstTrackable.length,
+        totalItems: trackable.length,
         completeCount,
-        items: firstTrackable
+        items: trackable
     };
 }
 
@@ -245,7 +249,7 @@ export function generateExportText(report: ProgressReport, targetTier: number): 
     lines.push(`Progress: ${overall.percent}% complete`);
     lines.push('');
 
-    const activityOrder = ['Mining', 'Logging', 'Farming', 'Fishing', 'Hunting', 'Crafting'];
+    const activityOrder = ['Mining', 'Logging', 'Foraging', 'Farming', 'Fishing', 'Hunting', 'Crafting'];
 
     for (const activity of activityOrder) {
         const data = byActivity[activity];
@@ -261,6 +265,54 @@ export function generateExportText(report: ProgressReport, targetTier: number): 
         lines.push('');
     }
 
+    return lines.join('\n');
+}
+
+/**
+ * Generate CSV export of ALL material requirements (deep walk).
+ * Matches the clipboard copy format.
+ */
+export function generateCSV(report: ProgressReport, targetTier: number): string {
+    const lines = ['activity,name,tier,required,have,deficit'];
+    
+    // Use trackableItems (full tree walk) not firstTrackable (stops early)
+    const { trackableItems } = report;
+    
+    // Group by activity and sort by deficit (matching clipboard format)
+    const byActivity = new Map<string, typeof trackableItems>();
+    
+    for (const item of trackableItems) {
+        if (item.deficit <= 0) continue; // Skip complete items
+        
+        const activity = categorizeByActivity(item.name);
+        if (!byActivity.has(activity)) {
+            byActivity.set(activity, []);
+        }
+        byActivity.get(activity)!.push(item);
+    }
+    
+    // Sort each activity group by deficit descending
+    const activityOrder = ['Mining', 'Logging', 'Foraging', 'Farming', 'Fishing', 'Hunting', 'Crafting'];
+    
+    for (const activity of activityOrder) {
+        const items = byActivity.get(activity);
+        if (!items || items.length === 0) continue;
+        
+        items.sort((a, b) => b.deficit - a.deficit);
+        
+        for (const item of items) {
+            const escapedName = item.name.includes(',') ? `"${item.name}"` : item.name;
+            lines.push([
+                activity,
+                escapedName,
+                item.tier,
+                item.required,
+                item.have,
+                item.deficit
+            ].join(','));
+        }
+    }
+    
     return lines.join('\n');
 }
 

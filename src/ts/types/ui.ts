@@ -1,6 +1,6 @@
 // UI state and configuration types
 
-import type { CELL_TYPE } from './enums.js';
+import type { CELL_TYPE } from './index.js';
 import type {
     ApiItem,
     ClaimResponse,
@@ -61,6 +61,9 @@ export interface ResourceIdMatrix {
     Carvings: number[][];
     Sailing: number[][];
 }
+export interface EnemyIdMatrix{
+    Animals: number[][];
+}
 
 export interface Config {
     EQUIPMENT_SLOTS: EquipmentSlotName[];
@@ -99,7 +102,7 @@ export interface ClaimData {
 // RESOURCE MATRIX
 // =============================================================================
 
-export type ResourceRowName = keyof ResourceIdMatrix;
+export type ResourceRowName = keyof ResourceIdMatrix | keyof EnemyIdMatrix;
 
 export type StateMatrixEntry = {
     category: string;

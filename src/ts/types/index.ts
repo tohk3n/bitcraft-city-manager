@@ -5,5 +5,6 @@ export * from './enums.js';
 export * from './api.js';
 export * from './codex.js';
 export * from './inventory.js';
+export * from './maplink.js';
 export * from './planner.js';
 export * from './ui.js';
