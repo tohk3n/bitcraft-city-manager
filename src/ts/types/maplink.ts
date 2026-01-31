@@ -1,5 +1,5 @@
-type ResourceMatrix = Record<string, number[][]>;
-type NamedMatrix = {
+export type ResourceMatrix = Record<string, number[][]>;
+export type NamedMatrix = {
     type: 'resource' | 'enemy';
-    map: Record<string, number[][]>;
+    map: ResourceMatrix;
 };
