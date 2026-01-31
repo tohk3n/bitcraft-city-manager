@@ -269,18 +269,14 @@ const BaseUI = {
             cellButton.textContent = '';
             cellButton.classList.add('matrix-cell-btn');
             cellButton.addEventListener('click', ():void => {
-              if (resourceName !== undefined && resourceName in MAP_CONFIG.RESOURCE_ID_MATRIX.map) {
-                MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.ENEMY_ID_MATRIX.map, t);
-              }
-              if (resourceName !== undefined && resourceName in MAP_CONFIG.ENEMY_ID_MATRIX.map) {
-                MAP_LINK.cellButtonEvent(resourceName as keyof typeof MAP_CONFIG.ENEMY_ID_MATRIX.map, t);
+              if (resourceName !== undefined) {
+                MAP_LINK.cellButtonEvent(resourceName, t);
               }
               const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
               const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement|null;
               if(resInputField){
                 resInputField.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-              if(enemyInputField){
+              }else if(enemyInputField){
                 enemyInputField.dispatchEvent(new Event('input', { bubbles: true }));
               }
             });
