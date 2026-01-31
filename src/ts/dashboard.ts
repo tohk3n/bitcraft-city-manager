@@ -228,7 +228,7 @@ export const DashboardUI = {
       cat = FOOD_BUFF.NONE;
     }
     return cat;
-  }
+  },
   // Crafting stations summary
   renderCraftingStations(data: CraftingStationsResult): void {
     const container:HTMLElement|null = document.getElementById('crafting-stations');
