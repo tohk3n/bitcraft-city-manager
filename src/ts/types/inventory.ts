@@ -35,14 +35,14 @@ export type MaterialMatrix = Record<MaterialCategory, TierQuantities>;
 // FOOD AND SCHOLAR TRACKING
 // =============================================================================
 
-export interface FoodItem {
+export interface Item {
     name: string;
     tier: number;
     qty: number;
     rarity?: number;
 }
 
-export type FoodItems = Record<number, FoodItem>;  // keyed by item ID
+export type Items = Record<number, Item>;  // keyed by item ID
 
 export type ScholarByTier = TierQuantities;
 
@@ -75,7 +75,7 @@ export type ProcessedInventory = Record<string, CategoryInventory>;  // category
 export interface InventoryProcessResult {
     inventory: ProcessedInventory;
     materialMatrix: MaterialMatrix;
-    foodItems: FoodItems;
+    foodItems: Items;
     scholarByTier: ScholarByTier;
 }
 

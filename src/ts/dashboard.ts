@@ -6,8 +6,8 @@ import {
   CategoryInventory,
   CraftingStationsResult,
   FILTER_TYPE,
-  FoodItem,
-  FoodItems,
+  Item,
+  Items,
   InventoryItem,
   InventoryProcessResult,
   MaterialCategory,
@@ -25,26 +25,26 @@ export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
     const { inventory, materialMatrix, foodItems, scholarByTier } = data;
-    let foods:FoodItems = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
+    let foods:Items = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
     this.renderQuickStats(foods, scholarByTier);
     this.renderMaterialMatrix(materialMatrix);
     this.renderInventory(inventory);
 
     this.show('dashboard');
   },
-  filterFridge(food: FoodItems, fridge: string[], filter:FILTER_TYPE): FoodItems {
+  filterFridge(food: Items, fridge: string[], filter:FILTER_TYPE): Items {
     // defines what we show in the food tab
     switch(filter){
       case FILTER_TYPE.FRIDGE:
         return Object.fromEntries(
             Object.entries(food).filter(([_, item]) =>
                 fridge.includes(item.name)
-            )) as FoodItems;
+            )) as Items;
       case FILTER_TYPE.RARITY_RARE:
         return Object.fromEntries(
             Object.entries(food).filter(([_, item]) =>
                   item.rarity && item.rarity>1
-            )) as FoodItems;
+            )) as Items;
       default:
         return food;
     }
@@ -129,14 +129,14 @@ export const DashboardUI = {
   },
 
   // Food and Scholar quick stats
-  renderQuickStats(foodItems: FoodItems, scholarByTier: ScholarByTier): void {
+  renderQuickStats(foodItems: Items, scholarByTier: ScholarByTier): void {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
 
     let html:string = '';
 
     // Food section
-    const foodList:FoodItem[] = (Object.values(foodItems) as FoodItem[]).sort((a, b) => b.qty - a.qty);
+    const foodList:Item[] = (Object.values(foodItems) as Item[]).sort((a, b) => b.qty - a.qty);
     let foodTotal:number = 0;
     for (const f of foodList) foodTotal += f.qty;
 

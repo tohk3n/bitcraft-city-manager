@@ -11,7 +11,7 @@ import type {
   ProcessedInventory,
   MaterialMatrix,
   MaterialCategory,
-  FoodItems,
+  Items,
   ScholarByTier,
   TierQuantities,
   CraftingStationsResult,
@@ -41,7 +41,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
   }
 
   // Food totals by item
-  const foodItems: FoodItems = {};
+  const foodItems: Items = {};
 
   // Scholar totals by tier
   const scholarByTier: ScholarByTier = createTierQuantities();

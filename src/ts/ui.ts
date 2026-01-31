@@ -240,7 +240,6 @@ const BaseUI = {
       (Object.keys(namedResMatrix.map)).forEach(resourceName => {
 
         const matrix:number[][] = namedResMatrix.map[resourceName];
-        log.info("row",resourceName);
         const tr = document.createElement('tr') as HTMLTableRowElement;
 
         // Row label (not clickable)
