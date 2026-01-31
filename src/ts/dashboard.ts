@@ -151,12 +151,10 @@ export const DashboardUI = {
       const pA = priority(a.name);
       const pB = priority(b.name);
 
-      // 1️⃣ Kategorie-Sortierung
       if (pA !== pB) {
         return pA - pB;
       }
 
-      // 2️⃣ innerhalb der Kategorie: tier ↓
       return b.tier - a.tier;
     });
     let foodTotal:number = 0;
