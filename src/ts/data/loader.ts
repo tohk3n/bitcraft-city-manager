@@ -1,8 +1,5 @@
 /**
  * Data Loader
- * 
- * Loads and caches BitJita data files.
- * Supports lazy loading - only fetch what's needed.
  */
 
 import type {
@@ -44,9 +41,6 @@ async function fetchJson<T>(path: string): Promise<T> {
     return response.json();
 }
 
-/**
- * Load recipes.json (required for most operations)
- */
 export async function loadRecipes(): Promise<RecipesFile> {
     if (!cache.recipes) {
         cache.recipes = await fetchJson<RecipesFile>('/data/recipes.json');
@@ -54,9 +48,7 @@ export async function loadRecipes(): Promise<RecipesFile> {
     return cache.recipes;
 }
 
-/**
- * Load items-meta.json (for market stats, equipment stats, etc.)
- */
+// Load items-meta.json (for market stats, equipment stats, etc.)
 export async function loadItemsMeta(): Promise<ItemsMetaFile> {
     if (!cache.itemsMeta) {
         cache.itemsMeta = await fetchJson<ItemsMetaFile>('/data/items-meta.json');
@@ -64,9 +56,6 @@ export async function loadItemsMeta(): Promise<ItemsMetaFile> {
     return cache.itemsMeta;
 }
 
-/**
- * Load stations.json (for station planning)
- */
 export async function loadStations(): Promise<StationsFile> {
     if (!cache.stations) {
         cache.stations = await fetchJson<StationsFile>('/data/stations.json');
@@ -74,9 +63,8 @@ export async function loadStations(): Promise<StationsFile> {
     return cache.stations;
 }
 
-/**
- * Load gathered.json and build lookup set
- */
+
+// Load gathered.json and build lookup set
 export async function loadGathered(): Promise<Set<string>> {
     if (!cache.gatheredSet) {
         if (!cache.gathered) {
@@ -87,9 +75,6 @@ export async function loadGathered(): Promise<Set<string>> {
     return cache.gatheredSet;
 }
 
-/**
- * Load core data needed for planner (recipes + gathered)
- */
 export async function loadCoreData(): Promise<{
     recipes: RecipesFile;
     gathered: Set<string>;
@@ -101,9 +86,6 @@ export async function loadCoreData(): Promise<{
     return { recipes, gathered };
 }
 
-/**
- * Load all data files
- */
 export async function loadAllData(): Promise<{
     recipes: RecipesFile;
     itemsMeta: ItemsMetaFile;
@@ -124,7 +106,7 @@ export async function loadAllData(): Promise<{
 // =============================================================================
 
 /**
- * Clear all cached data (useful for testing or forced refresh)
+ * Clear all cached data (mostly for testing...or a forced refresh)
  */
 export function clearCache(): void {
     cache.recipes = null;
