@@ -73,63 +73,48 @@ export function getAllKeys(recipes: RecipesFile): string[] {
 }
 
 // =============================================================================
+// CATEGORY RULES (order matters - first match wins)
+// =============================================================================
+
+interface CategoryRule {
+    category: ItemCategory;
+    tags: string[];  // match if item tag contains any of these
+}
+
+const CATEGORY_RULES: CategoryRule[] = [
+    { category: 'research',  tags: ['research'] },
+    { category: 'study',     tags: ['journal', 'carvings', 'hieroglyph'] },
+    { category: 'refined',   tags: ['refined'] },
+    { category: 'equipment', tags: ['armor', 'helm', 'boot', 'glove', 'ring', 'amulet', 'cape', 'belt'] },
+    { category: 'tool',      tags: ['axe', 'pickaxe', 'hammer', 'saw', 'knife', 'rod', 'hoe', 'chisel'] },
+    { category: 'food',      tags: ['meal', 'food', 'tea', 'soup', 'stew', 'pie'] },
+];
+
+// =============================================================================
 // CATEGORIZATION
 // =============================================================================
 
-/**
- * Derive item category from tag and data.
- * TODO: replace the old RecipeType system with something tag-driven.
- */
+function matchCategory(tag: string): ItemCategory | null {
+    const t = tag.toLowerCase();
+    for (const rule of CATEGORY_RULES) {
+        if (rule.tags.some(match => t.includes(match))) {
+            return rule.category;
+        }
+    }
+    return null;
+}
+
 export function categorize(
     recipe: RecipeEntry | null,
     tag: string | null,
     isGathered: boolean
 ): ItemCategory {
-    if (isGathered) {
-        return 'gathered'; // Gathered items have no recipe inputs
-    }
-    
-    if (!tag) return 'intermediate';
-    
+    if (isGathered) return 'gathered';
     if (tag) {
-        const t = tag.toLowerCase();
-        
-        // Research items
-        if (t.includes('research')) return 'research';
-        
-        // Study materials
-        if (t.includes('journal') || t.includes('carvings') || t.includes('hieroglyph')) {
-            return 'study';
-        }
-        
-        // Refined materials (end-stage for codex)
-        if (t.includes('refined')) return 'refined';
-        
-        // Equipment (armor, accessories)
-        if (t.includes('armor') || t.includes('helm') || t.includes('boot') || 
-            t.includes('glove') || t.includes('ring') || t.includes('amulet') ||
-            t.includes('cape') || t.includes('belt')) {
-            return 'equipment';
-        }
-        
-        // Tools
-        if (t.includes('axe') || t.includes('pickaxe') || t.includes('hammer') ||
-            t.includes('saw') || t.includes('knife') || t.includes('rod') ||
-            t.includes('hoe') || t.includes('chisel')) {
-            return 'tool';
-        }
-        
-        // Food
-        if (t.includes('meal') || t.includes('food') || t.includes('tea') ||
-            t.includes('soup') || t.includes('stew') || t.includes('pie')) {
-            return 'food';
-        }
+        const matched = matchCategory(tag);
+        if (matched) return matched;
     }
-
-    if (recipe && recipe.inputs.length === 0) {
-        return 'gathered';
-    }
-
+    if (recipe && recipe.inputs.length === 0) return 'gathered';
     return 'intermediate';
 }
 
