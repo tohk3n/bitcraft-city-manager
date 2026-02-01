@@ -43,7 +43,7 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 export async function loadRecipes(): Promise<RecipesFile> {
     if (!cache.recipes) {
-        cache.recipes = await fetchJson<RecipesFile>('/data/recipesV2.json');
+        cache.recipes = await fetchJson<RecipesFile>('/data/bitjita/recipes.json');
     }
     return cache.recipes;
 }
@@ -51,14 +51,14 @@ export async function loadRecipes(): Promise<RecipesFile> {
 // Load items-meta.json (for market stats, equipment stats, etc.)
 export async function loadItemsMeta(): Promise<ItemsMetaFile> {
     if (!cache.itemsMeta) {
-        cache.itemsMeta = await fetchJson<ItemsMetaFile>('/data/items-meta.json');
+        cache.itemsMeta = await fetchJson<ItemsMetaFile>('/data/bitjita/items-meta.json');
     }
     return cache.itemsMeta;
 }
 
 export async function loadStations(): Promise<StationsFile> {
     if (!cache.stations) {
-        cache.stations = await fetchJson<StationsFile>('/data/stations.json');
+        cache.stations = await fetchJson<StationsFile>('/data/bitjita/stations.json');
     }
     return cache.stations;
 }
@@ -68,7 +68,7 @@ export async function loadStations(): Promise<StationsFile> {
 export async function loadGathered(): Promise<Set<string>> {
     if (!cache.gatheredSet) {
         if (!cache.gathered) {
-            cache.gathered = await fetchJson<GatheredFile>('/data/gathered.json');
+            cache.gathered = await fetchJson<GatheredFile>('/data/bitjita/gathered.json');
         }
         cache.gatheredSet = new Set(cache.gathered.items);
     }
