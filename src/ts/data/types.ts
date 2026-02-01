@@ -10,7 +10,7 @@
 // FILE STRUCTURES (as stored in JSON)
 // =============================================================================
 
-/** recipes.json structure */
+/** recipesV2.json structure */
 export interface RecipesFile {
     version: number;
     generated: string;

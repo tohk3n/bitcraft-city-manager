@@ -43,7 +43,7 @@ async function fetchJson<T>(path: string): Promise<T> {
 
 export async function loadRecipes(): Promise<RecipesFile> {
     if (!cache.recipes) {
-        cache.recipes = await fetchJson<RecipesFile>('/data/recipes.json');
+        cache.recipes = await fetchJson<RecipesFile>('/data/recipesV2.json');
     }
     return cache.recipes;
 }
