@@ -110,7 +110,7 @@ function wireEvents(
 
   // CSV Export
   container.querySelector('#pv-export-csv')?.addEventListener('click', () => {
-    const csv = generateCSV(report, report.targetTier);
+    const csv = generateCSV(report);
     downloadCSV(csv, `planner-t${report.targetTier}-requirements.csv`);
   });
 }
