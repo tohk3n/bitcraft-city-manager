@@ -17,7 +17,7 @@ import {
   Rule,
 
   StationsByName,
-  StationSummary,
+  StationSummary, SUPPLY_CAT,
   TagGroup,
   TierQuantities
 } from './types/index.js';
@@ -173,8 +173,14 @@ export const DashboardUI = {
   },
   generateSupplyHtml(suppliesTotal:number,supplyList:Item[], maxEntries:number):string{
     let html:string = DashboardUI.makeTableHeaderHtml("📦",suppliesTotal,'Supply Cargo');
-
+    let lastCat:SUPPLY_CAT|undefined = undefined;
     for (const item of supplyList.slice(0, maxEntries)) {
+      const name:string = item.name;
+      const cat:SUPPLY_CAT = DashboardUI.getSupplyCategory(name);
+      if(!lastCat || lastCat!== cat){
+        lastCat = cat;
+        html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
+      }
       const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
       html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
@@ -182,6 +188,7 @@ export const DashboardUI = {
     return html;
   },
   getFoodBuffCategory(name:string):FOOD_BUFF{
+    name = name.toLowerCase();
     let cat
     if(name.includes('fish')){
       cat = FOOD_BUFF.CRAFTING;
@@ -191,6 +198,28 @@ export const DashboardUI = {
       cat = FOOD_BUFF.MOVEMENT;
     }else {
       cat = FOOD_BUFF.NONE;
+    }
+    return cat;
+  },
+  getSupplyCategory(name:string):SUPPLY_CAT{
+    name = name.toLowerCase();
+    let cat
+    if(name.includes('timber')){
+      cat = SUPPLY_CAT.TIMBER;
+    }else if (name.includes('frame')){
+      cat = SUPPLY_CAT.FRAMES;
+    }else if (name.includes('tarp')){
+      cat = SUPPLY_CAT.TARP;
+    }else if (name.includes('sack')){
+      cat = SUPPLY_CAT.HEX;
+    }else if (name.includes('slab')){
+      cat = SUPPLY_CAT.SLAB;
+    }else if(name.includes('sheeting')){
+      cat = SUPPLY_CAT.LEATHER;
+    }else if(name.includes('experimental')){
+      cat = SUPPLY_CAT.SCHOLAR;
+    }else{
+      cat = SUPPLY_CAT.NONE;
     }
     return cat;
   },
