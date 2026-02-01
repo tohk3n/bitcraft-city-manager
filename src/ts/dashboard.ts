@@ -149,43 +149,69 @@ export const DashboardUI = {
 
     container.innerHTML = html;
   },
-  generateFoodHtml(foodTotal:number,foodList:Item[],maxEntries:number){
+  generateItemTableHtml<CAT>(
+      icon: string,
+      title: string,
+      total: number,
+      items: Item[],
+      maxEntries: number,
+      getCategory: (item: Item) => CAT,
+      renderCategory: (cat: CAT) => string,
+      showMoreRow = false
+  ): string {
+    let html:string = DashboardUI.makeTableHeaderHtml(icon, total, title);
+    let lastCat: CAT | undefined = undefined;
 
-    let html:string = DashboardUI.makeTableHeaderHtml("🍖",foodTotal,'Food');
-    let lastCat:FOOD_BUFF|undefined = undefined;
-
-    for (const item of foodList.slice(0, maxEntries)) {
-      const name:string = item.name.toLowerCase();
-      const cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
-
-      if(!lastCat || lastCat!==cat) {
+    for (const item of items.slice(0, maxEntries)) {
+      const cat:CAT = getCategory(item);
+      if (lastCat !== cat) {
         lastCat = cat;
-        html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
+        html += `<tr><td>${renderCategory(cat)}</td><td class="cat-header"></td></tr>`;
       }
-      const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
-      html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
+      const tierBadge:string =
+          item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+
+      html += `<tr>
+      <td>${tierBadge} ${item.name}</td>
+      <td class="qty">${item.qty.toLocaleString()}</td>
+    </tr>`;
     }
-    if (foodList.length > maxEntries) {
-      html += `<tr class="more"><td colspan="2">+${foodList.length - maxEntries} more</td></tr>`;
+    if (showMoreRow && items.length > maxEntries) {
+      html += `<tr class="more">
+      <td colspan="2">+${items.length - maxEntries} more</td>
+    </tr>`;
     }
     html += '</table></div></div>';
     return html;
   },
-  generateSupplyHtml(suppliesTotal:number,supplyList:Item[], maxEntries:number):string{
-    let html:string = DashboardUI.makeTableHeaderHtml("📦",suppliesTotal,'Supply Cargo');
-    let lastCat:SUPPLY_CAT|undefined = undefined;
-    for (const item of supplyList.slice(0, maxEntries)) {
-      const name:string = item.name;
-      const cat:SUPPLY_CAT = DashboardUI.getSupplyCategory(name);
-      if(!lastCat || lastCat!== cat){
-        lastCat = cat;
-        html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
-      }
-      const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
-      html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
-    }
-    html += '</table></div></div>';
-    return html;
+  generateFoodHtml(foodTotal: number, foodList: Item[], maxEntries: number) {
+    return DashboardUI.generateItemTableHtml(
+        "🍖",
+        "Food",
+        foodTotal,
+        foodList,
+        maxEntries,
+        item => DashboardUI.getFoodBuffCategory(item.name),
+        cat => String(cat),
+        true
+    );
+  },
+  // requires the supplyList to be sorted by tag/category -> look into SUPPLY_CAT
+  generateSupplyHtml(
+      suppliesTotal: number,
+      supplyList: Item[],
+      maxEntries: number
+  ) {
+    return DashboardUI.generateItemTableHtml(
+        "📦",
+        "Supply Cargo",
+        suppliesTotal,
+        supplyList,
+        maxEntries,
+        item => DashboardUI.getSupplyCategory(item.name),
+        cat => String(cat),
+        false
+    );
   },
   getFoodBuffCategory(name:string):FOOD_BUFF{
     name = name.toLowerCase();
