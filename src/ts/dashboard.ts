@@ -14,20 +14,22 @@ import {
   MaterialCategory,
   MaterialMatrix,
   ProcessedInventory,
-  ScholarByTier,
+  Rule,
+
   StationsByName,
-  StationSummary,
+  StationSummary, SUPPLY_CAT,
   TagGroup,
   TierQuantities
 } from './types/index.js';
 import {CONFIG, DASHBOARD_CONFIG} from "./configuration/index.js";
-
+import {createLogger} from "./logger.js";
+const log = createLogger('Dashboard');
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
-    const { inventory, materialMatrix, foodItems, scholarByTier } = data;
+    const { inventory, materialMatrix, foodItems, supplyCargo } = data;
     let foods:Items = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
-    this.renderQuickStats(foods, scholarByTier);
+    this.renderQuickStats(foods, supplyCargo);
     this.renderMaterialMatrix(materialMatrix);
     this.renderInventory(inventory);
 
@@ -49,8 +51,6 @@ export const DashboardUI = {
       default:
         return food;
     }
-
-
   },
   // Helper to show a section
   show(sectionId: string): void {
@@ -129,83 +129,92 @@ export const DashboardUI = {
     container.innerHTML = html;
   },
 
-  // Food and Scholar quick stats
-  renderQuickStats(foodItems: Items, scholarByTier: ScholarByTier): void {
+  // Food and Supply quick stats
+  renderQuickStats(foodItems: Items, supplies: Items): void {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
 
-    const priority = (name: string): number => {
-      const n = name.toLowerCase();
-
-      if (n.includes('fish')) return 0;
-      if (n.includes('meat')) return 1;
-      if (n.includes('mushroom') || n.includes('berry')) return 2;
-
-      return 3;
-    };
-
-    let html:string = '';
-
     // Food section
-    const foodList:Item[] = Object.values(foodItems).sort((a, b) => {
-      const pA = priority(a.name);
-      const pB = priority(b.name);
+    const foodList:Item[] = DashboardUI.sortItems(foodItems,DASHBOARD_CONFIG.FOOD_RULE);
+    //total amount
+    let foodTotal:number = Object.values(foodItems).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
 
-      if (pA !== pB) {
-        return pA - pB;
-      }
+    let html:string = DashboardUI.generateFoodHtml(foodTotal,foodList,15);
 
-      return b.tier - a.tier;
-    });
-    let foodTotal:number = 0;
-    for (const f of foodList) foodTotal += f.qty;
-    html += DashboardUI.makeTableHeaderHtml("🍖",foodTotal);
-    let lastCat:FOOD_BUFF|undefined = undefined;
+    // Supply cargo items available
+    const suppliesTotal:number = Object.values(supplies).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
+    const supplyList:Item[] = DashboardUI.sortItems(supplies,[]);
 
-    for (const item of foodList.slice(0, 10)) {
-      const name:string = item.name.toLowerCase();
-      const cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
-
-      if(!lastCat || lastCat!==cat) {
-        lastCat = cat;
-        html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
-      }
-      const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
-      html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
-    }
-    if (foodList.length > 15) {
-      html += `<tr class="more"><td colspan="2">+${foodList.length - 10} more</td></tr>`;
-    }
-    html += '</table></div></div>';
-
-    // Scholar section
-    let scholarTotal:number = 0;
-    for (const qty of Object.values(scholarByTier)) scholarTotal += qty as number;
-
-    if (scholarTotal > 0) {
-      html += `
-      <div class="quick-card">
-      <div class="quick-header">
-      <span class="icon">📜</span>
-      <h4>Scholar</h4>
-      <span class="total">${scholarTotal.toLocaleString()}</span>
-      </div>
-      <div class="quick-body">
-      <table>
-      `;
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-        const qty:number = scholarByTier[t as keyof ScholarByTier] || 0;
-        if (qty > 0) {
-          const label:string = t === CONFIG.MAX_TIER ? 'T10' : `T${t}`;
-          html += `<tr><td><span class="tier-badge">${label}</span> Items</td><td class="qty">${qty.toLocaleString()}</td></tr>`;
-        }
-      }
-      html += '</table></div></div>';
-    }
+    html += DashboardUI.generateSupplyHtml(suppliesTotal,supplyList,15)
 
     container.innerHTML = html;
   },
+  generateItemTableHtml<CAT>(
+      icon: string,
+      title: string,
+      total: number,
+      items: Item[],
+      maxEntries: number,
+      getCategory: (item: Item) => CAT,
+      renderCategory: (cat: CAT) => string,
+      showMoreRow = false
+  ): string {
+    let html:string = DashboardUI.makeTableHeaderHtml(icon, total, title);
+    let lastCat: CAT | undefined = undefined;
+
+    for (const item of items.slice(0, maxEntries)) {
+      const cat:CAT = getCategory(item);
+      if (lastCat !== cat) {
+        lastCat = cat;
+        html += `<tr><td>${renderCategory(cat)}</td><td class="cat-header"></td></tr>`;
+      }
+      const tierBadge:string =
+          item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+
+      html += `<tr>
+      <td>${tierBadge} ${item.name}</td>
+      <td class="qty">${item.qty.toLocaleString()}</td>
+    </tr>`;
+    }
+    if (showMoreRow && items.length > maxEntries) {
+      html += `<tr class="more">
+      <td colspan="2">+${items.length - maxEntries} more</td>
+    </tr>`;
+    }
+    html += '</table></div></div>';
+    return html;
+  },
+  generateFoodHtml(foodTotal: number, foodList: Item[], maxEntries: number) {
+    return DashboardUI.generateItemTableHtml(
+        "🍖",
+        "Food",
+        foodTotal,
+        foodList,
+        maxEntries,
+        item => DashboardUI.getFoodBuffCategory(item.name),
+        cat => String(cat),
+        true
+    );
+  },
+  // requires the supplyList to be sorted by tag/category -> look into SUPPLY_CAT
+  generateSupplyHtml(
+      suppliesTotal: number,
+      supplyList: Item[],
+      maxEntries: number
+  ) {
+    return DashboardUI.generateItemTableHtml(
+        "📦",
+        "Supply Cargo",
+        suppliesTotal,
+        supplyList,
+        maxEntries,
+        item => DashboardUI.getSupplyCategory(item.name),
+        cat => String(cat),
+        false
+    );
+  },
   getFoodBuffCategory(name:string):FOOD_BUFF{
+    name = name.toLowerCase();
     let cat
     if(name.includes('fish')){
       cat = FOOD_BUFF.CRAFTING;
@@ -218,12 +227,64 @@ export const DashboardUI = {
     }
     return cat;
   },
-  makeTableHeaderHtml(icon:string,total:number):string{
+  getSupplyCategory(name:string):SUPPLY_CAT{
+    name = name.toLowerCase();
+    let cat
+    if(name.includes('timber')){
+      cat = SUPPLY_CAT.TIMBER;
+    }else if (name.includes('frame')){
+      cat = SUPPLY_CAT.FRAMES;
+    }else if (name.includes('tarp')){
+      cat = SUPPLY_CAT.TARP;
+    }else if (name.includes('sack')){
+      cat = SUPPLY_CAT.HEX;
+    }else if (name.includes('slab')){
+      cat = SUPPLY_CAT.SLAB;
+    }else if(name.includes('sheeting')){
+      cat = SUPPLY_CAT.LEATHER;
+    }else if(name.includes('experimental')){
+      cat = SUPPLY_CAT.SCHOLAR;
+    }else{
+      cat = SUPPLY_CAT.NONE;
+    }
+    return cat;
+  },
+  sortItems(items:Items,rules:Rule[]):Item[]{
+    return Object.values(items).sort(
+        DashboardUI.prioritySort(
+            item => {
+              const n:string = item.name.toLowerCase();
+              for (const r of rules) {
+                if (r.words.some(w => n.includes(w))) return r.prio;
+              }
+              return rules.length;
+            },
+            item => item.tier
+        )
+    );
+  },
+  // Generic sort function
+  prioritySort<T>(
+      getPriority: (item: T) => number,
+      getSecondary: (item: T) => number
+  ) {
+    return (a: T, b: T) => {
+      const pA:number = getPriority(a);
+      const pB:number = getPriority(b);
+
+      if (pA !== pB) {
+        return pA - pB;
+      }
+
+      return getSecondary(b) - getSecondary(a);
+    };
+  },
+  makeTableHeaderHtml(icon:string,total:number,title:string):string{
     let html:string = `
     <div class="quick-card">
     <div class="quick-header">
     <span class="icon">${icon}</span>
-    <h4>Food</h4>
+    <h4>${title}</h4>
     <span class="total">${total.toLocaleString()}</span>
     </div>
     <div class="quick-body">

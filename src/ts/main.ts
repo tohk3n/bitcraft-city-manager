@@ -9,7 +9,8 @@ import {
   ClaimData,
   PlannerState,
   EquipmentSlot,
-  CalculateOptions, ClaimInventoriesResponse
+  CalculateOptions, ClaimInventoriesResponse, InventoryProcessResult, ClaimBuildingsResponse, CraftingStationsResult,
+  ClaimResponse
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -49,10 +50,10 @@ async function loadClaim(claimId: string): Promise<void> {
     claimData.inventories = data;
 
     // Try to get claim name and details
-    let claimName = `Claim ${claimId}`;
-    let hasClaimHeader = false;
+    let claimName:string = `Claim ${claimId}`;
+    let hasClaimHeader:boolean = false;
     try {
-      const claimInfo = await API.getClaim(claimId);
+      const claimInfo:ClaimResponse = await API.getClaim(claimId);
       claimData.claimInfo = claimInfo;
       if (claimInfo.claim && claimInfo.claim.name) {
         claimName = claimInfo.claim.name;
@@ -71,14 +72,14 @@ async function loadClaim(claimId: string): Promise<void> {
     }
     UI.showTabs();
     // Process and render inventory view
-    const result = processInventory(data);
+    const result:InventoryProcessResult = processInventory(data);
     UI.renderDashboard(result);
 
     // Load and render crafting stations
     try {
-      const buildingsData = await API.getClaimBuildings(claimId);
+      const buildingsData:ClaimBuildingsResponse = await API.getClaimBuildings(claimId);
       claimData.buildings = buildingsData;
-      const stations = processCraftingStations(buildingsData.buildings);
+      const stations:CraftingStationsResult = processCraftingStations(buildingsData.buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {
       const error = e as Error;

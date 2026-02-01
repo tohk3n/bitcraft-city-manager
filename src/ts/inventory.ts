@@ -12,7 +12,6 @@ import type {
   MaterialMatrix,
   MaterialCategory,
   Items,
-  ScholarByTier,
   TierQuantities,
   CraftingStationsResult,
   StationsByName, BuildingBreakdown, BuildingFunction, InventorySlotContents, TagGroup,
@@ -44,7 +43,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
   const foodItems: Items = {};
 
   // Scholar totals by tier
-  const scholarByTier: ScholarByTier = createTierQuantities();
+  const supplies: Items = {};
 
   for (const building of buildings) {
     const buildingName:string = building.buildingNickname || building.buildingName;
@@ -69,7 +68,6 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       if (DASHBOARD_CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
         materialMatrix[category as MaterialCategory][tierKey] += qty;
       }
-
       // Track food items
       if (category === 'Food') {
         if (!foodItems[id]) {
@@ -77,10 +75,8 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
         }
         foodItems[id].qty += qty;
       }
-
-      // Track scholar items by tier
-      if (category === 'Scholar') {
-        scholarByTier[tierKey] += qty;
+      if(DASHBOARD_CONFIG.SUPPLY.has(tag)){
+        supplies[id] = {name: meta.name,tier:meta.tier,qty:qty,rarity:meta.rarity};
       }
 
       // Initialize nested structure
@@ -113,7 +109,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       }
     }
   }
-  return { inventory, materialMatrix, foodItems, scholarByTier };
+  return { inventory:inventory, materialMatrix:materialMatrix, foodItems:foodItems, supplyCargo:supplies };
 }
 
 // Build id -> metadata lookup

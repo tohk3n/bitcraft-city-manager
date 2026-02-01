@@ -36,3 +36,13 @@ export enum FOOD_BUFF{
     STAMINA = 'Stamina',
     NONE = 'none'
 }
+export enum SUPPLY_CAT{
+    TIMBER = 'Wood',
+    FRAMES = 'Metal',
+    TARP = 'Cloth',
+    LEATHER = 'Sheeting',
+    SLAB = 'Stone',
+    HEX = 'Hex',
+    SCHOLAR = 'Scholar',
+    NONE = 'none'
+}
