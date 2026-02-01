@@ -70,7 +70,6 @@ async function loadClaim(claimId: string): Promise<void> {
       UI.setClaimName(claimName);
     }
     UI.showTabs();
-    console.log(data);
     // Process and render inventory view
     const result:InventoryProcessResult = processInventory(data);
     UI.renderDashboard(result);
