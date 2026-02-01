@@ -1,1 +1,4 @@
-export type Rule = { words: string[]; prio: number };
+export interface Rule {
+  words: string[];
+  prio: number;
+}

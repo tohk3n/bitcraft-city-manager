@@ -1,6 +1,6 @@
 /**
  * Planner View - Orchestrates dashboard and flowchart tabs
- * 
+ *
  * Simple coordinator: manages tab state and delegates rendering.
  * Provides both filtered and full copy options.
  */
@@ -22,23 +22,23 @@ let cachedStudyJournals: ProcessedNode | null = null;
  * Render the planner view with tab switching.
  */
 export function render(
-    container: HTMLElement,
-    researches: ProcessedNode[],
-    report: ProgressReport & { targetTier: number },
-    studyJournals: ProcessedNode | null = null
+  container: HTMLElement,
+  researches: ProcessedNode[],
+  report: ProgressReport & { targetTier: number },
+  studyJournals: ProcessedNode | null = null
 ): void {
-    cachedResearches = researches;
-    cachedReport = report;
-    cachedStudyJournals = studyJournals;
+  cachedResearches = researches;
+  cachedReport = report;
+  cachedStudyJournals = studyJournals;
 
-    if (!researches || researches.length === 0) {
-        container.innerHTML = '<div class="pv-empty">No data</div>';
-        return;
-    }
+  if (!researches || researches.length === 0) {
+    container.innerHTML = '<div class="pv-empty">No data</div>';
+    return;
+  }
 
-    const { overall } = report;
+  const { overall } = report;
 
-    container.innerHTML = `
+  container.innerHTML = `
         <div class="pv-container">
             <div class="pv-toolbar">
                 <div class="pv-toolbar-left">
@@ -64,102 +64,104 @@ export function render(
         </div>
     `;
 
-    const contentEl = container.querySelector('#pv-content') as HTMLElement;
-    wireEvents(container, contentEl, report);
-    renderContent(contentEl);
+  const contentEl = container.querySelector('#pv-content') as HTMLElement;
+  wireEvents(container, contentEl, report);
+  renderContent(contentEl);
 }
 
 /**
  * Wire up all event handlers.
  */
 function wireEvents(
-    container: HTMLElement, 
-    contentEl: HTMLElement, 
-    report: ProgressReport & { targetTier: number }
+  container: HTMLElement,
+  contentEl: HTMLElement,
+  report: ProgressReport & { targetTier: number }
 ): void {
-    // Tab switching
-    container.querySelectorAll<HTMLElement>('.pv-tab').forEach(tab => {
-        tab.addEventListener('click', () => {
-            const view = tab.dataset.view as ViewMode;
-            if (view === currentView) return;
+  // Tab switching
+  container.querySelectorAll<HTMLElement>('.pv-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      const view = tab.dataset.view as ViewMode;
+      if (view === currentView) return;
 
-            currentView = view;
-            container.querySelectorAll('.pv-tab').forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            renderContent(contentEl);
-        });
+      currentView = view;
+      container.querySelectorAll('.pv-tab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderContent(contentEl);
     });
+  });
 
-    // Copy View - respects current filters
-    container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
-        const text = currentView === 'dashboard'
-            ? PlannerDashboard.generateDashboardText()
-            : generateExportText(report, report.targetTier);
-        copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
-    });
+  // Copy View - respects current filters
+  container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
+    const text =
+      currentView === 'dashboard'
+        ? PlannerDashboard.generateDashboardText()
+        : generateExportText(report, report.targetTier);
+    copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
+  });
 
-    // Copy All - ignores filters
-    container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
-        const text = currentView === 'dashboard'
-            ? PlannerDashboard.generateFullText()
-            : generateExportText(report, report.targetTier);
-        copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
-    });
+  // Copy All - ignores filters
+  container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
+    const text =
+      currentView === 'dashboard'
+        ? PlannerDashboard.generateFullText()
+        : generateExportText(report, report.targetTier);
+    copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
+  });
 
-    // CSV Export
-    container.querySelector('#pv-export-csv')?.addEventListener('click', () => {
-        const csv = generateCSV(report, report.targetTier);
-        downloadCSV(csv, `planner-t${report.targetTier}-requirements.csv`);
-    });
+  // CSV Export
+  container.querySelector('#pv-export-csv')?.addEventListener('click', () => {
+    const csv = generateCSV(report);
+    downloadCSV(csv, `planner-t${report.targetTier}-requirements.csv`);
+  });
 }
 
 /**
  * Render the active view.
  */
 function renderContent(container: HTMLElement): void {
-    if (!cachedReport) return;
+  if (!cachedReport) return;
 
-    if (currentView === 'dashboard') {
-        PlannerDashboard.render(container, cachedReport);
-    } else {
-        Flowchart.render(container, cachedResearches, cachedReport, cachedStudyJournals);
-    }
+  if (currentView === 'dashboard') {
+    PlannerDashboard.render(container, cachedReport);
+  } else {
+    Flowchart.render(container, cachedResearches, cachedReport, cachedStudyJournals);
+  }
 }
 
 /**
  * Copy text and show feedback.
  */
 function copyWithFeedback(text: string, btn: HTMLElement): void {
-    navigator.clipboard.writeText(text).then(() => {
-        const original = btn.innerHTML;
-        btn.innerHTML = '✓';
-        btn.classList.add('copied');
-        setTimeout(() => {
-            btn.innerHTML = original;
-            btn.classList.remove('copied');
-        }, 1500);
-    });
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('copied');
+    }, 1500);
+  });
 }
 
 /**
  * Trigger CSV file download.
  */
 function downloadCSV(content: string, filename: string): void {
-    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export function renderLoading(container: HTMLElement): void {
-    container.innerHTML = '<div class="pv-loading">Calculating...</div>';
+  container.innerHTML = '<div class="pv-loading">Calculating...</div>';
 }
 
 export function renderEmpty(container: HTMLElement): void {
-    container.innerHTML = '<div class="pv-empty">Select a target tier</div>';
+  container.innerHTML = '<div class="pv-empty">Select a target tier</div>';
 }

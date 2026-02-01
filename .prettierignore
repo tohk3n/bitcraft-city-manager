@@ -1,0 +1,11 @@
+# Built output
+public/js/
+
+# Dependencies
+node_modules/
+
+# Data files (don't, very bad)
+public/data/
+
+# Package manager
+package-lock.json

@@ -14,21 +14,24 @@ import type {
   Items,
   TierQuantities,
   CraftingStationsResult,
-  StationsByName, BuildingBreakdown, BuildingFunction, InventorySlotContents, TagGroup,
+  StationsByName,
+  BuildingBreakdown,
+  BuildingFunction,
+  InventorySlotContents,
+  TagGroup,
 } from './types/index.js';
-import {createLogger} from "./logger.js";
-const log = createLogger('inventory');
+
 // Helper to create fresh tier quantities object
 function createTierQuantities(): TierQuantities {
-  return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10:0 };
+  return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
 }
 
 // Process raw API response into structured inventory
 export function processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
   const buildings: Building[] = data.buildings || [];
 
-  const itemMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.items || []);
-  const cargoMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.cargos || []);
+  const itemMeta: Record<number, ApiItem | ApiCargo> = buildMetaLookup(data.items || []);
+  const cargoMeta: Record<number, ApiItem | ApiCargo> = buildMetaLookup(data.cargos || []);
 
   // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
   const inventory: ProcessedInventory = {};
@@ -46,22 +49,22 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
   const supplies: Items = {};
 
   for (const building of buildings) {
-    const buildingName:string = building.buildingNickname || building.buildingName;
+    const buildingName: string = building.buildingNickname || building.buildingName;
 
     for (const slot of building.inventory || []) {
-      const contents:InventorySlotContents|null = slot.contents;
+      const contents: InventorySlotContents | null = slot.contents;
       if (!contents) continue;
 
-      const id:number = contents.item_id;
-      const qty:number = contents.quantity;
-      const isItem:boolean = contents.item_type === 'item';
+      const id: number = contents.item_id;
+      const qty: number = contents.quantity;
+      const isItem: boolean = contents.item_type === 'item';
 
-      const meta:ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
+      const meta: ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
       if (!meta) continue;
 
-      const tag:string = meta.tag || 'Other';
-      const category:string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
-      const tier:number = meta.tier > 0 ? meta.tier : 1;
+      const tag: string = meta.tag || 'Other';
+      const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
+      const tier: number = meta.tier > 0 ? meta.tier : 1;
       const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
 
       // Aggregate raw materials into matrix by category and tier
@@ -71,12 +74,12 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       // Track food items
       if (category === 'Food') {
         if (!foodItems[id]) {
-          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 , rarity:meta.rarity};
+          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0, rarity: meta.rarity };
         }
         foodItems[id].qty += qty;
       }
-      if(DASHBOARD_CONFIG.SUPPLY.has(tag)){
-        supplies[id] = {name: meta.name,tier:meta.tier,qty:qty,rarity:meta.rarity};
+      if (DASHBOARD_CONFIG.SUPPLY.has(tag)) {
+        supplies[id] = { name: meta.name, tier: meta.tier, qty: qty, rarity: meta.rarity };
       }
 
       // Initialize nested structure
@@ -85,7 +88,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
         inventory[category][tag] = { items: {}, total: 0 };
       }
 
-      const tagGroup:TagGroup = inventory[category][tag];
+      const tagGroup: TagGroup = inventory[category][tag];
 
       if (!tagGroup.items[id]) {
         tagGroup.items[id] = {
@@ -93,7 +96,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
           name: meta.name,
           tier: meta.tier,
           qty: 0,
-          buildings: []
+          buildings: [],
         };
       }
 
@@ -101,7 +104,9 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       tagGroup.total += qty;
 
       // Track per-building breakdown
-      const existing = tagGroup.items[id].buildings.find(b => b.name === buildingName) as BuildingBreakdown | undefined;
+      const existing = tagGroup.items[id].buildings.find((b) => b.name === buildingName) as
+        | BuildingBreakdown
+        | undefined;
       if (existing) {
         existing.qty += qty;
       } else {
@@ -109,7 +114,12 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       }
     }
   }
-  return { inventory:inventory, materialMatrix:materialMatrix, foodItems:foodItems, supplyCargo:supplies };
+  return {
+    inventory: inventory,
+    materialMatrix: materialMatrix,
+    foodItems: foodItems,
+    supplyCargo: supplies,
+  };
 }
 
 // Build id -> metadata lookup
@@ -127,12 +137,12 @@ export function processCraftingStations(buildings: Building[]): CraftingStations
   const passive: StationsByName = {};
   log.info("process Crafting Stations:",buildings);
   for (const building of buildings) {
-    const func:BuildingFunction|undefined = building.functions?.[0];
+    const func: BuildingFunction | undefined = building.functions?.[0];
     if (!func) continue;
 
-    const tier:number = func.level || 1;
+    const tier: number = func.level || 1;
     const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
-    const name:string = building.buildingName;
+    const name: string = building.buildingName;
 
     // Active: has crafting slots
     if (func.crafting_slots && func.crafting_slots > 0) {
