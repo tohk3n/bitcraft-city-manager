@@ -87,6 +87,11 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
+#pv-export-csv {
+    font-family: monospace;
+    font-size: 0.8rem;
+}
+
 /* Copy button group */
 .pv-copy-group {
     display: flex;
@@ -136,6 +141,66 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
+}
+
+.pv-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 12px;
+    gap: 12px;
+}
+
+.pv-toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.pv-toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pv-progress-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pv-pct {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.pv-progress-bar-mini {
+    width: 60px;
+    height: 6px;
+    background: var(--bg-tertiary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.pv-progress-fill-mini {
+    height: 100%;
+    background: var(--status-partial);
+    border-radius: 3px;
+}
+
+.pv-stats-mini {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+/* Compact copy buttons */
+.pv-toolbar-right .pv-copy {
+    padding: 4px 8px;
+    font-size: 0.8rem;
 }
 
 /* Responsive - stack on narrow screens */

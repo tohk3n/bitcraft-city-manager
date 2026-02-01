@@ -9,7 +9,7 @@ import {
   ClaimData,
   PlannerState,
   EquipmentSlot,
-  CalculateOptions
+  CalculateOptions, ClaimInventoriesResponse
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -44,7 +44,7 @@ async function loadClaim(claimId: string): Promise<void> {
 
   try {
     // Load inventories (includes item metadata)
-    const data = await API.getClaimInventories(claimId);
+    const data:ClaimInventoriesResponse = await API.getClaimInventories(claimId);
     claimData.claimId = claimId;
     claimData.inventories = data;
 
@@ -70,7 +70,6 @@ async function loadClaim(claimId: string): Promise<void> {
       UI.setClaimName(claimName);
     }
     UI.showTabs();
-
     // Process and render inventory view
     const result = processInventory(data);
     UI.renderDashboard(result);
