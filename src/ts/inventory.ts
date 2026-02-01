@@ -11,13 +11,14 @@ import type {
   ProcessedInventory,
   MaterialMatrix,
   MaterialCategory,
-  FoodItems,
+  Items,
   ScholarByTier,
   TierQuantities,
   CraftingStationsResult,
   StationsByName, BuildingBreakdown, BuildingFunction, InventorySlotContents, TagGroup,
 } from './types/index.js';
-
+import {createLogger} from "./logger.js";
+const log = createLogger('inventory');
 // Helper to create fresh tier quantities object
 function createTierQuantities(): TierQuantities {
   return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10:0 };
@@ -26,6 +27,7 @@ function createTierQuantities(): TierQuantities {
 // Process raw API response into structured inventory
 export function processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
   const buildings: Building[] = data.buildings || [];
+
   const itemMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.items || []);
   const cargoMeta:Record<number, ApiItem|ApiCargo> = buildMetaLookup(data.cargos || []);
 
@@ -39,7 +41,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
   }
 
   // Food totals by item
-  const foodItems: FoodItems = {};
+  const foodItems: Items = {};
 
   // Scholar totals by tier
   const scholarByTier: ScholarByTier = createTierQuantities();
@@ -71,7 +73,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       // Track food items
       if (category === 'Food') {
         if (!foodItems[id]) {
-          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 };
+          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0 , rarity:meta.rarity};
         }
         foodItems[id].qty += qty;
       }
@@ -111,7 +113,6 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       }
     }
   }
-
   return { inventory, materialMatrix, foodItems, scholarByTier };
 }
 

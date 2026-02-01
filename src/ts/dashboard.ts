@@ -1,19 +1,22 @@
 // Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
 
-import type {
+import {
   BuildingBreakdown,
   CategoryInventory,
   CraftingStationsResult,
-  FoodItem,
-  FoodItems,
+  FILTER_TYPE,
+  FOOD_BUFF,
   InventoryItem,
   InventoryProcessResult,
+  Item,
+  Items,
   MaterialCategory,
   MaterialMatrix,
   ProcessedInventory,
   ScholarByTier,
-  StationsByName, StationSummary,
+  StationsByName,
+  StationSummary,
   TagGroup,
   TierQuantities
 } from './types/index.js';
@@ -23,14 +26,32 @@ export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
     const { inventory, materialMatrix, foodItems, scholarByTier } = data;
-
+    let foods:Items = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
+    this.renderQuickStats(foods, scholarByTier);
     this.renderMaterialMatrix(materialMatrix);
-    this.renderQuickStats(foodItems, scholarByTier);
     this.renderInventory(inventory);
 
     this.show('dashboard');
   },
+  filterFridge(food: Items, fridge: string[], filter:FILTER_TYPE): Items {
+    // defines what we show in the food tab
+    switch(filter){
+      case FILTER_TYPE.FRIDGE:
+        return Object.fromEntries(
+            Object.entries(food).filter(([_, item]) =>
+                fridge.includes(item.name)
+            )) as Items;
+      case FILTER_TYPE.RARITY_RARE:
+        return Object.fromEntries(
+            Object.entries(food).filter(([_, item]) =>
+                  item.rarity && item.rarity>1
+            )) as Items;
+      default:
+        return food;
+    }
 
+
+  },
   // Helper to show a section
   show(sectionId: string): void {
     const el:HTMLElement|null = document.getElementById(sectionId);
@@ -109,37 +130,53 @@ export const DashboardUI = {
   },
 
   // Food and Scholar quick stats
-  renderQuickStats(foodItems: FoodItems, scholarByTier: ScholarByTier): void {
+  renderQuickStats(foodItems: Items, scholarByTier: ScholarByTier): void {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
+
+    const priority = (name: string): number => {
+      const n = name.toLowerCase();
+
+      if (n.includes('fish')) return 0;
+      if (n.includes('meat')) return 1;
+      if (n.includes('mushroom') || n.includes('berry')) return 2;
+
+      return 3;
+    };
 
     let html:string = '';
 
     // Food section
-    const foodList:FoodItem[] = (Object.values(foodItems) as FoodItem[]).sort((a, b) => b.qty - a.qty);
+    const foodList:Item[] = Object.values(foodItems).sort((a, b) => {
+      const pA = priority(a.name);
+      const pB = priority(b.name);
+
+      if (pA !== pB) {
+        return pA - pB;
+      }
+
+      return b.tier - a.tier;
+    });
     let foodTotal:number = 0;
     for (const f of foodList) foodTotal += f.qty;
+    html += DashboardUI.makeTableHeaderHtml("🍖",foodTotal);
+    let lastCat:FOOD_BUFF|undefined = undefined;
 
-    if (foodTotal > 0) {
-      html += `
-      <div class="quick-card">
-      <div class="quick-header">
-      <span class="icon">🍖</span>
-      <h4>Food</h4>
-      <span class="total">${foodTotal.toLocaleString()}</span>
-      </div>
-      <div class="quick-body">
-      <table>
-      `;
-      for (const item of foodList.slice(0, 10)) {
-        const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
-        html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
+    for (const item of foodList.slice(0, 10)) {
+      const name:string = item.name.toLowerCase();
+      const cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
+
+      if(!lastCat || lastCat!==cat) {
+        lastCat = cat;
+        html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
       }
-      if (foodList.length > 10) {
-        html += `<tr class="more"><td colspan="2">+${foodList.length - 10} more</td></tr>`;
-      }
-      html += '</table></div></div>';
+      const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+      html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
+    if (foodList.length > 15) {
+      html += `<tr class="more"><td colspan="2">+${foodList.length - 10} more</td></tr>`;
+    }
+    html += '</table></div></div>';
 
     // Scholar section
     let scholarTotal:number = 0;
@@ -168,7 +205,32 @@ export const DashboardUI = {
 
     container.innerHTML = html;
   },
-
+  getFoodBuffCategory(name:string):FOOD_BUFF{
+    let cat
+    if(name.includes('fish')){
+      cat = FOOD_BUFF.CRAFTING;
+    }else if(name.includes('meat')){
+      cat = FOOD_BUFF.COMBAT;
+    }else if(name.includes('mushroom')||name.includes('berry')){
+      cat = FOOD_BUFF.MOVEMENT;
+    }else {
+      cat = FOOD_BUFF.NONE;
+    }
+    return cat;
+  },
+  makeTableHeaderHtml(icon:string,total:number):string{
+    let html:string = `
+    <div class="quick-card">
+    <div class="quick-header">
+    <span class="icon">${icon}</span>
+    <h4>Food</h4>
+    <span class="total">${total.toLocaleString()}</span>
+    </div>
+    <div class="quick-body">
+    <table>
+    `;
+    return html
+  },
   // Crafting stations summary
   renderCraftingStations(data: CraftingStationsResult): void {
     const container:HTMLElement|null = document.getElementById('crafting-stations');

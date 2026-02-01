@@ -22,3 +22,17 @@ export enum KeyboardKey {
     Enter = 'Enter',
     Escape = 'Escape'
 }
+/** Dashboard filter types */
+export enum FILTER_TYPE {
+    FRIDGE,
+    RARITY_RARE,
+    NONE
+}
+
+export enum FOOD_BUFF{
+    COMBAT = 'Combat',
+    CRAFTING = 'Crafting',
+    MOVEMENT = 'Movement',
+    STAMINA = 'Stamina',
+    NONE = 'none'
+}
