@@ -14,6 +14,7 @@ import {
   MaterialCategory,
   MaterialMatrix,
   ProcessedInventory,
+  Rule,
 
   StationsByName,
   StationSummary,
@@ -21,7 +22,8 @@ import {
   TierQuantities
 } from './types/index.js';
 import {CONFIG, DASHBOARD_CONFIG} from "./configuration/index.js";
-
+import {createLogger} from "./logger.js";
+const log = createLogger('Dashboard');
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
@@ -49,8 +51,6 @@ export const DashboardUI = {
       default:
         return food;
     }
-
-
   },
   // Helper to show a section
   show(sectionId: string): void {
@@ -134,35 +134,15 @@ export const DashboardUI = {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
 
-    const priority = (name: string): number => {
-      const n = name.toLowerCase();
-
-      if (n.includes('fish')) return 0;
-      if (n.includes('meat')) return 1;
-      if (n.includes('mushroom') || n.includes('berry')) return 2;
-
-      return 3;
-    };
-
-    let html:string = '';
-
     // Food section
-    const foodList:Item[] = Object.values(foodItems).sort((a, b) => {
-      const pA:number = priority(a.name);
-      const pB:number = priority(b.name);
+    const foodList:Item[] = DashboardUI.sortItems(foodItems,DASHBOARD_CONFIG.FOOD_RULE);
+    //total amount
+    let foodTotal:number = Object.values(foodItems).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
 
-      if (pA !== pB) {
-        return pA - pB;
-      }
-
-      return b.tier - a.tier;
-    });
-    let foodTotal:number = 0;
-    for (const f of foodList) foodTotal += f.qty;
-    html += DashboardUI.makeTableHeaderHtml("🍖",foodTotal,'Food');
+    let html:string = DashboardUI.makeTableHeaderHtml("🍖",foodTotal,'Food');
     let lastCat:FOOD_BUFF|undefined = undefined;
 
-    for (const item of foodList.slice(0, 10)) {
+    for (const item of foodList.slice(0, DASHBOARD_CONFIG.FOOD_ENTRIES)) {
       const name:string = item.name.toLowerCase();
       const cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
 
@@ -170,33 +150,25 @@ export const DashboardUI = {
         lastCat = cat;
         html += `<tr><td>${cat}</td><td class="cat-header"></td></tr>`;
       }
-      const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+      const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
       html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
-    if (foodList.length > 15) {
-      html += `<tr class="more"><td colspan="2">+${foodList.length - 10} more</td></tr>`;
+    if (foodList.length > DASHBOARD_CONFIG.FOOD_ENTRIES) {
+      html += `<tr class="more"><td colspan="2">+${foodList.length - DASHBOARD_CONFIG.FOOD_ENTRIES} more</td></tr>`;
     }
     html += '</table></div></div>';
 
     // Supply cargo items available
-    let suppliesTotal:number = 0;
-    for (const item of Object.values(supplies)) suppliesTotal += item.qty as number;
+    const suppliesTotal:number = Object.values(supplies).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
 
-
-    html += DashboardUI.makeTableHeaderHtml("📜",suppliesTotal,'Supply Cargo');
-    const supplyList:Item[] = Object.values(supplies).sort(
-      DashboardUI.prioritySort<Item>(
-          item => priority(item.name),
-          item => item.tier
-      )
-    )
+    html += DashboardUI.makeTableHeaderHtml("📦",suppliesTotal,'Supply Cargo');
+    const supplyList:Item[] = DashboardUI.sortItems(supplies,[]);
     for (const item of supplyList.slice(0, 10)) {
-      const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+      const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
       html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
 
     html += '</table></div></div>';
-
 
     container.innerHTML = html;
   },
@@ -212,6 +184,36 @@ export const DashboardUI = {
       cat = FOOD_BUFF.NONE;
     }
     return cat;
+  },
+  sortItems(items:Items,rules:Rule[]):Item[]{
+    return Object.values(items).sort(
+        DashboardUI.prioritySort(
+            item => {
+              const n:string = item.name.toLowerCase();
+              for (const r of rules) {
+                if (r.words.some(w => n.includes(w))) return r.prio;
+              }
+              return rules.length;
+            },
+            item => item.tier
+        )
+    );
+  },
+  // Generic sort function
+  prioritySort<T>(
+      getPriority: (item: T) => number,
+      getSecondary: (item: T) => number
+  ) {
+    return (a: T, b: T) => {
+      const pA:number = getPriority(a);
+      const pB:number = getPriority(b);
+
+      if (pA !== pB) {
+        return pA - pB;
+      }
+
+      return getSecondary(b) - getSecondary(a);
+    };
   },
   makeTableHeaderHtml(icon:string,total:number,title:string):string{
     let html:string = `
@@ -284,21 +286,6 @@ export const DashboardUI = {
 
     container.innerHTML = html;
     this.show('crafting-stations');
-  },
-  prioritySort<T>(
-      getPriority: (item: T) => number,
-      getSecondary: (item: T) => number
-  ) {
-    return (a: T, b: T) => {
-      const pA = getPriority(a);
-      const pB = getPriority(b);
-
-      if (pA !== pB) {
-        return pA - pB;
-      }
-
-      return getSecondary(b) - getSecondary(a);
-    };
   },
 
   // Inventory grid with expandable category cards

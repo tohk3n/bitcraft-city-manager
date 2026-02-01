@@ -9,7 +9,8 @@ import {
   ClaimData,
   PlannerState,
   EquipmentSlot,
-  CalculateOptions, ClaimInventoriesResponse, InventoryProcessResult, ClaimBuildingsResponse, CraftingStationsResult
+  CalculateOptions, ClaimInventoriesResponse, InventoryProcessResult, ClaimBuildingsResponse, CraftingStationsResult,
+  ClaimResponse
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -49,10 +50,10 @@ async function loadClaim(claimId: string): Promise<void> {
     claimData.inventories = data;
 
     // Try to get claim name and details
-    let claimName = `Claim ${claimId}`;
-    let hasClaimHeader = false;
+    let claimName:string = `Claim ${claimId}`;
+    let hasClaimHeader:boolean = false;
     try {
-      const claimInfo = await API.getClaim(claimId);
+      const claimInfo:ClaimResponse = await API.getClaim(claimId);
       claimData.claimInfo = claimInfo;
       if (claimInfo.claim && claimInfo.claim.name) {
         claimName = claimInfo.claim.name;

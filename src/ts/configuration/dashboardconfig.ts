@@ -43,11 +43,19 @@ export const DASHBOARD_CONFIG = {
     ],
     // Categories excluded from inventory grid (shown in quick stats instead)
     INVENTORY_GRID_EXCLUDE: ['Food', 'Scholar'],
-    // Actual food to be shown in the food tab
+    // Actual food to be shown in the food tab, incomplete and not yet used
     FRIDGE: [
         'Fine Deluxe Ocean Fish Sticks',
         "Succulent Ocean Fish Sticks"
     ],
+    // rules for sorting food
+    FOOD_RULE:[
+        { words: ['fish'], prio: 0 },
+        { words: ['meat'], prio: 1 },
+        { words: ['mushroom', 'berry'], prio: 2 }
+    ],
+    // Amount of entries shown in the food dashboard
+    FOOD_ENTRIES: 15,
     //TODO check if this can not be done with css
     BG_CONST : 'background: rgba(88, 166, 255, 0.2);'
 }
