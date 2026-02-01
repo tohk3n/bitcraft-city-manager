@@ -129,7 +129,7 @@ export const DashboardUI = {
     container.innerHTML = html;
   },
 
-  // Food and Scholar quick stats
+  // Food and Supply quick stats
   renderQuickStats(foodItems: Items, supplies: Items): void {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
@@ -139,10 +139,22 @@ export const DashboardUI = {
     //total amount
     let foodTotal:number = Object.values(foodItems).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
 
+    let html:string = DashboardUI.generateFoodHtml(foodTotal,foodList,15);
+
+    // Supply cargo items available
+    const suppliesTotal:number = Object.values(supplies).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
+    const supplyList:Item[] = DashboardUI.sortItems(supplies,[]);
+
+    html += DashboardUI.generateSupplyHtml(suppliesTotal,supplyList,15)
+
+    container.innerHTML = html;
+  },
+  generateFoodHtml(foodTotal:number,foodList:Item[],maxEntries:number){
+
     let html:string = DashboardUI.makeTableHeaderHtml("🍖",foodTotal,'Food');
     let lastCat:FOOD_BUFF|undefined = undefined;
 
-    for (const item of foodList.slice(0, DASHBOARD_CONFIG.FOOD_ENTRIES)) {
+    for (const item of foodList.slice(0, maxEntries)) {
       const name:string = item.name.toLowerCase();
       const cat:FOOD_BUFF = DashboardUI.getFoodBuffCategory(name);
 
@@ -153,24 +165,21 @@ export const DashboardUI = {
       const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
       html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
-    if (foodList.length > DASHBOARD_CONFIG.FOOD_ENTRIES) {
-      html += `<tr class="more"><td colspan="2">+${foodList.length - DASHBOARD_CONFIG.FOOD_ENTRIES} more</td></tr>`;
+    if (foodList.length > maxEntries) {
+      html += `<tr class="more"><td colspan="2">+${foodList.length - maxEntries} more</td></tr>`;
     }
     html += '</table></div></div>';
+    return html;
+  },
+  generateSupplyHtml(suppliesTotal:number,supplyList:Item[], maxEntries:number):string{
+    let html:string = DashboardUI.makeTableHeaderHtml("📦",suppliesTotal,'Supply Cargo');
 
-    // Supply cargo items available
-    const suppliesTotal:number = Object.values(supplies).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
-
-    html += DashboardUI.makeTableHeaderHtml("📦",suppliesTotal,'Supply Cargo');
-    const supplyList:Item[] = DashboardUI.sortItems(supplies,[]);
-    for (const item of supplyList.slice(0, 10)) {
+    for (const item of supplyList.slice(0, maxEntries)) {
       const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
       html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
-
     html += '</table></div></div>';
-
-    container.innerHTML = html;
+    return html;
   },
   getFoodBuffCategory(name:string):FOOD_BUFF{
     let cat
