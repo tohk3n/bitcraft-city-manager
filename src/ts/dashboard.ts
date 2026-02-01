@@ -294,64 +294,64 @@ export const DashboardUI = {
   },
   // Crafting stations summary
   renderCraftingStations(data: CraftingStationsResult): void {
+    log.debug("Start rendering Stations");
     const container:HTMLElement|null = document.getElementById('crafting-stations');
     if (!container) return;
-
+    log.debug("Stations data:",data);
     const { active, passive } = data;
-
     const activeNames:string[] = Object.keys(active).sort();
     const passiveNames:string[] = Object.keys(passive).sort();
 
     if (activeNames.length === 0 && passiveNames.length === 0) {
       container.innerHTML = '';
+      log.debug("No stations to render found (active and passive)");
       return;
     }
 
     let html:string = '';
 
-    // Helper to render a station matrix
-    const renderMatrix = (stations: StationsByName, names: string[], title: string): string => {
-      if (names.length === 0) return '';
-
-      let total:number = 0;
-      for (const name of names) {
-        total += stations[name].total;
-      }
-
-      let out:string = `<div class="stations-section">`;
-      out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
-      out += '<table class="material-matrix"><thead><tr>';
-      out += '<th></th>';
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-        out += `<th>T${t}</th>`;
-      }
-      out += '<th class="row-total">Total</th>';
-      out += '</tr></thead><tbody>';
-
-      for (const name of names) {
-        const station:StationSummary = stations[name];
-        out += `<tr><td class="cat-label">${name}</td>`;
-        for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-          const val:number = station.tiers[t as keyof TierQuantities] || 0;
-          const displayVal:string = val > 0 ? String(val) : '—';
-          const bgStyle:string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
-          out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
-        }
-        out += `<td class="row-total">${station.total}</td>`;
-        out += '</tr>';
-      }
-
-      out += '</tbody></table></div>';
-      return out;
-    };
-
-    html += renderMatrix(active, activeNames, 'Active Crafting Stations');
-    html += renderMatrix(passive, passiveNames, 'Passive Crafting Stations');
+    html += this.generateMatrixHtml(active, activeNames, 'Active Crafting Stations');
+    html += this.generateMatrixHtml(passive, passiveNames, 'Passive Crafting Stations');
 
     container.innerHTML = html;
     this.show('crafting-stations');
   },
+  generateMatrixHtml(stations:StationsByName,names:string[],title:string):string{
+    log.debug("start generate Matrix for:",stations);
+    if (names.length === 0) return '';
 
+    let total:number = 0;
+    for (const name of names) {
+      total += stations[name].total;
+    }
+
+    let out:string = `<div class="stations-section">`;
+    out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
+    out += '<table class="material-matrix"><thead><tr>';
+    out += '<th></th>';
+    for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+      out += `<th>T${t}</th>`;
+    }
+    out += '<th class="row-total">Total</th>';
+    out += '</tr></thead><tbody>';
+
+    for (const name of names) {
+      const station:StationSummary = stations[name];
+      out += `<tr><td class="cat-label">${name}</td>`;
+      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+        const val:number = station.tiers[t as keyof TierQuantities] || 0;
+        const displayVal:string = val > 0 ? String(val) : '—';
+        const bgStyle:string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
+        out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
+      }
+      out += `<td class="row-total">${station.total}</td>`;
+      out += '</tr>';
+    }
+
+    out += '</tbody></table></div>';
+    log.debug("Finished generating matrix");
+    return out;
+  },
   // Inventory grid with expandable category cards
   renderInventory(inventory: ProcessedInventory): void {
     const grid:HTMLElement|null = document.getElementById('inventory-grid');

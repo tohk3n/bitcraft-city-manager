@@ -9,7 +9,7 @@ import type {
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
-  PlayerVaultResponse
+  PlayerVaultResponse, Building
 } from './types/index.js';
 
 const log = createLogger('API');
@@ -47,8 +47,8 @@ export const API = {
     return this.fetch<ClaimCitizensResponse>(`/claims/${claimId}/citizens`);
   },
 
-  getClaimBuildings(claimId: string): Promise<ClaimBuildingsResponse> {
-    return this.fetch<ClaimBuildingsResponse>(`/claims/${claimId}/buildings`);
+  getClaimBuildings(claimId: string): Promise<Building[]> {
+    return this.fetch<Building[]>(`/claims/${claimId}/buildings`);
   },
 
   getItems(): Promise<ItemsResponse> {

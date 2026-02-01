@@ -10,7 +10,7 @@ import {
   PlannerState,
   EquipmentSlot,
   CalculateOptions, ClaimInventoriesResponse, InventoryProcessResult, ClaimBuildingsResponse, CraftingStationsResult,
-  ClaimResponse
+  ClaimResponse, Building
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -74,16 +74,20 @@ async function loadClaim(claimId: string): Promise<void> {
     // Process and render inventory view
     const result:InventoryProcessResult = processInventory(data);
     UI.renderDashboard(result);
-
+    log.debug("rendered Dashboard");
     // Load and render crafting stations
     try {
-      const buildingsData:ClaimBuildingsResponse = await API.getClaimBuildings(claimId);
+      const buildings:Building[] = await API.getClaimBuildings(claimId);
+      const buildingsData: ClaimBuildingsResponse = {
+        buildings
+      };
       claimData.buildings = buildingsData;
+      log.debug("claimdata.buildings:",buildingsData);
       const stations:CraftingStationsResult = processCraftingStations(buildingsData.buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {
       const error = e as Error;
-      log.debug('Could not fetch buildings:', error.message);
+      log.info('Could not fetch buildings:', error.message);
     }
 
     // Initialize planner controls (don't load data yet - lazy load on tab click)
