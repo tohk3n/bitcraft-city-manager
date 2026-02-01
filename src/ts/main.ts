@@ -9,7 +9,7 @@ import {
   ClaimData,
   PlannerState,
   EquipmentSlot,
-  CalculateOptions, ClaimInventoriesResponse
+  CalculateOptions, ClaimInventoriesResponse, InventoryProcessResult, ClaimBuildingsResponse, CraftingStationsResult
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -72,14 +72,14 @@ async function loadClaim(claimId: string): Promise<void> {
     UI.showTabs();
     console.log(data);
     // Process and render inventory view
-    const result = processInventory(data);
+    const result:InventoryProcessResult = processInventory(data);
     UI.renderDashboard(result);
 
     // Load and render crafting stations
     try {
-      const buildingsData = await API.getClaimBuildings(claimId);
+      const buildingsData:ClaimBuildingsResponse = await API.getClaimBuildings(claimId);
       claimData.buildings = buildingsData;
-      const stations = processCraftingStations(buildingsData.buildings);
+      const stations:CraftingStationsResult = processCraftingStations(buildingsData.buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {
       const error = e as Error;

@@ -44,8 +44,6 @@ export interface Item {
 
 export type Items = Record<number, Item>;  // keyed by item ID
 
-export type ScholarByTier = TierQuantities;
-
 // =============================================================================
 // BUILDING AND ITEM BREAKDOWN
 // =============================================================================
@@ -76,7 +74,7 @@ export interface InventoryProcessResult {
     inventory: ProcessedInventory;
     materialMatrix: MaterialMatrix;
     foodItems: Items;
-    scholarByTier: ScholarByTier;
+    supplyCargo: Items;
 }
 
 // =============================================================================

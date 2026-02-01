@@ -14,7 +14,7 @@ import {
   MaterialCategory,
   MaterialMatrix,
   ProcessedInventory,
-  ScholarByTier,
+
   StationsByName,
   StationSummary,
   TagGroup,
@@ -25,9 +25,9 @@ import {CONFIG, DASHBOARD_CONFIG} from "./configuration/index.js";
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
-    const { inventory, materialMatrix, foodItems, scholarByTier } = data;
+    const { inventory, materialMatrix, foodItems, supplyCargo } = data;
     let foods:Items = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
-    this.renderQuickStats(foods, scholarByTier);
+    this.renderQuickStats(foods, supplyCargo);
     this.renderMaterialMatrix(materialMatrix);
     this.renderInventory(inventory);
 
@@ -130,7 +130,7 @@ export const DashboardUI = {
   },
 
   // Food and Scholar quick stats
-  renderQuickStats(foodItems: Items, scholarByTier: ScholarByTier): void {
+  renderQuickStats(foodItems: Items, supplies: Items): void {
     const container:HTMLElement|null = document.getElementById('quick-stats');
     if (!container) return;
 
@@ -148,8 +148,8 @@ export const DashboardUI = {
 
     // Food section
     const foodList:Item[] = Object.values(foodItems).sort((a, b) => {
-      const pA = priority(a.name);
-      const pB = priority(b.name);
+      const pA:number = priority(a.name);
+      const pB:number = priority(b.name);
 
       if (pA !== pB) {
         return pA - pB;
@@ -159,7 +159,7 @@ export const DashboardUI = {
     });
     let foodTotal:number = 0;
     for (const f of foodList) foodTotal += f.qty;
-    html += DashboardUI.makeTableHeaderHtml("🍖",foodTotal);
+    html += DashboardUI.makeTableHeaderHtml("🍖",foodTotal,'Food');
     let lastCat:FOOD_BUFF|undefined = undefined;
 
     for (const item of foodList.slice(0, 10)) {
@@ -178,30 +178,25 @@ export const DashboardUI = {
     }
     html += '</table></div></div>';
 
-    // Scholar section
-    let scholarTotal:number = 0;
-    for (const qty of Object.values(scholarByTier)) scholarTotal += qty as number;
+    // Supply cargo items available
+    let suppliesTotal:number = 0;
+    for (const item of Object.values(supplies)) suppliesTotal += item.qty as number;
 
-    if (scholarTotal > 0) {
-      html += `
-      <div class="quick-card">
-      <div class="quick-header">
-      <span class="icon">📜</span>
-      <h4>Scholar</h4>
-      <span class="total">${scholarTotal.toLocaleString()}</span>
-      </div>
-      <div class="quick-body">
-      <table>
-      `;
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-        const qty:number = scholarByTier[t as keyof ScholarByTier] || 0;
-        if (qty > 0) {
-          const label:string = t === CONFIG.MAX_TIER ? 'T10' : `T${t}`;
-          html += `<tr><td><span class="tier-badge">${label}</span> Items</td><td class="qty">${qty.toLocaleString()}</td></tr>`;
-        }
-      }
-      html += '</table></div></div>';
+
+    html += DashboardUI.makeTableHeaderHtml("📜",suppliesTotal,'Supply Cargo');
+    const supplyList:Item[] = Object.values(supplies).sort(
+      DashboardUI.prioritySort<Item>(
+          item => priority(item.name),
+          item => item.tier
+      )
+    )
+    for (const item of supplyList.slice(0, 10)) {
+      const tierBadge = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+      html += `<tr><td>${tierBadge} ${item.name}</td><td class="qty">${item.qty.toLocaleString()}</td></tr>`;
     }
+
+    html += '</table></div></div>';
+
 
     container.innerHTML = html;
   },
@@ -218,12 +213,12 @@ export const DashboardUI = {
     }
     return cat;
   },
-  makeTableHeaderHtml(icon:string,total:number):string{
+  makeTableHeaderHtml(icon:string,total:number,title:string):string{
     let html:string = `
     <div class="quick-card">
     <div class="quick-header">
     <span class="icon">${icon}</span>
-    <h4>Food</h4>
+    <h4>${title}</h4>
     <span class="total">${total.toLocaleString()}</span>
     </div>
     <div class="quick-body">
@@ -289,6 +284,21 @@ export const DashboardUI = {
 
     container.innerHTML = html;
     this.show('crafting-stations');
+  },
+  prioritySort<T>(
+      getPriority: (item: T) => number,
+      getSecondary: (item: T) => number
+  ) {
+    return (a: T, b: T) => {
+      const pA = getPriority(a);
+      const pB = getPriority(b);
+
+      if (pA !== pB) {
+        return pA - pB;
+      }
+
+      return getSecondary(b) - getSecondary(a);
+    };
   },
 
   // Inventory grid with expandable category cards

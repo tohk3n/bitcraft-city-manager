@@ -31,6 +31,9 @@ export const DASHBOARD_CONFIG = {
         'Bait', 'Lake Fish', 'Lake Fish Filet', 'Ocean Fish', 'Oceanfish Filet', 'Chum',
         'Leather', 'Tanned Pelt', 'Tannin', 'Raw Meat',
     ]),
+    SUPPLY: new Set([
+       'Frame', 'Timber', 'Tarp', 'Slab', 'Sheeting'
+    ]),
     // Build reverse lookup: tag -> category (computed at load time)
     TAG_TO_CATEGORY: {} as Record<string, string>,
     // Inventory category display order
