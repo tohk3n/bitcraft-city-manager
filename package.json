@@ -4,12 +4,15 @@
   "description": "Dashboard for viewing Bitcraft claim inventory, citizens, and equipment",
   "private": true,
   "scripts": {
+    "test": "vitest",
     "build": "tsc",
     "watch": "tsc --watch",
     "deploy": "npm run build && vercel --prod"
   },
   "devDependencies": {
-  "typescript": "^5.4.0"
+    "@types/node": "^25.1.0",
+    "typescript": "^5.4.0",
+    "vitest": "^4.0.18"
   },
   "repository": {
     "type": "git",
