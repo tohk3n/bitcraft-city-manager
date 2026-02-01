@@ -1,8 +1,8 @@
 // Map link composer functionality
-import {MAP_CONFIG} from './configuration/index.js';
-import {NamedMatrix} from './types/index.js';
-import {createLogger} from "./logger.js";
-import {CELL_TYPE, LINK_PARAM, StateMatrixEntry} from './types/index.js';
+import { MAP_CONFIG } from './configuration/index.js';
+import type { NamedMatrix } from './types/index.js';
+import type { StateMatrixEntry } from './types/index.js';
+import { CELL_TYPE, LINK_PARAM } from './types/index.js';
 
 interface LinkDataMap {
   regionId?: string;
@@ -10,58 +10,71 @@ interface LinkDataMap {
   playerId?: string;
   enemyId?: string;
 }
-const log = createLogger('maplink');
 export const MAP_LINK = {
+  // Gets values from checkboxes and input fields to generate link
+  generateLinkEvent(): void {
+    const checkboxes = Array.from(
+      document.querySelectorAll<HTMLInputElement>('#checkbox-row input[type="checkbox"]:checked')
+    ).map((cb) => cb.value);
 
-    // Gets values from checkboxes and input fields to generate link
-    generateLinkEvent(): void {
-    const checkboxes = Array
-    .from(document.querySelectorAll<HTMLInputElement>('#checkbox-row input[type="checkbox"]:checked'))
-    .map(cb => cb.value);
+    const resIdsEl = document.getElementById('res-ids') as HTMLInputElement | null;
+    const playerIdsEl = document.getElementById('player-ids') as HTMLInputElement | null;
+    const enemyIdsEl = document.getElementById('enemy-ids') as HTMLInputElement | null;
 
-    const resIdsEl = document.getElementById("res-ids") as HTMLInputElement | null;
-    const playerIdsEl = document.getElementById("player-ids") as HTMLInputElement | null;
-    const enemyIdsEl = document.getElementById("enemy-ids") as HTMLInputElement | null;
-
-    let resourceIdInput:string = resIdsEl?.value || '';
-    let playerIdInput:string = playerIdsEl?.value || '';
-    let enemyIdInput:string = enemyIdsEl?.value || '';
+    let resourceIdInput: string = resIdsEl?.value || '';
+    let playerIdInput: string = playerIdsEl?.value || '';
+    let enemyIdInput: string = enemyIdsEl?.value || '';
     // Remove possible trailing comma
     resourceIdInput = MAP_LINK.finalizeCommaNumberInput(resourceIdInput);
     playerIdInput = MAP_LINK.finalizeCommaNumberInput(playerIdInput);
     enemyIdInput = MAP_LINK.finalizeCommaNumberInput(enemyIdInput);
 
     // Build the link
-    const generatedLink = MAP_LINK.generateLink(checkboxes, resourceIdInput, playerIdInput, enemyIdInput);
-    const displayLink = MAP_LINK.generateDisplayLink(checkboxes, resourceIdInput, playerIdInput, enemyIdInput);
+    const generatedLink = MAP_LINK.generateLink(
+      checkboxes,
+      resourceIdInput,
+      playerIdInput,
+      enemyIdInput
+    );
+    const displayLink = MAP_LINK.generateDisplayLink(
+      checkboxes,
+      resourceIdInput,
+      playerIdInput,
+      enemyIdInput
+    );
 
     // Show link in UI
-    const linkEl = document.getElementById("map-link") as HTMLAnchorElement | null;
+    const linkEl = document.getElementById('map-link') as HTMLAnchorElement | null;
     if (linkEl) {
       linkEl.href = generatedLink.toString();
       linkEl.textContent = displayLink;
     }
   },
 
-    // ONLY for display, it's not a correct link (so it might not work)
-    generateDisplayLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): string {
+  // ONLY for display, it's not a correct link (so it might not work)
+  generateDisplayLink(
+    regions: string[],
+    resourceIds: string,
+    playerIds: string,
+    enemyIds: string
+  ): string {
     const dataMap: LinkDataMap = {};
 
-        if (regions.length > 0) {
-            dataMap.regionId = regions.join(',');
-        }
-        if (resourceIds !== '') {
-            dataMap.resourceId = resourceIds;
-        }
-        if (playerIds !== '') {
-            dataMap.playerId = playerIds;
-        }
-        if (enemyIds !== '') {
-            dataMap.enemyId = enemyIds;
-        }
+    if (regions.length > 0) {
+      dataMap.regionId = regions.join(',');
+    }
+    if (resourceIds !== '') {
+      dataMap.resourceId = resourceIds;
+    }
+    if (playerIds !== '') {
+      dataMap.playerId = playerIds;
+    }
+    if (enemyIds !== '') {
+      dataMap.enemyId = enemyIds;
+    }
 
-        let displayUrl:string = MAP_CONFIG.BASE_URL;
-        let first:boolean = true;
+    let displayUrl: string = MAP_CONFIG.BASE_URL;
+    let first = true;
 
     // First value has ? prefix, subsequent use &
     for (const [key, value] of Object.entries(dataMap)) {
@@ -72,9 +85,8 @@ export const MAP_LINK = {
     return displayUrl;
   },
 
-    // Generate link to bitcraft map from provided data
-    generateLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): URL {
-
+  // Generate link to bitcraft map from provided data
+  generateLink(regions: string[], resourceIds: string, playerIds: string, enemyIds: string): URL {
     const url = new URL(MAP_CONFIG.BASE_URL);
     if (regions.length > 0) {
       url.searchParams.set(LINK_PARAM.REGION_ID, regions.join(','));
@@ -92,40 +104,39 @@ export const MAP_LINK = {
     return url;
   },
 
-    // Add input validation for comma-separated number fields
-    addCommaNumberValidation(inputId: string): void {
+  // Add input validation for comma-separated number fields
+  addCommaNumberValidation(inputId: string): void {
     const field = document.getElementById(inputId) as HTMLInputElement | null;
     if (!field) return;
 
-        field.addEventListener('input', () => {
-            let value = field.value;
+    field.addEventListener('input', () => {
+      let value = field.value;
 
-            value = value
-                .replace(/[^0-9,]/g, '')  // only numbers and commas
-                .replace(/^,+/, '')       // no leading commas
-                .replace(/\s*,\s*/g, ',') // no spaces around commas
-                .replace(/,{2,}/g, ',');  // no duplicate commas
+      value = value
+        .replace(/[^0-9,]/g, '') // only numbers and commas
+        .replace(/^,+/, '') // no leading commas
+        .replace(/\s*,\s*/g, ',') // no spaces around commas
+        .replace(/,{2,}/g, ','); // no duplicate commas
 
       field.value = value;
     });
   },
 
-    // Clean up trailing commas from input
-    finalizeCommaNumberInput(value: string): string {
-    return value.replace(/,+$/, '')
-        .replace(/,{2,}/g, ',');  // no duplicate commas;
+  // Clean up trailing commas from input
+  finalizeCommaNumberInput(value: string): string {
+    return value.replace(/,+$/, '').replace(/,{2,}/g, ','); // no duplicate commas;
   },
 
-    // Add or remove new value to input field, separates by comma, leaves the rest intact
-    syncInputValue(value: string | number, activated: boolean, elementName:string): void {
-    const strValue:string = String(value);
+  // Add or remove new value to input field, separates by comma, leaves the rest intact
+  syncInputValue(value: string | number, activated: boolean, elementName: string): void {
+    const strValue = String(value);
     const inputField = document.getElementById(elementName) as HTMLInputElement | null;
     if (!inputField) return;
 
     const resultValue = inputField.value.trim();
     const values: Set<string> = resultValue
-    ? new Set(resultValue.split(',').map(v => v.trim()))
-    : new Set();
+      ? new Set(resultValue.split(',').map((v) => v.trim()))
+      : new Set();
 
     if (activated) {
       values.add(strValue);
@@ -134,91 +145,102 @@ export const MAP_LINK = {
     }
     inputField.value = Array.from(values).join(',');
   },
-    // Synchronize the resource ID matrix to match the input
-    syncMatrixState(resourceIdInput: string, matrix:NamedMatrix):void {
-        const inputIds:string[] = resourceIdInput.split(',');
-        if(!matrix)return;
-        const stateObject:StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds, matrix);
-        MAP_LINK.setMatrixState(stateObject);
-    },
-    buildStateMatrix(idsToCheck: string[],inputMatrix:NamedMatrix): StateMatrixEntry[]  {
+  // Synchronize the resource ID matrix to match the input
+  syncMatrixState(resourceIdInput: string, matrix: NamedMatrix): void {
+    const inputIds: string[] = resourceIdInput.split(',');
+    if (!matrix) return;
+    const stateObject: StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds, matrix);
+    MAP_LINK.setMatrixState(stateObject);
+  },
+  buildStateMatrix(idsToCheck: string[], inputMatrix: NamedMatrix): StateMatrixEntry[] {
+    const idSet = new Set(idsToCheck.map(Number));
+    const result: StateMatrixEntry[] = [];
 
-        const idSet = new Set(idsToCheck.map(Number));
-        const result: StateMatrixEntry[] = [];
-
-        for (const [category, arrayOfArrays] of Object.entries(inputMatrix.map)) {
-            arrayOfArrays.forEach((ids:number[], index:number):void => {
-                const matches:number = ids.filter(id => idSet.has(id)).length;
-                let state;
-                if (matches === 0) {
-                    state = CELL_TYPE.NONE;
-                } else if (matches === ids.length) {
-                    state = CELL_TYPE.FULL;
-                } else {
-                    state = CELL_TYPE.PART;
-                }
-
-                result.push({
-                    category,
-                    col: index, // 0–9
-                    state: state
-                });
-            });
+    for (const [category, arrayOfArrays] of Object.entries(inputMatrix.map)) {
+      arrayOfArrays.forEach((ids: number[], index: number): void => {
+        const matches: number = ids.filter((id) => idSet.has(id)).length;
+        let state;
+        if (matches === 0) {
+          state = CELL_TYPE.NONE;
+        } else if (matches === ids.length) {
+          state = CELL_TYPE.FULL;
+        } else {
+          state = CELL_TYPE.PART;
         }
-        return result;
-    },
-    cellButtonEvent(entryKey:string, tier:number):void {
-      if(!entryKey)return;
-      if(entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX.map){
-          this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.RESOURCE_ID_MATRIX,'res-ids');
-      }
-      if(entryKey in MAP_CONFIG.ENEMY_ID_MATRIX.map){
-          this.resourceCellButtonEvent(entryKey,tier,MAP_CONFIG.ENEMY_ID_MATRIX,'enemy-ids');
-      }
-    },
-    resourceCellButtonEvent(entryKey:string, tier:number, matrix:NamedMatrix, htmlId:string):void {
-      if(!entryKey){
-          return;
-      }
 
-      const cellArea:Element|null = document.querySelector(`[data-row="${entryKey}"][data-tier="${tier}"]`);
-      if(!cellArea)return;
-      const isActive:boolean | undefined = cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
-      if(isActive===undefined)return;
-      const index:number = tier - 1;
-
-      //get corresponding ids for this row/tier
-      const idValues:number[] = matrix.map[entryKey]?.[index];
-      if(!idValues)return;
-      //update input field
-      idValues.forEach(id => this.syncInputValue(id, !isActive,htmlId))
-      //update matrix state
-      const inputField = document.getElementById(htmlId) as HTMLInputElement | null;
-      if(!inputField) return;
-      const fieldValues:string = inputField.value;
-      MAP_LINK.syncMatrixState(fieldValues,matrix);
-    },
-
-    // Uses an array of stateMatrixEntries to set states for all cells
-    setMatrixState(stateObjectArray:StateMatrixEntry[]):void {
-        const table:HTMLElement|null = document.getElementById("id-matrix");
-        if(!table)return;
-        stateObjectArray.forEach(entry => {
-            const cell:HTMLElement|null|undefined = MAP_LINK.getCell(table, entry.category, entry.col + 1);
-            if(cell) {
-                MAP_LINK.setCellState(cell, entry.state);
-            }
-        })
-    },
-    getCell(table:HTMLElement, row:string, tier:number):HTMLElement|null {
-        if (!table) return null;
-
-        return document.querySelector(`[data-row="${row}"][data-tier="${tier}"]`);
-    },
-    setCellState(cell:HTMLElement, state:CELL_TYPE):void {
-        if (!cell || !Object.values(CELL_TYPE).includes(state)) return;
-
-        cell.classList.remove(...Object.values(CELL_TYPE));
-        cell.classList.add(state);
+        result.push({
+          category,
+          col: index, // 0–9
+          state: state,
+        });
+      });
     }
+    return result;
+  },
+  cellButtonEvent(entryKey: string, tier: number): void {
+    if (!entryKey) return;
+    if (entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX.map) {
+      this.resourceCellButtonEvent(entryKey, tier, MAP_CONFIG.RESOURCE_ID_MATRIX, 'res-ids');
+    }
+    if (entryKey in MAP_CONFIG.ENEMY_ID_MATRIX.map) {
+      this.resourceCellButtonEvent(entryKey, tier, MAP_CONFIG.ENEMY_ID_MATRIX, 'enemy-ids');
+    }
+  },
+  resourceCellButtonEvent(
+    entryKey: string,
+    tier: number,
+    matrix: NamedMatrix,
+    htmlId: string
+  ): void {
+    if (!entryKey) {
+      return;
+    }
+
+    const cellArea: Element | null = document.querySelector(
+      `[data-row="${entryKey}"][data-tier="${tier}"]`
+    );
+    if (!cellArea) return;
+    const isActive: boolean | undefined =
+      cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
+    if (isActive === undefined) return;
+    const index: number = tier - 1;
+
+    //get corresponding ids for this row/tier
+    const idValues: number[] = matrix.map[entryKey]?.[index];
+    if (!idValues) return;
+    //update input field
+    idValues.forEach((id) => this.syncInputValue(id, !isActive, htmlId));
+    //update matrix state
+    const inputField = document.getElementById(htmlId) as HTMLInputElement | null;
+    if (!inputField) return;
+    const fieldValues: string = inputField.value;
+    MAP_LINK.syncMatrixState(fieldValues, matrix);
+  },
+
+  // Uses an array of stateMatrixEntries to set states for all cells
+  setMatrixState(stateObjectArray: StateMatrixEntry[]): void {
+    const table: HTMLElement | null = document.getElementById('id-matrix');
+    if (!table) return;
+    stateObjectArray.forEach((entry) => {
+      const cell: HTMLElement | null | undefined = MAP_LINK.getCell(
+        table,
+        entry.category,
+        entry.col + 1
+      );
+      if (cell) {
+        MAP_LINK.setCellState(cell, entry.state);
+      }
+    });
+  },
+  getCell(table: HTMLElement, row: string, tier: number): HTMLElement | null {
+    if (!table) return null;
+
+    return document.querySelector(`[data-row="${row}"][data-tier="${tier}"]`);
+  },
+  setCellState(cell: HTMLElement, state: CELL_TYPE): void {
+    if (!cell || !Object.values(CELL_TYPE).includes(state)) return;
+
+    cell.classList.remove(...Object.values(CELL_TYPE));
+    cell.classList.add(state);
+  },
 };

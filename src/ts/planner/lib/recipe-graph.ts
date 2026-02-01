@@ -1,17 +1,17 @@
 /**
  * Recipe Graph - Data access layer for normalized recipe data
- * 
+ *
  * Provides typed access to recipes.json and codex.json.
  * Designed for reuse across planner, inventory dashboard, and future features.
  */
 
 import type {
-    Recipe,
-    RecipesFile,
-    RecipeType,
-    CodexFile,
-    CodexTier,
-    MappingType
+  Recipe,
+  RecipesFile,
+  RecipeType,
+  CodexFile,
+  CodexTier,
+  MappingType,
 } from '../../types/index.js';
 
 // =============================================================================
@@ -19,13 +19,13 @@ import type {
 // =============================================================================
 
 export function createKey(name: string, tier: number): string {
-    return `${name}:${tier}`;
+  return `${name}:${tier}`;
 }
 
 export function parseKey(key: string): { name: string; tier: number } | null {
-    const match = key.match(/^(.+):(\d+)$/);
-    if (!match) return null;
-    return { name: match[1], tier: parseInt(match[2], 10) };
+  const match = key.match(/^(.+):(\d+)$/);
+  if (!match) return null;
+  return { name: match[1], tier: parseInt(match[2], 10) };
 }
 
 // =============================================================================
@@ -33,19 +33,19 @@ export function parseKey(key: string): { name: string; tier: number } | null {
 // =============================================================================
 
 const RECIPE_TO_MAPPING: Record<RecipeType, MappingType> = {
-    gathered: 'gathered',
-    intermediate: 'intermediate',
-    refined: 'likely_api',
-    research: 'research',
-    study: 'study_material'
+  gathered: 'gathered',
+  intermediate: 'intermediate',
+  refined: 'likely_api',
+  research: 'research',
+  study: 'study_material',
 };
 
 export function toMappingType(type: RecipeType): MappingType {
-    return RECIPE_TO_MAPPING[type] ?? 'unknown';
+  return RECIPE_TO_MAPPING[type] ?? 'unknown';
 }
 
 export function isTrackable(type: RecipeType): boolean {
-    return type !== 'research';
+  return type !== 'research';
 }
 
 // =============================================================================
@@ -53,17 +53,17 @@ export function isTrackable(type: RecipeType): boolean {
 // =============================================================================
 
 export function getRecipe(recipes: RecipesFile, key: string): Recipe | undefined {
-    return recipes.recipes[key];
+  return recipes.recipes[key];
 }
 
 export function getCodexTier(codex: CodexFile, tier: number): CodexTier | undefined {
-    return codex.tiers[String(tier)];
+  return codex.tiers[String(tier)];
 }
 
 export function getAllRecipeKeys(recipes: RecipesFile): string[] {
-    return Object.keys(recipes.recipes);
+  return Object.keys(recipes.recipes);
 }
 
 export function getRecipesByType(recipes: RecipesFile, type: RecipeType): Recipe[] {
-    return Object.values(recipes.recipes).filter(r => r.type === type);
+  return Object.values(recipes.recipes).filter((r) => r.type === type);
 }

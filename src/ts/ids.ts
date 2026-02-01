@@ -1,7 +1,7 @@
 // ID Lookup view rendering
 // Handles: citizen and item ID lists with filtering
 
-import type { ApiItem, ClaimCitizensResponse, Citizen, IdsTabType } from './types/index.js';
+import type { ApiItem, ClaimCitizensResponse, IdsTabType } from './types/index.js';
 
 export const IdsUI = {
   // Render ID list (citizens or items)
@@ -23,7 +23,7 @@ export const IdsUI = {
       }
 
       const sorted = [...citizens].sort((a, b) =>
-      (a.userName || '').localeCompare(b.userName || '')
+        (a.userName || '').localeCompare(b.userName || '')
       );
 
       for (const c of sorted) {
@@ -53,23 +53,23 @@ export const IdsUI = {
     list.innerHTML = html;
 
     // Add copy handlers
-    list.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach(btn => {
+    list.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
       btn.addEventListener('click', () => this.copyToClipboard(btn.dataset.id || '', btn));
     });
   },
 
   // Filter ID list by name
-  filterIdList(filter: string, type: IdsTabType): void {
+  filterIdList(filter: string): void {
     const rows = document.querySelectorAll<HTMLTableRowElement>('#ids-list tbody tr');
     const lowerFilter = filter.toLowerCase();
 
-    rows.forEach(row => {
+    rows.forEach((row) => {
       const name = row.dataset.name || '';
-    if (name.includes(lowerFilter)) {
-      row.style.display = '';
-    } else {
-      row.style.display = 'none';
-    }
+      if (name.includes(lowerFilter)) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
     });
   },
 
@@ -84,5 +84,5 @@ export const IdsUI = {
         btn.classList.remove('copied');
       }, 1500);
     });
-  }
+  },
 };

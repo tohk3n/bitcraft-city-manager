@@ -7,25 +7,25 @@ import type { MappingType, ProcessedNode } from './codex.js';
 // =============================================================================
 
 export interface ItemMapping {
-    type: MappingType;
-    trackable: boolean;
-    note?: string;
-    tiers?: number[];
-    apiEquivalent?: string;
-    convertsTo?: string;
+  type: MappingType;
+  trackable: boolean;
+  note?: string;
+  tiers?: number[];
+  apiEquivalent?: string;
+  convertsTo?: string;
 }
 
 export interface ItemMappingsFile {
-    version: number;
-    generated: string;
-    description: string;
-    usage: Record<string, string>;
-    stats: {
-        totalCodexItems: number;
-        directlyMatched: number;
-        requiresMapping: number;
-    };
-    mappings: Record<string, ItemMapping>;
+  version: number;
+  generated: string;
+  description: string;
+  usage: Record<string, string>;
+  stats: {
+    totalCodexItems: number;
+    directlyMatched: number;
+    requiresMapping: number;
+  };
+  mappings: Record<string, ItemMapping>;
 }
 
 // =============================================================================
@@ -33,27 +33,27 @@ export interface ItemMappingsFile {
 // =============================================================================
 
 export interface TrackableItem {
-    name: string;
-    tier: number;
-    required: number;
-    have: number;
-    deficit: number;
-    pctComplete: number;
-    mappingType: MappingType;
+  name: string;
+  tier: number;
+  required: number;
+  have: number;
+  deficit: number;
+  pctComplete: number;
+  mappingType: MappingType;
 }
 
 export interface FirstTrackableItem extends TrackableItem {
-    sources: string[];  // which research branches need this item
+  sources: string[]; // which research branches need this item
 }
 
 export interface SecondLevelItem {
-    name: string;
-    tier: number;
-    required: number;
-    have: number;
-    deficit: number;
-    trackable: boolean;
-    mappingType: MappingType;
+  name: string;
+  tier: number;
+  required: number;
+  have: number;
+  deficit: number;
+  trackable: boolean;
+  mappingType: MappingType;
 }
 
 // =============================================================================
@@ -61,29 +61,29 @@ export interface SecondLevelItem {
 // =============================================================================
 
 export interface AggregatedItem {
-    name: string;
-    tier: number;
-    idealQty: number;
-    trackable: boolean;
-    mappingType: MappingType;
-    sources: string[];
+  name: string;
+  tier: number;
+  idealQty: number;
+  trackable: boolean;
+  mappingType: MappingType;
+  sources: string[];
 }
 
 export interface FlattenedItem {
-    name: string;
-    tier: number;
-    idealQty: number;
-    trackable: boolean;
-    mappingType: MappingType;
-    research: string;
+  name: string;
+  tier: number;
+  idealQty: number;
+  trackable: boolean;
+  mappingType: MappingType;
+  research: string;
 }
 
 export interface FirstTrackableResult {
-    name: string;
-    tier: number;
-    idealQty: number;
-    mappingType: MappingType;
-    parent: string | null;
+  name: string;
+  tier: number;
+  idealQty: number;
+  mappingType: MappingType;
+  parent: string | null;
 }
 
 // =============================================================================
@@ -91,34 +91,34 @@ export interface FirstTrackableResult {
 // =============================================================================
 
 export interface ProgressOverall {
-    percent: number;
-    totalRequired: number;
-    totalContribution: number;
-    completeCount: number;
-    totalItems: number;
+  percent: number;
+  totalRequired: number;
+  totalContribution: number;
+  completeCount: number;
+  totalItems: number;
 }
 
 export interface ActivityGroup {
-    activity: string;
-    items: TrackableItem[];
-    totalDeficit: number;
+  activity: string;
+  items: TrackableItem[];
+  totalDeficit: number;
 }
 
 export interface ResearchProgress {
-    percent: number;
-    totalRequired: number;
-    totalContribution: number;
-    items: TrackableItem[];
+  percent: number;
+  totalRequired: number;
+  totalContribution: number;
+  items: TrackableItem[];
 }
 
 export interface ProgressReport {
-    overall: ProgressOverall;
-    byActivity: Record<string, ActivityGroup>;
-    byResearch: Record<string, ResearchProgress>;
-    trackableItems: TrackableItem[];
-    firstTrackable: FirstTrackableItem[];
-    secondLevel: SecondLevelItem[];
-    targetCount: number;
+  overall: ProgressOverall;
+  byActivity: Record<string, ActivityGroup>;
+  byResearch: Record<string, ResearchProgress>;
+  trackableItems: TrackableItem[];
+  firstTrackable: FirstTrackableItem[];
+  secondLevel: SecondLevelItem[];
+  targetCount: number;
 }
 
 // =============================================================================
@@ -126,20 +126,20 @@ export interface ProgressReport {
 // =============================================================================
 
 export interface PlannerResults {
-    targetTier: number;
-    codexTier: number;
-    codexCount: number;
-    codexName: string;
-    researches: ProcessedNode[];
-    studyJournals: ProcessedNode | null;
-    summary: SecondLevelItem[];
-    report: ProgressReport;
+  targetTier: number;
+  codexTier: number;
+  codexCount: number;
+  codexName: string;
+  researches: ProcessedNode[];
+  studyJournals: ProcessedNode | null;
+  summary: SecondLevelItem[];
+  report: ProgressReport;
 }
 
 export interface PlannerState {
-    targetTier: number;
-    codexCount: number | null;
-    results: PlannerResults | null;
+  targetTier: number;
+  codexCount: number | null;
+  results: PlannerResults | null;
 }
 
 // =============================================================================
@@ -147,12 +147,12 @@ export interface PlannerState {
 // =============================================================================
 
 export interface TierRequirement {
-    codexTier: number;
-    count: number;
+  codexTier: number;
+  count: number;
 }
 
 export type TierRequirements = Record<number, TierRequirement>;
 
 export interface CalculateOptions {
-    customCount?: number;
+  customCount?: number;
 }
