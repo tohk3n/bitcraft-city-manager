@@ -5,12 +5,16 @@ import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
 import * as Planner from './planner/planner.js';
 import * as ClaimSearch from './claim-search.js';
-import {
+import type {
   ClaimData,
   PlannerState,
   EquipmentSlot,
-  CalculateOptions, ClaimInventoriesResponse, InventoryProcessResult, ClaimBuildingsResponse, CraftingStationsResult,
-  ClaimResponse
+  CalculateOptions,
+  ClaimInventoriesResponse,
+  InventoryProcessResult,
+  ClaimBuildingsResponse,
+  CraftingStationsResult,
+  ClaimResponse,
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -24,14 +28,14 @@ const claimData: ClaimData = {
   inventories: null,
   citizens: null,
   buildings: null,
-  items: null
+  items: null,
 };
 
 // Planner state
 const plannerState: PlannerState = {
   targetTier: 6, // Default target
   codexCount: null, // null means use default for tier
-  results: null
+  results: null,
 };
 
 async function loadClaim(claimId: string): Promise<void> {
@@ -45,15 +49,15 @@ async function loadClaim(claimId: string): Promise<void> {
 
   try {
     // Load inventories (includes item metadata)
-    const data:ClaimInventoriesResponse = await API.getClaimInventories(claimId);
+    const data: ClaimInventoriesResponse = await API.getClaimInventories(claimId);
     claimData.claimId = claimId;
     claimData.inventories = data;
 
     // Try to get claim name and details
-    let claimName:string = `Claim ${claimId}`;
-    let hasClaimHeader:boolean = false;
+    let claimName = `Claim ${claimId}`;
+    let hasClaimHeader = false;
     try {
-      const claimInfo:ClaimResponse = await API.getClaim(claimId);
+      const claimInfo: ClaimResponse = await API.getClaim(claimId);
       claimData.claimInfo = claimInfo;
       if (claimInfo.claim && claimInfo.claim.name) {
         claimName = claimInfo.claim.name;
@@ -72,14 +76,14 @@ async function loadClaim(claimId: string): Promise<void> {
     }
     UI.showTabs();
     // Process and render inventory view
-    const result:InventoryProcessResult = processInventory(data);
+    const result: InventoryProcessResult = processInventory(data);
     UI.renderDashboard(result);
 
     // Load and render crafting stations
     try {
-      const buildingsData:ClaimBuildingsResponse = await API.getClaimBuildings(claimId);
+      const buildingsData: ClaimBuildingsResponse = await API.getClaimBuildings(claimId);
       claimData.buildings = buildingsData;
-      const stations:CraftingStationsResult = processCraftingStations(buildingsData.buildings);
+      const stations: CraftingStationsResult = processCraftingStations(buildingsData.buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {
       const error = e as Error;
@@ -91,7 +95,6 @@ async function loadClaim(claimId: string): Promise<void> {
 
     // Save to URL for sharing
     history.replaceState(null, '', `?claim=${claimId}`);
-
   } catch (err) {
     const error = err as Error;
     log.error('Failed to load claim:', error.message);
@@ -108,11 +111,15 @@ function initPlanner(): void {
 
   if (!controlsContainer || !plannerContainer) return;
 
-  Planner.renderControls(controlsContainer, plannerState.targetTier, async (newTier: number, newCount: number | null) => {
-    plannerState.targetTier = newTier;
-    plannerState.codexCount = newCount;
-    await loadPlanner();
-  });
+  Planner.renderControls(
+    controlsContainer,
+    plannerState.targetTier,
+    async (newTier: number, newCount: number | null) => {
+      plannerState.targetTier = newTier;
+      plannerState.codexCount = newCount;
+      await loadPlanner();
+    }
+  );
 
   Planner.renderEmpty(plannerContainer);
 }
@@ -127,7 +134,9 @@ async function loadPlanner(): Promise<void> {
   Planner.renderLoading(plannerContainer);
 
   try {
-    const options: CalculateOptions = plannerState.codexCount ? { customCount: plannerState.codexCount } : {};
+    const options: CalculateOptions = plannerState.codexCount
+      ? { customCount: plannerState.codexCount }
+      : {};
     const results = await Planner.calculateRequirements(
       claimData.claimId,
       plannerState.targetTier,
@@ -137,7 +146,6 @@ async function loadPlanner(): Promise<void> {
 
     // Render unified planner view (dashboard + flowchart tabs)
     Planner.renderPlannerView(plannerContainer, results.researches, results.studyJournals);
-
   } catch (err) {
     const error = err as Error;
     log.error('Planner error:', error.message);
@@ -166,7 +174,7 @@ async function loadCitizens(): Promise<void> {
     const citizens = citizensData.citizens || [];
 
     // Render skeleton table immediately with empty equipment
-    const citizensWithEmptyGear = citizens.map(c => ({ ...c, equipment: [] as EquipmentSlot[] }));
+    const citizensWithEmptyGear = citizens.map((c) => ({ ...c, equipment: [] as EquipmentSlot[] }));
     claimData.citizens = { citizens: citizensWithEmptyGear };
     UI.renderCitizens(claimData.citizens);
     UI.showCitizensLoading(false);
@@ -195,12 +203,11 @@ async function loadCitizens(): Promise<void> {
 
         // Update cached data
         if (claimData.citizens) {
-          const cached = claimData.citizens.citizens.find(c => c.entityId === result.id);
+          const cached = claimData.citizens.citizens.find((c) => c.entityId === result.id);
           if (cached) cached.equipment = result.equipment;
         }
       }, i * 30);
     }
-
   } catch (err) {
     const error = err as Error;
     log.error('Failed to load citizens:', error.message);
@@ -229,16 +236,16 @@ async function loadItems(): Promise<void> {
 // Tab switching
 function setupTabs(): void {
   const tabs = document.querySelectorAll<HTMLElement>('#view-tabs .tab-btn');
-  tabs.forEach(tab => {
+  tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
       const view = tab.dataset.view;
 
       // Update active tab
-      tabs.forEach(t => t.classList.remove('active'));
+      tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
 
       // Show correct view
-      document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+      document.querySelectorAll('.view-section').forEach((s) => s.classList.add('hidden'));
       const viewEl = document.getElementById(`view-${view}`);
       viewEl?.classList.remove('hidden');
 
@@ -260,11 +267,11 @@ function setupTabs(): void {
 
   // ID type tabs (citizens vs items)
   const idTabs = document.querySelectorAll<HTMLElement>('.ids-tab-btn');
-  idTabs.forEach(tab => {
+  idTabs.forEach((tab) => {
     tab.addEventListener('click', () => {
       const type = tab.dataset.type;
 
-      idTabs.forEach(t => t.classList.remove('active'));
+      idTabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
 
       if (type === 'items') {
@@ -289,7 +296,7 @@ function setupTabs(): void {
 // Unified claim input (handles both city search and direct ID)
 ClaimSearch.init({
   onSelect: (claimId) => loadClaim(claimId),
-  onDirectLoad: (claimId) => loadClaim(claimId)
+  onDirectLoad: (claimId) => loadClaim(claimId),
 });
 
 // Load button (reads from input field)

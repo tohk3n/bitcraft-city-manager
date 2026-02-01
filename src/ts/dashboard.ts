@@ -1,12 +1,10 @@
 // Dashboard rendering methods
 // Handles: material matrix, quick stats, crafting stations, inventory grid
 
-import {
+import type {
   BuildingBreakdown,
   CategoryInventory,
   CraftingStationsResult,
-  FILTER_TYPE,
-  FOOD_BUFF,
   InventoryItem,
   InventoryProcessResult,
   Item,
@@ -15,62 +13,62 @@ import {
   MaterialMatrix,
   ProcessedInventory,
   Rule,
-
   StationsByName,
-  StationSummary, SUPPLY_CAT,
+  StationSummary,
   TagGroup,
-  TierQuantities
+  TierQuantities,
 } from './types/index.js';
-import {CONFIG, DASHBOARD_CONFIG} from "./configuration/index.js";
-import {createLogger} from "./logger.js";
-const log = createLogger('Dashboard');
+import { FILTER_TYPE, FOOD_BUFF, SUPPLY_CAT } from './types/index.js';
+import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
     const { inventory, materialMatrix, foodItems, supplyCargo } = data;
-    let foods:Items = DashboardUI.filterFridge(foodItems,DASHBOARD_CONFIG.FRIDGE,FILTER_TYPE.RARITY_RARE);
+    const foods: Items = DashboardUI.filterFridge(
+      foodItems,
+      DASHBOARD_CONFIG.FRIDGE,
+      FILTER_TYPE.RARITY_RARE
+    );
     this.renderQuickStats(foods, supplyCargo);
     this.renderMaterialMatrix(materialMatrix);
     this.renderInventory(inventory);
 
     this.show('dashboard');
   },
-  filterFridge(food: Items, fridge: string[], filter:FILTER_TYPE): Items {
+  filterFridge(food: Items, fridge: string[], filter: FILTER_TYPE): Items {
     // defines what we show in the food tab
-    switch(filter){
+    switch (filter) {
       case FILTER_TYPE.FRIDGE:
         return Object.fromEntries(
-            Object.entries(food).filter(([_, item]) =>
-                fridge.includes(item.name)
-            )) as Items;
+          Object.entries(food).filter(([_, item]) => fridge.includes(item.name))
+        ) as Items;
       case FILTER_TYPE.RARITY_RARE:
         return Object.fromEntries(
-            Object.entries(food).filter(([_, item]) =>
-                  item.rarity && item.rarity>1
-            )) as Items;
+          Object.entries(food).filter(([_, item]) => item.rarity && item.rarity > 1)
+        ) as Items;
       default:
         return food;
     }
   },
   // Helper to show a section
   show(sectionId: string): void {
-    const el:HTMLElement|null = document.getElementById(sectionId);
+    const el: HTMLElement | null = document.getElementById(sectionId);
     if (el) el.classList.remove('hidden');
   },
 
   // Material matrix table with heatmap
   renderMaterialMatrix(matrix: MaterialMatrix): void {
-    const container:HTMLElement|null = document.getElementById('tier-bar');
+    const container: HTMLElement | null = document.getElementById('tier-bar');
     if (!container) return;
 
     const categories = Object.keys(matrix) as MaterialCategory[];
 
     // Find global max for heatmap normalization
-    let globalMax:number = 0;
-    let grandTotal:number = 0;
+    let globalMax = 0;
+    let grandTotal = 0;
     for (const cat of categories) {
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-        const val:number = matrix[cat][t as keyof TierQuantities] || 0;
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+        const val: number = matrix[cat][t as keyof TierQuantities] || 0;
         if (val > globalMax) globalMax = val;
         grandTotal += val;
       }
@@ -78,21 +76,35 @@ export const DashboardUI = {
 
     // Calculate row and column totals
     const rowTotals: Record<string, number> = {};
-    const colTotals: TierQuantities = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
+    const colTotals: TierQuantities = {
+      1: 0,
+      2: 0,
+      3: 0,
+      4: 0,
+      5: 0,
+      6: 0,
+      7: 0,
+      8: 0,
+      9: 0,
+      10: 0,
+    };
     for (const cat of categories) {
       rowTotals[cat] = 0;
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         const tier = t as keyof TierQuantities;
-        const val:number = matrix[cat][tier] || 0;
+        const val: number = matrix[cat][tier] || 0;
         rowTotals[cat] += val;
         colTotals[tier] += val;
       }
     }
 
-    let html:string = '<div class="matrix-header"><h3>Raw Materials</h3><span class="total">' + grandTotal.toLocaleString() + ' total</span></div>';
+    let html: string =
+      '<div class="matrix-header"><h3>Raw Materials</h3><span class="total">' +
+      grandTotal.toLocaleString() +
+      ' total</span></div>';
     html += '<table class="material-matrix"><thead><tr>';
     html += '<th></th>';
-    for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
       const label = t === CONFIG.MAX_TIER ? 'T10' : `T${t}`;
       html += `<th>${label}</th>`;
     }
@@ -104,11 +116,12 @@ export const DashboardUI = {
       if (rowTotals[cat] === 0) continue;
 
       html += `<tr><td class="cat-label">${cat}</td>`;
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-        const val:number = matrix[cat][t as keyof TierQuantities] || 0;
-        const intensity:number = globalMax > 0 ? val / globalMax : 0;
-        const bgStyle:string = val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
-        const displayVal:string = val > 0 ? val.toLocaleString() : '-';
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+        const val: number = matrix[cat][t as keyof TierQuantities] || 0;
+        const intensity: number = globalMax > 0 ? val / globalMax : 0;
+        const bgStyle: string =
+          val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
+        const displayVal: string = val > 0 ? val.toLocaleString() : '-';
         html += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
       }
       html += `<td class="row-total">${rowTotals[cat].toLocaleString()}</td>`;
@@ -117,9 +130,9 @@ export const DashboardUI = {
 
     // Column totals row
     html += '<tr class="col-totals"><td class="cat-label">Total</td>';
-    for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-      const val:number = colTotals[t as keyof TierQuantities];
-      const displayVal:string = val > 0 ? val.toLocaleString() : '-';
+    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+      const val: number = colTotals[t as keyof TierQuantities];
+      const displayVal: string = val > 0 ? val.toLocaleString() : '-';
       html += `<td class="matrix-cell">${displayVal}</td>`;
     }
     html += `<td class="row-total grand-total">${grandTotal.toLocaleString()}</td>`;
@@ -131,45 +144,51 @@ export const DashboardUI = {
 
   // Food and Supply quick stats
   renderQuickStats(foodItems: Items, supplies: Items): void {
-    const container:HTMLElement|null = document.getElementById('quick-stats');
+    const container: HTMLElement | null = document.getElementById('quick-stats');
     if (!container) return;
 
     // Food section
-    const foodList:Item[] = DashboardUI.sortItems(foodItems,DASHBOARD_CONFIG.FOOD_RULE);
+    const foodList: Item[] = DashboardUI.sortItems(foodItems, DASHBOARD_CONFIG.FOOD_RULE);
     //total amount
-    let foodTotal:number = Object.values(foodItems).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
+    const foodTotal: number = Object.values(foodItems).reduce(
+      (sum: number, item: Item): number => sum + (item.qty ?? 0),
+      0
+    );
 
-    let html:string = DashboardUI.generateFoodHtml(foodTotal,foodList,15);
+    let html: string = DashboardUI.generateFoodHtml(foodTotal, foodList, 15);
 
     // Supply cargo items available
-    const suppliesTotal:number = Object.values(supplies).reduce((sum:number, item:Item):number => sum + (item.qty ?? 0), 0);
-    const supplyList:Item[] = DashboardUI.sortItems(supplies,[]);
+    const suppliesTotal: number = Object.values(supplies).reduce(
+      (sum: number, item: Item): number => sum + (item.qty ?? 0),
+      0
+    );
+    const supplyList: Item[] = DashboardUI.sortItems(supplies, []);
 
-    html += DashboardUI.generateSupplyHtml(suppliesTotal,supplyList,15)
+    html += DashboardUI.generateSupplyHtml(suppliesTotal, supplyList, 15);
 
     container.innerHTML = html;
   },
   generateItemTableHtml<CAT>(
-      icon: string,
-      title: string,
-      total: number,
-      items: Item[],
-      maxEntries: number,
-      getCategory: (item: Item) => CAT,
-      renderCategory: (cat: CAT) => string,
-      showMoreRow = false
+    icon: string,
+    title: string,
+    total: number,
+    items: Item[],
+    maxEntries: number,
+    getCategory: (item: Item) => CAT,
+    renderCategory: (cat: CAT) => string,
+    showMoreRow = false
   ): string {
-    let html:string = DashboardUI.makeTableHeaderHtml(icon, total, title);
+    let html: string = DashboardUI.makeTableHeaderHtml(icon, total, title);
     let lastCat: CAT | undefined = undefined;
 
     for (const item of items.slice(0, maxEntries)) {
-      const cat:CAT = getCategory(item);
+      const cat: CAT = getCategory(item);
       if (lastCat !== cat) {
         lastCat = cat;
         html += `<tr><td>${renderCategory(cat)}</td><td class="cat-header"></td></tr>`;
       }
-      const tierBadge:string =
-          item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+      const tierBadge: string =
+        item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
 
       html += `<tr>
       <td>${tierBadge} ${item.name}</td>
@@ -186,91 +205,84 @@ export const DashboardUI = {
   },
   generateFoodHtml(foodTotal: number, foodList: Item[], maxEntries: number) {
     return DashboardUI.generateItemTableHtml(
-        "🍖",
-        "Food",
-        foodTotal,
-        foodList,
-        maxEntries,
-        item => DashboardUI.getFoodBuffCategory(item.name),
-        cat => String(cat),
-        true
+      '🍖',
+      'Food',
+      foodTotal,
+      foodList,
+      maxEntries,
+      (item) => DashboardUI.getFoodBuffCategory(item.name),
+      (cat) => String(cat),
+      true
     );
   },
   // requires the supplyList to be sorted by tag/category -> look into SUPPLY_CAT
-  generateSupplyHtml(
-      suppliesTotal: number,
-      supplyList: Item[],
-      maxEntries: number
-  ) {
+  generateSupplyHtml(suppliesTotal: number, supplyList: Item[], maxEntries: number) {
     return DashboardUI.generateItemTableHtml(
-        "📦",
-        "Supply Cargo",
-        suppliesTotal,
-        supplyList,
-        maxEntries,
-        item => DashboardUI.getSupplyCategory(item.name),
-        cat => String(cat),
-        false
+      '📦',
+      'Supply Cargo',
+      suppliesTotal,
+      supplyList,
+      maxEntries,
+      (item) => DashboardUI.getSupplyCategory(item.name),
+      (cat) => String(cat),
+      false
     );
   },
-  getFoodBuffCategory(name:string):FOOD_BUFF{
+  getFoodBuffCategory(name: string): FOOD_BUFF {
     name = name.toLowerCase();
-    let cat
-    if(name.includes('fish')){
+    let cat;
+    if (name.includes('fish')) {
       cat = FOOD_BUFF.CRAFTING;
-    }else if(name.includes('meat')){
+    } else if (name.includes('meat')) {
       cat = FOOD_BUFF.COMBAT;
-    }else if(name.includes('mushroom')||name.includes('berry')){
+    } else if (name.includes('mushroom') || name.includes('berry')) {
       cat = FOOD_BUFF.MOVEMENT;
-    }else {
+    } else {
       cat = FOOD_BUFF.NONE;
     }
     return cat;
   },
-  getSupplyCategory(name:string):SUPPLY_CAT{
+  getSupplyCategory(name: string): SUPPLY_CAT {
     name = name.toLowerCase();
-    let cat
-    if(name.includes('timber')){
+    let cat;
+    if (name.includes('timber')) {
       cat = SUPPLY_CAT.TIMBER;
-    }else if (name.includes('frame')){
+    } else if (name.includes('frame')) {
       cat = SUPPLY_CAT.FRAMES;
-    }else if (name.includes('tarp')){
+    } else if (name.includes('tarp')) {
       cat = SUPPLY_CAT.TARP;
-    }else if (name.includes('sack')){
+    } else if (name.includes('sack')) {
       cat = SUPPLY_CAT.HEX;
-    }else if (name.includes('slab')){
+    } else if (name.includes('slab')) {
       cat = SUPPLY_CAT.SLAB;
-    }else if(name.includes('sheeting')){
+    } else if (name.includes('sheeting')) {
       cat = SUPPLY_CAT.LEATHER;
-    }else if(name.includes('experimental')){
+    } else if (name.includes('experimental')) {
       cat = SUPPLY_CAT.SCHOLAR;
-    }else{
+    } else {
       cat = SUPPLY_CAT.NONE;
     }
     return cat;
   },
-  sortItems(items:Items,rules:Rule[]):Item[]{
+  sortItems(items: Items, rules: Rule[]): Item[] {
     return Object.values(items).sort(
-        DashboardUI.prioritySort(
-            item => {
-              const n:string = item.name.toLowerCase();
-              for (const r of rules) {
-                if (r.words.some(w => n.includes(w))) return r.prio;
-              }
-              return rules.length;
-            },
-            item => item.tier
-        )
+      DashboardUI.prioritySort(
+        (item) => {
+          const n: string = item.name.toLowerCase();
+          for (const r of rules) {
+            if (r.words.some((w) => n.includes(w))) return r.prio;
+          }
+          return rules.length;
+        },
+        (item) => item.tier
+      )
     );
   },
   // Generic sort function
-  prioritySort<T>(
-      getPriority: (item: T) => number,
-      getSecondary: (item: T) => number
-  ) {
+  prioritySort<T>(getPriority: (item: T) => number, getSecondary: (item: T) => number) {
     return (a: T, b: T) => {
-      const pA:number = getPriority(a);
-      const pB:number = getPriority(b);
+      const pA: number = getPriority(a);
+      const pB: number = getPriority(b);
 
       if (pA !== pB) {
         return pA - pB;
@@ -279,8 +291,8 @@ export const DashboardUI = {
       return getSecondary(b) - getSecondary(a);
     };
   },
-  makeTableHeaderHtml(icon:string,total:number,title:string):string{
-    let html:string = `
+  makeTableHeaderHtml(icon: string, total: number, title: string): string {
+    const html = `
     <div class="quick-card">
     <div class="quick-header">
     <span class="icon">${icon}</span>
@@ -290,51 +302,51 @@ export const DashboardUI = {
     <div class="quick-body">
     <table>
     `;
-    return html
+    return html;
   },
   // Crafting stations summary
   renderCraftingStations(data: CraftingStationsResult): void {
-    const container:HTMLElement|null = document.getElementById('crafting-stations');
+    const container: HTMLElement | null = document.getElementById('crafting-stations');
     if (!container) return;
 
     const { active, passive } = data;
 
-    const activeNames:string[] = Object.keys(active).sort();
-    const passiveNames:string[] = Object.keys(passive).sort();
+    const activeNames: string[] = Object.keys(active).sort();
+    const passiveNames: string[] = Object.keys(passive).sort();
 
     if (activeNames.length === 0 && passiveNames.length === 0) {
       container.innerHTML = '';
       return;
     }
 
-    let html:string = '';
+    let html = '';
 
     // Helper to render a station matrix
     const renderMatrix = (stations: StationsByName, names: string[], title: string): string => {
       if (names.length === 0) return '';
 
-      let total:number = 0;
+      let total = 0;
       for (const name of names) {
         total += stations[name].total;
       }
 
-      let out:string = `<div class="stations-section">`;
+      let out = `<div class="stations-section">`;
       out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
       out += '<table class="material-matrix"><thead><tr>';
       out += '<th></th>';
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
         out += `<th>T${t}</th>`;
       }
       out += '<th class="row-total">Total</th>';
       out += '</tr></thead><tbody>';
 
       for (const name of names) {
-        const station:StationSummary = stations[name];
+        const station: StationSummary = stations[name];
         out += `<tr><td class="cat-label">${name}</td>`;
-        for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-          const val:number = station.tiers[t as keyof TierQuantities] || 0;
-          const displayVal:string = val > 0 ? String(val) : '—';
-          const bgStyle:string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
+        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+          const val: number = station.tiers[t as keyof TierQuantities] || 0;
+          const displayVal: string = val > 0 ? String(val) : '—';
+          const bgStyle: string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
           out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
         }
         out += `<td class="row-total">${station.total}</td>`;
@@ -354,51 +366,54 @@ export const DashboardUI = {
 
   // Inventory grid with expandable category cards
   renderInventory(inventory: ProcessedInventory): void {
-    const grid:HTMLElement|null = document.getElementById('inventory-grid');
+    const grid: HTMLElement | null = document.getElementById('inventory-grid');
     if (!grid) return;
 
     // Exclude Food and Scholar from main grid (shown in quick stats)
-    const exclude:string[] = DASHBOARD_CONFIG.INVENTORY_GRID_EXCLUDE;
-    const sortedCategories:string[] = Object.keys(inventory)
-    .filter(c => !exclude.includes(c))
-    .sort((a, b):number => {
-      const aIdx:number = DASHBOARD_CONFIG.CATEGORY_ORDER.indexOf(a);
-      const bIdx:number = DASHBOARD_CONFIG.CATEGORY_ORDER.indexOf(b);
-      return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
-    });
+    const exclude: string[] = DASHBOARD_CONFIG.INVENTORY_GRID_EXCLUDE;
+    const sortedCategories: string[] = Object.keys(inventory)
+      .filter((c) => !exclude.includes(c))
+      .sort((a, b): number => {
+        const aIdx: number = DASHBOARD_CONFIG.CATEGORY_ORDER.indexOf(a);
+        const bIdx: number = DASHBOARD_CONFIG.CATEGORY_ORDER.indexOf(b);
+        return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
+      });
 
-    let html:string = '';
+    let html = '';
 
     for (const category of sortedCategories) {
-      const tags:CategoryInventory = inventory[category];
+      const tags: CategoryInventory = inventory[category];
 
-      let categoryTotal:number = 0;
+      let categoryTotal = 0;
       for (const tagData of Object.values(tags) as TagGroup[]) {
         categoryTotal += tagData.total;
       }
 
       if (categoryTotal === 0) continue;
 
-      let tableHtml:string = '';
-      const sortedTags:string[] = Object.keys(tags).sort();
+      let tableHtml = '';
+      const sortedTags: string[] = Object.keys(tags).sort();
 
       for (const tag of sortedTags) {
-        const tagData:TagGroup = tags[tag];
+        const tagData: TagGroup = tags[tag];
 
-        const items:InventoryItem[] = (Object.values(tagData.items) as InventoryItem[]).sort((a, b) => {
-          if (a.tier !== b.tier) return a.tier - b.tier;
-          return a.name.localeCompare(b.name);
-        });
+        const items: InventoryItem[] = (Object.values(tagData.items) as InventoryItem[]).sort(
+          (a, b) => {
+            if (a.tier !== b.tier) return a.tier - b.tier;
+            return a.name.localeCompare(b.name);
+          }
+        );
 
         for (const item of items) {
-          const tierBadge:string = item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+          const tierBadge: string =
+            item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
 
-          let breakdownHtml:string = '';
+          let breakdownHtml = '';
           if (item.buildings.length > 1) {
-            const buildingList:string = [...item.buildings]
-            .sort((a:BuildingBreakdown, b:BuildingBreakdown):number => b.qty - a.qty)
-            .map(b => `<li>${b.name}: ${b.qty.toLocaleString()}</li>`)
-            .join('');
+            const buildingList: string = [...item.buildings]
+              .sort((a: BuildingBreakdown, b: BuildingBreakdown): number => b.qty - a.qty)
+              .map((b) => `<li>${b.name}: ${b.qty.toLocaleString()}</li>`)
+              .join('');
             breakdownHtml = `
             <details class="building-breakdown">
             <summary>${item.buildings.length} locations</summary>
@@ -436,13 +451,13 @@ export const DashboardUI = {
     grid.innerHTML = html;
 
     // Attach event listeners after innerHTML assignment
-    grid.querySelectorAll('.card-header').forEach(header => {
+    grid.querySelectorAll('.card-header').forEach((header) => {
       header.addEventListener('click', () => {
-        const card:Element|null = header.closest('.inventory-card');
+        const card: Element | null = header.closest('.inventory-card');
         card?.classList.toggle('expanded');
       });
     });
 
     this.show('inventory');
-  }
+  },
 };

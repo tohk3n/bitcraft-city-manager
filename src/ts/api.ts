@@ -9,7 +9,7 @@ import type {
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
-  PlayerVaultResponse
+  PlayerVaultResponse,
 } from './types/index.js';
 
 const log = createLogger('API');
@@ -31,7 +31,7 @@ export const API = {
     return data as T;
   },
 
-  searchClaims(query: string, limit: number = 10): Promise<ClaimSearchResponse> {
+  searchClaims(query: string, limit = 10): Promise<ClaimSearchResponse> {
     return this.fetch<ClaimSearchResponse>(`/claims?q=${encodeURIComponent(query)}&limit=${limit}`);
   },
 
@@ -69,5 +69,5 @@ export const API = {
 
   getPlayerVault(playerId: string): Promise<PlayerVaultResponse> {
     return this.fetch<PlayerVaultResponse>(`/players/${playerId}/vault`);
-  }
+  },
 };

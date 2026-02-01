@@ -1,12 +1,13 @@
 // Core UI - combines base utilities with view-specific modules
-import {CONFIG} from './configuration/config.js';
-import {MAP_LINK} from './maplink.js';
-import {DashboardUI} from './dashboard.js';
-import {CitizensUI} from './citizens.js';
-import {IdsUI} from './ids.js';
-import {CELL_TYPE,NamedMatrix} from './types/index.js';
-import {createLogger} from "./logger.js";
-import {MAP_CONFIG} from "./configuration/maplinkconfig.js";
+import { CONFIG } from './configuration/config.js';
+import { MAP_LINK } from './maplink.js';
+import { DashboardUI } from './dashboard.js';
+import { CitizensUI } from './citizens.js';
+import { IdsUI } from './ids.js';
+import type { NamedMatrix } from './types/index.js';
+import { CELL_TYPE } from './types/index.js';
+import { createLogger } from './logger.js';
+import { MAP_CONFIG } from './configuration/maplinkconfig.js';
 
 const log = createLogger('UI');
 // Base UI utilities
@@ -25,7 +26,7 @@ const BaseUI = {
     this.show('error');
   },
 
-  clearError():void {
+  clearError(): void {
     this.hide('error');
   },
 
@@ -36,17 +37,19 @@ const BaseUI = {
   },
 
   // ClaimInfo shape from API
-  renderClaimHeader(claimInfo: { claim?: {
-    name?: string;
-    tier?: number;
-    regionName?: string;
-    supplies?: number;
-    suppliesPurchaseThreshold?: number;
-    suppliesRunOut?: string;
-    treasury?: string | number;
-    numTiles?: number;
-    upkeepCost?: number;
-  }}): void {
+  renderClaimHeader(claimInfo: {
+    claim?: {
+      name?: string;
+      tier?: number;
+      regionName?: string;
+      supplies?: number;
+      suppliesPurchaseThreshold?: number;
+      suppliesRunOut?: string;
+      treasury?: string | number;
+      numTiles?: number;
+      upkeepCost?: number;
+    };
+  }): void {
     const container = document.getElementById('claim-header');
     if (!container || !claimInfo || !claimInfo.claim) {
       return;
@@ -55,9 +58,10 @@ const BaseUI = {
     const c = claimInfo.claim;
 
     // Calculate supplies percentage and time remaining
-    const suppliesPercent = c.suppliesPurchaseThreshold && c.suppliesPurchaseThreshold > 0
-    ? Math.min(100, ((c.supplies || 0) / c.suppliesPurchaseThreshold) * 100)
-    : 0;
+    const suppliesPercent =
+      c.suppliesPurchaseThreshold && c.suppliesPurchaseThreshold > 0
+        ? Math.min(100, ((c.supplies || 0) / c.suppliesPurchaseThreshold) * 100)
+        : 0;
 
     let suppliesTimeStr = '';
     if (c.suppliesRunOut) {
@@ -134,9 +138,9 @@ const BaseUI = {
   showTabs(): void {
     this.show('view-tabs');
     // Reset to inventory view
-    document.querySelectorAll('#view-tabs .tab-btn').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#view-tabs .tab-btn').forEach((t) => t.classList.remove('active'));
     document.querySelector('#view-tabs .tab-btn[data-view="inventory"]')?.classList.add('active');
-    document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.view-section').forEach((s) => s.classList.add('hidden'));
     document.getElementById('view-inventory')?.classList.remove('hidden');
   },
 
@@ -149,21 +153,24 @@ const BaseUI = {
   },
 
   copyToClipboard(text: string, btn: HTMLElement): void {
-    navigator.clipboard.writeText(text).then(() => {
-      const original = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = original;
-        btn.classList.remove('copied');
-      }, 1500);
-    }).catch(err => {
-      console.error('Copy failed:', err);
-    });
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1500);
+      })
+      .catch((err) => {
+        console.error('Copy failed:', err);
+      });
   },
 
   renderMapLinkComposer(): void {
-    const checkboxContainer:HTMLElement|null = document.getElementById("checkbox-row");
+    const checkboxContainer: HTMLElement | null = document.getElementById('checkbox-row');
     if (!checkboxContainer) {
       return;
     }
@@ -172,8 +179,8 @@ const BaseUI = {
     }
 
     // Generate label and checkbox for region selection
-    let html:string = '';
-    for (let i:number = 1; i <= CONFIG.REGION_COUNT; i++) {
+    let html = '';
+    for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
       html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
     }
     checkboxContainer.innerHTML = html;
@@ -183,49 +190,57 @@ const BaseUI = {
     MAP_LINK.addCommaNumberValidation('player-ids');
     MAP_LINK.addCommaNumberValidation('enemy-ids');
 
-    const btn:HTMLElement|null = document.getElementById("lnk-gen-btn");
-    if(!btn)return;
-    const matrixBtn:HTMLElement|null = document.getElementById("id-matrix-btn");
-    if(!matrixBtn)return;
-    const matrixWrapper:HTMLElement|null = document.getElementById('id-matrix');
-    if(!matrixWrapper)return;
+    const btn: HTMLElement | null = document.getElementById('lnk-gen-btn');
+    if (!btn) return;
+    const matrixBtn: HTMLElement | null = document.getElementById('id-matrix-btn');
+    if (!matrixBtn) return;
+    const matrixWrapper: HTMLElement | null = document.getElementById('id-matrix');
+    if (!matrixWrapper) return;
 
-    this.renderResourceMatrix('id-matrix', [MAP_CONFIG.RESOURCE_ID_MATRIX, MAP_CONFIG.ENEMY_ID_MATRIX],true);
-    btn?.addEventListener("click", ():void => MAP_LINK.generateLinkEvent());
+    this.renderResourceMatrix(
+      'id-matrix',
+      [MAP_CONFIG.RESOURCE_ID_MATRIX, MAP_CONFIG.ENEMY_ID_MATRIX],
+      true
+    );
+    btn?.addEventListener('click', (): void => MAP_LINK.generateLinkEvent());
 
-    matrixBtn?.addEventListener("click", ():void => {
+    matrixBtn?.addEventListener('click', (): void => {
       matrixWrapper?.classList.toggle('hidden');
     });
 
-    const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
-    resInputField?.addEventListener("blur", ():void => {
-      MAP_LINK.syncMatrixState(resInputField.value,MAP_CONFIG.RESOURCE_ID_MATRIX);
+    const resInputField = document.getElementById('res-ids') as HTMLInputElement | null;
+    resInputField?.addEventListener('blur', (): void => {
+      MAP_LINK.syncMatrixState(resInputField.value, MAP_CONFIG.RESOURCE_ID_MATRIX);
     });
-    const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement|null;
-    enemyInputField?.addEventListener("blur", ():void => {
-      MAP_LINK.syncMatrixState(enemyInputField.value,MAP_CONFIG.ENEMY_ID_MATRIX);
+    const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement | null;
+    enemyInputField?.addEventListener('blur', (): void => {
+      MAP_LINK.syncMatrixState(enemyInputField.value, MAP_CONFIG.ENEMY_ID_MATRIX);
     });
   },
 
   // Generates table with clickable fields to add to input field for resource selection
-  renderResourceMatrix(containerId: string, resourceMatrix: NamedMatrix[], addHeader:boolean): void {
-    const table:HTMLElement|null = document.getElementById(containerId);
+  renderResourceMatrix(
+    containerId: string,
+    resourceMatrix: NamedMatrix[],
+    addHeader: boolean
+  ): void {
+    const table: HTMLElement | null = document.getElementById(containerId);
     if (!table) return;
 
     table.innerHTML = '';
 
     /* ---------- Header ---------- */
-    const head:HTMLTableSectionElement = document.createElement('thead');
-    const headerRow:HTMLTableRowElement = document.createElement('tr');
+    const head: HTMLTableSectionElement = document.createElement('thead');
+    const headerRow: HTMLTableRowElement = document.createElement('tr');
 
     // Empty top-left cell
-    const emptyTh:HTMLTableCellElement = document.createElement('th');
+    const emptyTh: HTMLTableCellElement = document.createElement('th');
     headerRow.appendChild(emptyTh);
 
     // T1 - T10
-    if(addHeader){
-      for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
-        const th:HTMLTableCellElement = document.createElement('th');
+    if (addHeader) {
+      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+        const th: HTMLTableCellElement = document.createElement('th');
         th.textContent = `T${t}`;
         headerRow.appendChild(th);
       }
@@ -236,10 +251,9 @@ const BaseUI = {
 
     /* ---------- Body ---------- */
     const body = document.createElement('tbody') as HTMLTableSectionElement;
-    (Object.values(resourceMatrix)).forEach(namedResMatrix=>{
-      (Object.keys(namedResMatrix.map)).forEach(resourceName => {
-
-        const matrix:number[][] = namedResMatrix.map[resourceName];
+    Object.values(resourceMatrix).forEach((namedResMatrix) => {
+      Object.keys(namedResMatrix.map).forEach((resourceName) => {
+        const matrix: number[][] = namedResMatrix.map[resourceName];
         const tr = document.createElement('tr') as HTMLTableRowElement;
 
         // Row label (not clickable)
@@ -249,7 +263,7 @@ const BaseUI = {
         tr.appendChild(nameCell);
 
         // T1 - T10 cells
-        for (let t:number = 1; t <= CONFIG.MAX_TIER; t++) {
+        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
           const td = document.createElement('td') as HTMLTableCellElement;
           td.classList.add('matrix-cell');
 
@@ -261,26 +275,28 @@ const BaseUI = {
           // data attributes for later logic
           cellArea.dataset.row = resourceName;
           cellArea.dataset.tier = String(t);
-          const currentIndex:number = t-1;
-          const idValues:number[] = matrix?.[currentIndex] ?? [];
-          if(idValues.length > 0){
+          const currentIndex: number = t - 1;
+          const idValues: number[] = matrix?.[currentIndex] ?? [];
+          if (idValues.length > 0) {
             const cellButton = document.createElement('button') as HTMLButtonElement;
             cellButton.textContent = '';
             cellButton.classList.add('matrix-cell-btn');
-            cellButton.addEventListener('click', ():void => {
+            cellButton.addEventListener('click', (): void => {
               if (resourceName !== undefined) {
                 MAP_LINK.cellButtonEvent(resourceName, t);
               }
-              const resInputField = document.getElementById('res-ids') as HTMLInputElement|null;
-              const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement|null;
-              if(resInputField){
+              const resInputField = document.getElementById('res-ids') as HTMLInputElement | null;
+              const enemyInputField = document.getElementById(
+                'enemy-ids'
+              ) as HTMLInputElement | null;
+              if (resInputField) {
                 resInputField.dispatchEvent(new Event('input', { bubbles: true }));
-              }else if(enemyInputField){
+              } else if (enemyInputField) {
                 enemyInputField.dispatchEvent(new Event('input', { bubbles: true }));
               }
             });
             cellArea.appendChild(cellButton);
-          }else{
+          } else {
             cellArea.classList.add('empty');
           }
 
@@ -297,10 +313,4 @@ const BaseUI = {
 };
 
 // Combine all UI modules into single export
-export const UI = Object.assign(
-  {},
-  BaseUI,
-  DashboardUI,
-  CitizensUI,
-  IdsUI
-);
+export const UI = Object.assign({}, BaseUI, DashboardUI, CitizensUI, IdsUI);
