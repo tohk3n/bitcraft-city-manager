@@ -20,6 +20,10 @@ import type {
 } from './types/index.js';
 import { FILTER_TYPE, FOOD_BUFF, SUPPLY_CAT } from './types/index.js';
 import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
+import { createLogger } from "./logger.js";
+
+const log = createLogger('Dashboard');
+
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
