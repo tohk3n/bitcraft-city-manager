@@ -128,6 +128,19 @@ export const DASHBOARD_CONFIG = {
   ],
   // Amount of entries shown in the food dashboard
   FOOD_ENTRIES: 15,
+  // Tier specifier
+  SPECIFIER: [
+    'rough',
+    'simple',
+    'sturdy',
+    'fine',
+    'exquisite',
+    'peerless',
+    'ornate',
+    'pristine',
+    'flawless',
+    'magnificent'
+  ],
   //TODO check if this can not be done with css
   BG_CONST: 'background: rgba(88, 166, 255, 0.2);',
 };

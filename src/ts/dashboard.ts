@@ -9,13 +9,12 @@ import type {
   InventoryProcessResult,
   Item,
   Items,
-  MaterialCategory,
-  MaterialMatrix,
   ProcessedInventory,
   Rule,
   StationsByName,
   StationSummary,
   TagGroup,
+  Tier,
   TierQuantities,
 } from './types/index.js';
 import { FILTER_TYPE, FOOD_BUFF, SUPPLY_CAT } from './types/index.js';
@@ -227,16 +226,16 @@ export const DashboardUI = {
     const container: HTMLElement | null = document.getElementById('crafting-stations');
     if (!container) return;
     log.debug("Stations data:",data);
+    data = this.removeSpecifier(data,DASHBOARD_CONFIG.SPECIFIER);
     const { active, passive } = data;
     const activeNames: string[] = Object.keys(active).sort();
     const passiveNames: string[] = Object.keys(passive).sort();
-
     if (activeNames.length === 0 && passiveNames.length === 0) {
       container.innerHTML = '';
       log.debug("No stations to render found (active and passive)");
       return;
     }
-    log.info(active,activeNames);
+    log.debug(active,activeNames);
     let html = `<div><button id = "toggleStationsBtn">Show Stations</button></div>`;
     html += `<div id="station-box" class="hidden">`;
     html += this.generateMatrixHtml(active, activeNames, 'Active Crafting Stations');
@@ -255,8 +254,63 @@ export const DashboardUI = {
     });
     this.show('crafting-stations');
   },
+  removeSpecifier(
+    data: CraftingStationsResult,
+    specifier:string[]
+  ): CraftingStationsResult {
+
+    const condense = (source: StationsByName): StationsByName => {
+      const result: StationsByName = {};
+
+      for (const [name, summary] of Object.entries(source)) {
+        const normalizedName:string = this.normalizeStationName(name,specifier);
+
+        if (!result[normalizedName]) {
+          result[normalizedName] = {
+            tiers: { ...summary.tiers },
+            total: summary.total
+          };
+        } else {
+          result[normalizedName].tiers =
+            this.mergeTiers(result[normalizedName].tiers, summary.tiers);
+
+          result[normalizedName].total += summary.total;
+        }
+      }
+
+      return result;
+    }
+
+    return {
+      active: condense(data.active),
+      passive: condense(data.passive)
+    };
+  },
+  normalizeStationName(name: string, specifier:string[]): string {
+    let result = name.toLowerCase();
+
+    for (const spec of specifier) {
+      const regex = new RegExp(`\\b${spec}\\b`, 'gi');
+      result = result.replace(regex, '');
+    }
+
+    return result.replace(/\s+/g, ' ').trim();
+  },
+  mergeTiers(
+    target: TierQuantities,
+    source: TierQuantities
+  ): TierQuantities {
+
+    const result: TierQuantities = { ...target };
+
+    for (const tier of Object.keys(source) as unknown as Tier[]) {
+      result[tier] = (result[tier] ?? 0) + source[tier];
+    }
+
+    return result;
+  },
   generateMatrixHtml(stations:StationsByName,names:string[],title:string):string{
-    log.debug("start generate Matrix for:",stations);
+    log.info("start generate Matrix for:",stations);
     if (names.length === 0) return '';
 
       let total = 0;
