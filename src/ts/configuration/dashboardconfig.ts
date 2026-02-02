@@ -139,7 +139,7 @@ export const DASHBOARD_CONFIG = {
     'ornate',
     'pristine',
     'flawless',
-    'magnificent'
+    'magnificent',
   ],
   //TODO check if this can not be done with css
   BG_CONST: 'background: rgba(88, 166, 255, 0.2);',

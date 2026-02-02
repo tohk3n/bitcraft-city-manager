@@ -8,7 +8,7 @@ import type { ItemMapping } from './planner.js';
 // =============================================================================
 
 export type Tier = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
-export type TierQuantities = Record<Tier,number>;
+export type TierQuantities = Record<Tier, number>;
 export type MaterialCategory =
   | 'Wood'
   | 'Metal'

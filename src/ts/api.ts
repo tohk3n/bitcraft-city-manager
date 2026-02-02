@@ -8,7 +8,8 @@ import type {
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
-  PlayerVaultResponse, Building
+  PlayerVaultResponse,
+  Building,
 } from './types/index.js';
 
 const log = createLogger('API');
@@ -68,5 +69,5 @@ export const API = {
 
   getPlayerVault(playerId: string): Promise<PlayerVaultResponse> {
     return this.fetch<PlayerVaultResponse>(`/players/${playerId}/vault`);
-  }
+  },
 };

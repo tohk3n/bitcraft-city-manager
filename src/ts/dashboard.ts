@@ -19,7 +19,7 @@ import type {
 } from './types/index.js';
 import { FILTER_TYPE, FOOD_BUFF, SUPPLY_CAT } from './types/index.js';
 import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
-import { createLogger } from "./logger.js";
+import { createLogger } from './logger.js';
 
 const log = createLogger('Dashboard');
 
@@ -66,9 +66,9 @@ export const DashboardUI = {
     // Food section
     const foodList: Item[] = DashboardUI.sortItems(foodItems, DASHBOARD_CONFIG.FOOD_RULE);
     //total amount
-    const foodTotal: number =
-        Object.values(foodItems).reduce(
-      (sum: number, item: Item): number => sum + (item.qty ?? 0), 0
+    const foodTotal: number = Object.values(foodItems).reduce(
+      (sum: number, item: Item): number => sum + (item.qty ?? 0),
+      0
     );
 
     let html: string = DashboardUI.generateFoodHtml(foodTotal, foodList, 15);
@@ -222,20 +222,20 @@ export const DashboardUI = {
   },
   // Crafting stations summary
   renderCraftingStations(data: CraftingStationsResult): void {
-    log.debug("Start rendering Stations");
+    log.debug('Start rendering Stations');
     const container: HTMLElement | null = document.getElementById('crafting-stations');
     if (!container) return;
-    log.debug("Stations data:",data);
-    data = this.removeSpecifier(data,DASHBOARD_CONFIG.SPECIFIER);
+    log.debug('Stations data:', data);
+    data = this.removeSpecifier(data, DASHBOARD_CONFIG.SPECIFIER);
     const { active, passive } = data;
     const activeNames: string[] = Object.keys(active).sort();
     const passiveNames: string[] = Object.keys(passive).sort();
     if (activeNames.length === 0 && passiveNames.length === 0) {
       container.innerHTML = '';
-      log.debug("No stations to render found (active and passive)");
+      log.debug('No stations to render found (active and passive)');
       return;
     }
-    log.debug(active,activeNames);
+    log.debug(active, activeNames);
     let html = `<div><button id = "toggleStationsBtn">Show Stations</button></div>`;
     html += `<div id="station-box" class="hidden">`;
     html += this.generateMatrixHtml(active, activeNames, 'Active Crafting Stations');
@@ -243,50 +243,46 @@ export const DashboardUI = {
 
     html += `</div>`;
     container.innerHTML = html;
-    const btn = document.getElementById("toggleStationsBtn");
-    const box = document.getElementById("station-box");
-    if(!btn || !box) return;
-    btn.addEventListener("click", () => {
-      box.classList.toggle("hidden");
-      btn.textContent = box.classList.contains("hidden")
-        ? "Show Stations"
-        : "Hide Stations";
+    const btn = document.getElementById('toggleStationsBtn');
+    const box = document.getElementById('station-box');
+    if (!btn || !box) return;
+    btn.addEventListener('click', () => {
+      box.classList.toggle('hidden');
+      btn.textContent = box.classList.contains('hidden') ? 'Show Stations' : 'Hide Stations';
     });
     this.show('crafting-stations');
   },
-  removeSpecifier(
-    data: CraftingStationsResult,
-    specifier:string[]
-  ): CraftingStationsResult {
-
+  removeSpecifier(data: CraftingStationsResult, specifier: string[]): CraftingStationsResult {
     const condense = (source: StationsByName): StationsByName => {
       const result: StationsByName = {};
 
       for (const [name, summary] of Object.entries(source)) {
-        const normalizedName:string = this.normalizeStationName(name,specifier);
+        const normalizedName: string = this.normalizeStationName(name, specifier);
 
         if (!result[normalizedName]) {
           result[normalizedName] = {
             tiers: { ...summary.tiers },
-            total: summary.total
+            total: summary.total,
           };
         } else {
-          result[normalizedName].tiers =
-            this.mergeTiers(result[normalizedName].tiers, summary.tiers);
+          result[normalizedName].tiers = this.mergeTiers(
+            result[normalizedName].tiers,
+            summary.tiers
+          );
 
           result[normalizedName].total += summary.total;
         }
       }
 
       return result;
-    }
+    };
 
     return {
       active: condense(data.active),
-      passive: condense(data.passive)
+      passive: condense(data.passive),
     };
   },
-  normalizeStationName(name: string, specifier:string[]): string {
+  normalizeStationName(name: string, specifier: string[]): string {
     let result = name.toLowerCase();
 
     for (const spec of specifier) {
@@ -296,11 +292,7 @@ export const DashboardUI = {
 
     return result.replace(/\s+/g, ' ').trim();
   },
-  mergeTiers(
-    target: TierQuantities,
-    source: TierQuantities
-  ): TierQuantities {
-
+  mergeTiers(target: TierQuantities, source: TierQuantities): TierQuantities {
     const result: TierQuantities = { ...target };
 
     for (const tier of Object.keys(source) as unknown as Tier[]) {
@@ -309,40 +301,40 @@ export const DashboardUI = {
 
     return result;
   },
-  generateMatrixHtml(stations:StationsByName,names:string[],title:string):string{
-    log.info("start generate Matrix for:",stations);
+  generateMatrixHtml(stations: StationsByName, names: string[], title: string): string {
+    log.info('start generate Matrix for:', stations);
     if (names.length === 0) return '';
 
-      let total = 0;
-      for (const name of names) {
-        total += stations[name].total;
-      }
+    let total = 0;
+    for (const name of names) {
+      total += stations[name].total;
+    }
 
-      let out = `<div class="stations-section">`;
-      out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
-      out += '<table class="material-matrix"><thead><tr>';
-      out += '<th></th>';
+    let out = `<div class="stations-section">`;
+    out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
+    out += '<table class="material-matrix"><thead><tr>';
+    out += '<th></th>';
+    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
+      out += `<th>T${t}</th>`;
+    }
+    out += '<th class="row-total">Total</th>';
+    out += '</tr></thead><tbody>';
+
+    for (const name of names) {
+      const station: StationSummary = stations[name];
+      out += `<tr><td class="cat-label">${name}</td>`;
       for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        out += `<th>T${t}</th>`;
+        const val: number = station.tiers[t as keyof TierQuantities] || 0;
+        const displayVal: string = val > 0 ? String(val) : '—';
+        const bgStyle: string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
+        out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
       }
-      out += '<th class="row-total">Total</th>';
-      out += '</tr></thead><tbody>';
-
-      for (const name of names) {
-        const station: StationSummary = stations[name];
-        out += `<tr><td class="cat-label">${name}</td>`;
-        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-          const val: number = station.tiers[t as keyof TierQuantities] || 0;
-          const displayVal: string = val > 0 ? String(val) : '—';
-          const bgStyle: string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
-          out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
-        }
-        out += `<td class="row-total">${station.total}</td>`;
-        out += '</tr>';
-      }
+      out += `<td class="row-total">${station.total}</td>`;
+      out += '</tr>';
+    }
 
     out += '</tbody></table></div>';
-    log.debug("Finished generating matrix");
+    log.debug('Finished generating matrix');
     return out;
   },
   // Inventory grid with expandable category cards
