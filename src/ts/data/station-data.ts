@@ -97,13 +97,13 @@ export function getStationTierCounts(
 ): Map<number, number> {
     const station = getStation(stations, stationType);
     const counts = new Map<number, number>();
-    
+
     if (!station) return counts;
-    
+
     for (const [tier, items] of Object.entries(station.tiers)) {
         counts.set(Number(tier), items.length);
     }
-    
+
     return counts;
 }
 
@@ -113,7 +113,7 @@ export function findStationForItem(
 ): { type: number; tier: number; name: string | null } | null {
     const recipe = getRecipeById(recipes, itemId);
     if (!recipe?.station) return null;
-    
+
     return {
         type: recipe.station.type,
         tier: recipe.station.tier,
@@ -122,15 +122,18 @@ export function findStationForItem(
 }
 
 export function getStationSummary(
-    stations: StationsFile
-): Array<{ type: number; name: string | null; tierCount: number; itemCount: number }> {
-    return Object.entries(stations.byType).map(([typeStr, station]) => {
-        const itemCount = Object.values(station.tiers).flat().length;
-        return {
-            type: Number(typeStr),
-            name: station.name,
-            tierCount: Object.keys(station.tiers).length,
-            itemCount
-        };
-    });
+  stations: StationsFile
+) {
+  return Object.entries(stations.byType).map(([typeStr, station]) => {
+    const tiers = Object.values(station.tiers);
+    const itemCount = tiers.flat().length;
+    const tierCount = tiers.length;
+
+    return {
+      type: Number(typeStr),
+      name: station.name,
+      tierCount,
+      itemCount
+    };
+  });
 }

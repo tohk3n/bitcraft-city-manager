@@ -196,7 +196,7 @@ describe('calculateInventoryValue', () => {
             ['1001', 10],  // Simple Plank: sellMed=30, 10*30=300
             ['5001', 2]    // Iron Pickaxe: sellMed=150, 2*150=300
         ]);
-        
+
         const value = calculateInventoryValue(mockItemsMeta, inventory);
         expect(value).toBe(600);
     });
@@ -205,7 +205,7 @@ describe('calculateInventoryValue', () => {
         const inventory = new Map([
             ['1001', 10]  // Simple Plank: sellLow=1, 10*1=10
         ]);
-        
+
         const value = calculateInventoryValue(mockItemsMeta, inventory, 'sellLow');
         expect(value).toBe(10);
     });
@@ -215,7 +215,7 @@ describe('calculateInventoryValue', () => {
             ['1001', 10],  // Has market data
             ['1002', 100]  // No market data
         ]);
-        
+
         const value = calculateInventoryValue(mockItemsMeta, inventory);
         expect(value).toBe(300); // Only 1001 counted
     });
@@ -229,21 +229,51 @@ describe('calculateInventoryValue', () => {
 describe('getMarketItems', () => {
     it('returns items with market data, sorted by default', () => {
         const items = getMarketItems(mockItemsMeta);
-        
+
         expect(items.length).toBeGreaterThan(0);
         expect(items.every(i => i.market !== undefined)).toBe(true);
-        
+
         // Should be descending by sellMed by default
         for (let i = 1; i < items.length; i++) {
-            expect(items[i - 1].market!.sellMed).toBeGreaterThanOrEqual(items[i].market!.sellMed);
+          const prev = items[i - 1].market;
+          const curr = items[i].market;
+
+          if (!prev || !curr) {
+            throw new Error("market must be defined");
+          }
+
+          if (prev.sellMed === undefined || curr.sellMed === undefined) {
+            throw new Error("sellMed must be defined");
+          }
+
+          expect(prev.sellMed).toBeGreaterThanOrEqual(curr.sellMed);
         }
     });
 
     it('sorts ascending when specified', () => {
         const items = getMarketItems(mockItemsMeta, 'sellMed', false);
-        
+
         for (let i = 1; i < items.length; i++) {
-            expect(items[i - 1].market!.sellMed).toBeLessThanOrEqual(items[i].market!.sellMed);
+          const prev = items[i-1];
+          const curr = items[i];
+          if(!prev||!curr){
+            throw new Error("item must be defined");
+          }
+          const prevMarket = prev.market;
+          const currMarket = curr.market;
+
+          if (!prevMarket || !currMarket) {
+            throw new Error("market must be defined");
+          }
+
+          const prevSellMed = prevMarket.sellMed;
+          const currSellMed = currMarket.sellMed;
+
+          if (prevSellMed === undefined || currSellMed === undefined) {
+            throw new Error("sellMed must be defined");
+          }
+
+          expect(prevSellMed).toBeLessThanOrEqual(currSellMed);
         }
     });
 });

@@ -1,6 +1,6 @@
 /**
  * Item Data Utilities
- * 
+ *
  * Operates on items-meta.json data.
  */
 
@@ -67,10 +67,10 @@ export function calculateInventoryValue(
 export function getMarketItems(
     items: ItemsMetaFile,
     sortBy: keyof MarketStats = 'sellMed',
-    descending: boolean = true
+    descending: true
 ): ItemMeta[] {
     const withMarket = Object.values(items.items).filter(item => item.market);
-    
+
     return withMarket.sort((a, b) => {
         const aVal = a.market?.[sortBy] ?? 0;
         const bVal = b.market?.[sortBy] ?? 0;
@@ -87,7 +87,7 @@ export function getEquipmentStats(items: ItemsMetaFile, id: string): EquipmentSt
 }
 
 export function findEquipment(items: ItemsMetaFile): ItemMeta[] {
-    return Object.values(items.items).filter(item => 
+    return Object.values(items.items).filter(item =>
         item.equipment && item.equipment.length > 0
     );
 }
@@ -111,7 +111,7 @@ export function findTools(items: ItemsMetaFile): ItemMeta[] {
 }
 
 export function findToolsByType(items: ItemsMetaFile, toolType: number): ItemMeta[] {
-    return Object.values(items.items).filter(item => 
+    return Object.values(items.items).filter(item =>
         item.tool?.type === toolType
     );
 }
@@ -130,7 +130,7 @@ export function findFood(items: ItemsMetaFile): ItemMeta[] {
 
 export function findFoodBySatiation(
     items: ItemsMetaFile,
-    descending: boolean = true
+    descending: true
 ): ItemMeta[] {
     const food = findFood(items);
     return food.sort((a, b) => {

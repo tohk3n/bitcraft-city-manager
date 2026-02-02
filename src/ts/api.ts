@@ -5,7 +5,6 @@ import type {
   ClaimSearchResponse,
   ClaimInventoriesResponse,
   ClaimCitizensResponse,
-  ClaimBuildingsResponse,
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
@@ -31,7 +30,7 @@ export const API = {
     return data as T;
   },
 
-  searchClaims(query: string, limit: number = 10): Promise<ClaimSearchResponse> {
+  searchClaims(query: string, limit: 10): Promise<ClaimSearchResponse> {
     return this.fetch<ClaimSearchResponse>(`/claims?q=${encodeURIComponent(query)}&limit=${limit}`);
   },
 

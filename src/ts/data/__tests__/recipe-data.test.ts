@@ -18,7 +18,7 @@ import {
     findByTier,
     findByStation
 } from '../recipe-data.js';
-import type { RecipesFile, RecipeEntry, ItemCategory } from '../types.js';
+import type { RecipesFile, ItemCategory } from '../types.js';
 
 // =============================================================================
 // TEST FIXTURES
@@ -313,7 +313,7 @@ describe('isTrackable', () => {
 describe('resolveRecipe', () => {
     it('resolves recipe with input details', () => {
         const resolved = resolveRecipe(mockRecipes, 'Simple Plank:2', mockGathered);
-        
+
         expect(resolved).not.toBeNull();
         expect(resolved?.name).toBe('Simple Plank');
         expect(resolved?.category).toBe('intermediate');
@@ -336,14 +336,14 @@ describe('resolveRecipe', () => {
 describe('getInputRecipes', () => {
     it('returns input recipes', () => {
         const inputs = getInputRecipes(mockRecipes, 'Simple Plank:2');
-        
+
         expect(inputs).toHaveLength(1);
         expect(inputs[0].name).toBe('Simple Stripped Wood');
     });
 
     it('returns multiple inputs', () => {
         const inputs = getInputRecipes(mockRecipes, "Novice's Wood Research:2");
-        
+
         expect(inputs).toHaveLength(2);
         expect(inputs.map(i => i.name)).toContain('Refined Simple Plank');
         expect(inputs.map(i => i.name)).toContain('Novice Study Journal');
