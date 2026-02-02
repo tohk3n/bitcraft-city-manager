@@ -33,99 +33,6 @@
   margin-top: 4px;
 }
 
-/* Material matrix table */
-#tier-bar {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
-}
-
-.matrix-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.matrix-header h3 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.matrix-header .total {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.material-matrix {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
-}
-
-.material-matrix th {
-  padding: 8px 12px;
-  text-align: center;
-  font-weight: 500;
-  color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
-}
-
-.material-matrix th:first-child {
-  text-align: left;
-}
-
-.material-matrix td {
-  padding: 8px 12px;
-  text-align: center;
-  border-bottom: 1px solid var(--border);
-}
-
-.material-matrix td.cat-label {
-  text-align: left;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.material-matrix .matrix-cell {
-  color: var(--text-primary);
-  border-radius: 4px;
-}
-
-.material-matrix td.row-total {
-  font-weight: 600;
-  color: var(--accent);
-  border-left: 1px solid var(--border);
-}
-
-.material-matrix th.row-total {
-  border-left: 1px solid var(--border);
-}
-
-.material-matrix tr.col-totals td {
-  font-weight: 600;
-  color: var(--text-secondary);
-  border-top: 2px solid var(--border);
-  border-bottom: none;
-}
-
-.material-matrix tr.col-totals td.grand-total {
-  color: var(--accent);
-}
-
-.material-matrix tbody tr:hover td {
-  background: var(--bg-tertiary);
-}
-
-.material-matrix tbody tr:hover td.matrix-cell {
-  background: rgba(88, 166, 255, 0.15);
-}
-
 /* Quick stats (Food & Scholar) */
 #quick-stats {
   display: grid;
@@ -212,6 +119,34 @@
 /* Crafting stations */
 #crafting-stations {
   margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+#toggleStationsBtn {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#station-box {
+  display: flex;
+  gap: 1rem;
+}
+
+#station-box.hidden {
+  display: none;
 }
 
 .stations-section {

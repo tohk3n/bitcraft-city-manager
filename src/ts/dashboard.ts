@@ -34,7 +34,6 @@ export const DashboardUI = {
       FILTER_TYPE.RARITY_RARE
     );
     this.renderQuickStats(foods, supplyCargo);
-    this.renderMaterialMatrix(materialMatrix);
     this.renderInventory(inventory);
 
     this.show('dashboard');
@@ -58,92 +57,6 @@ export const DashboardUI = {
   show(sectionId: string): void {
     const el: HTMLElement | null = document.getElementById(sectionId);
     if (el) el.classList.remove('hidden');
-  },
-
-  // Material matrix table with heatmap
-  renderMaterialMatrix(matrix: MaterialMatrix): void {
-    const container: HTMLElement | null = document.getElementById('tier-bar');
-    if (!container) return;
-
-    const categories = Object.keys(matrix) as MaterialCategory[];
-
-    // Find global max for heatmap normalization
-    let globalMax = 0;
-    let grandTotal = 0;
-    for (const cat of categories) {
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const val: number = matrix[cat][t as keyof TierQuantities] || 0;
-        if (val > globalMax) globalMax = val;
-        grandTotal += val;
-      }
-    }
-
-    // Calculate row and column totals
-    const rowTotals: Record<string, number> = {};
-    const colTotals: TierQuantities = {
-      1: 0,
-      2: 0,
-      3: 0,
-      4: 0,
-      5: 0,
-      6: 0,
-      7: 0,
-      8: 0,
-      9: 0,
-      10: 0,
-    };
-    for (const cat of categories) {
-      rowTotals[cat] = 0;
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const tier = t as keyof TierQuantities;
-        const val: number = matrix[cat][tier] || 0;
-        rowTotals[cat] += val;
-        colTotals[tier] += val;
-      }
-    }
-
-    let html: string =
-      '<div class="matrix-header"><h3>Raw Materials</h3><span class="total">' +
-      grandTotal.toLocaleString() +
-      ' total</span></div>';
-    html += '<table class="material-matrix"><thead><tr>';
-    html += '<th></th>';
-    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-      const label = t === CONFIG.MAX_TIER ? 'T10' : `T${t}`;
-      html += `<th>${label}</th>`;
-    }
-    html += '<th class="row-total">Total</th>';
-    html += '</tr></thead><tbody>';
-
-    for (const cat of categories) {
-      // Skip rows with zero total
-      if (rowTotals[cat] === 0) continue;
-
-      html += `<tr><td class="cat-label">${cat}</td>`;
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const val: number = matrix[cat][t as keyof TierQuantities] || 0;
-        const intensity: number = globalMax > 0 ? val / globalMax : 0;
-        const bgStyle: string =
-          val > 0 ? `background: rgba(88, 166, 255, ${0.1 + intensity * 0.5});` : '';
-        const displayVal: string = val > 0 ? val.toLocaleString() : '-';
-        html += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
-      }
-      html += `<td class="row-total">${rowTotals[cat].toLocaleString()}</td>`;
-      html += '</tr>';
-    }
-
-    // Column totals row
-    html += '<tr class="col-totals"><td class="cat-label">Total</td>';
-    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-      const val: number = colTotals[t as keyof TierQuantities];
-      const displayVal: string = val > 0 ? val.toLocaleString() : '-';
-      html += `<td class="matrix-cell">${displayVal}</td>`;
-    }
-    html += `<td class="row-total grand-total">${grandTotal.toLocaleString()}</td>`;
-    html += '</tr>';
-
-    html += '</tbody></table>';
-    container.innerHTML = html;
   },
 
   // Food and Supply quick stats
@@ -323,13 +236,23 @@ export const DashboardUI = {
       log.debug("No stations to render found (active and passive)");
       return;
     }
-
-    let html = '';
-
+    log.info(active,activeNames);
+    let html = `<div><button id = "toggleStationsBtn">Show Stations</button></div>`;
+    html += `<div id="station-box" class="hidden">`;
     html += this.generateMatrixHtml(active, activeNames, 'Active Crafting Stations');
     html += this.generateMatrixHtml(passive, passiveNames, 'Passive Crafting Stations');
 
+    html += `</div>`;
     container.innerHTML = html;
+    const btn = document.getElementById("toggleStationsBtn");
+    const box = document.getElementById("station-box");
+    if(!btn || !box) return;
+    btn.addEventListener("click", () => {
+      box.classList.toggle("hidden");
+      btn.textContent = box.classList.contains("hidden")
+        ? "Show Stations"
+        : "Hide Stations";
+    });
     this.show('crafting-stations');
   },
   generateMatrixHtml(stations:StationsByName,names:string[],title:string):string{
