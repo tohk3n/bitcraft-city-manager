@@ -124,7 +124,7 @@ export {
   // Food
   getFoodStats,
   findFood,
-  findFoodBySatiation,
+  findFoodByStation,
 
   // General filtering
   findItemsByTag,

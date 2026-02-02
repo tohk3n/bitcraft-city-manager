@@ -13,7 +13,7 @@ import {
   findToolsByType,
   getFoodStats,
   findFood,
-  findFoodBySatiation,
+  findFoodByStation,
   findItemsByTag,
   findItemsByTier,
   findItemsByRarity,
@@ -224,7 +224,7 @@ describe('calculateInventoryValue', () => {
 
 describe('getMarketItems', () => {
   it('returns items with market data, sorted by default', () => {
-    const items = getMarketItems(mockItemsMeta);
+    const items = getMarketItems(mockItemsMeta,'sellMed', false);
 
     expect(items.length).toBeGreaterThan(0);
     expect(items.every((i) => i.market !== undefined)).toBe(true);
@@ -377,13 +377,13 @@ describe('findFood', () => {
 
 describe('findFoodBySatiation', () => {
   it('returns food sorted by satiation descending', () => {
-    const food = findFoodBySatiation(mockItemsMeta);
+    const food = findFoodByStation(mockItemsMeta, true);
     expect(food[0].name).toBe('Meat Stew'); // 150
     expect(food[1].name).toBe('Roasted Meat'); // 50
   });
 
   it('sorts ascending when specified', () => {
-    const food = findFoodBySatiation(mockItemsMeta, false);
+    const food = findFoodByStation(mockItemsMeta, false);
     expect(food[0].name).toBe('Roasted Meat'); // 50
     expect(food[1].name).toBe('Meat Stew'); // 150
   });

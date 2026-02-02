@@ -67,7 +67,7 @@ export function calculateInventoryValue(
 export function getMarketItems(
   items: ItemsMetaFile,
   sortBy: keyof MarketStats = 'sellMed',
-  descending: true
+  descending: boolean
 ): ItemMeta[] {
   const withMarket = Object.values(items.items).filter((item) => item.market);
 
@@ -122,7 +122,7 @@ export function findFood(items: ItemsMetaFile): ItemMeta[] {
   return Object.values(items.items).filter((item) => item.food);
 }
 
-export function findFoodBySatiation(items: ItemsMetaFile, descending: true): ItemMeta[] {
+export function findFoodByStation(items: ItemsMetaFile, descending: boolean): ItemMeta[] {
   const food = findFood(items);
   return food.sort((a, b) => {
     const aVal = a.food?.satiation ?? 0;
