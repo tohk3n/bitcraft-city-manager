@@ -135,7 +135,6 @@ function buildMetaLookup(arr: ApiItem[] | ApiCargo[]): Record<number, ApiItem | 
 export function processCraftingStations(buildings: Building[]): CraftingStationsResult {
   const active: StationsByName = {};
   const passive: StationsByName = {};
-
   for (const building of buildings) {
     const func: BuildingFunction | undefined = building.functions?.[0];
     if (!func) continue;

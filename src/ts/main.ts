@@ -15,6 +15,7 @@ import type {
   ClaimBuildingsResponse,
   CraftingStationsResult,
   ClaimResponse,
+  Building,
 } from './types/index.js';
 
 const log = createLogger('Main');
@@ -78,11 +79,15 @@ async function loadClaim(claimId: string): Promise<void> {
     // Process and render inventory view
     const result: InventoryProcessResult = processInventory(data);
     UI.renderDashboard(result);
-
+    log.debug('rendered Dashboard');
     // Load and render crafting stations
     try {
-      const buildingsData: ClaimBuildingsResponse = await API.getClaimBuildings(claimId);
+      const buildings: Building[] = await API.getClaimBuildings(claimId);
+      const buildingsData: ClaimBuildingsResponse = {
+        buildings,
+      };
       claimData.buildings = buildingsData;
+      log.debug('claimdata.buildings:', buildingsData);
       const stations: CraftingStationsResult = processCraftingStations(buildingsData.buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {

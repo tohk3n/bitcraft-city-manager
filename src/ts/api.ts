@@ -5,11 +5,11 @@ import type {
   ClaimSearchResponse,
   ClaimInventoriesResponse,
   ClaimCitizensResponse,
-  ClaimBuildingsResponse,
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
   PlayerVaultResponse,
+  Building,
 } from './types/index.js';
 
 const log = createLogger('API');
@@ -31,7 +31,7 @@ export const API = {
     return data as T;
   },
 
-  searchClaims(query: string, limit = 10): Promise<ClaimSearchResponse> {
+  searchClaims(query: string, limit: 10): Promise<ClaimSearchResponse> {
     return this.fetch<ClaimSearchResponse>(`/claims?q=${encodeURIComponent(query)}&limit=${limit}`);
   },
 
@@ -47,8 +47,8 @@ export const API = {
     return this.fetch<ClaimCitizensResponse>(`/claims/${claimId}/citizens`);
   },
 
-  getClaimBuildings(claimId: string): Promise<ClaimBuildingsResponse> {
-    return this.fetch<ClaimBuildingsResponse>(`/claims/${claimId}/buildings`);
+  getClaimBuildings(claimId: string): Promise<Building[]> {
+    return this.fetch<Building[]>(`/claims/${claimId}/buildings`);
   },
 
   getItems(): Promise<ItemsResponse> {

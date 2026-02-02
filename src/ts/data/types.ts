@@ -1,6 +1,6 @@
 /**
  * BitJita Data Types
- * 
+ *
  * Type definitions for transformed BitJita game data.
  * These represent the JSON file structures and runtime types.
  * TODO: Move to types folder when testing complete
@@ -12,109 +12,109 @@
 
 /** recipesV2.json structure */
 export interface RecipesFile {
-    version: number;
-    generated: string;
-    source: string;
-    byId: Record<string, RecipeEntry>;
-    byKey: Record<string, string>;  // "Name:tier" → ID
+  version: number;
+  generated: string;
+  source: string;
+  byId: Record<string, RecipeEntry>;
+  byKey: Record<string, string>; // "Name:tier" → ID
 }
 
 export interface RecipeEntry {
-    id: string;
-    name: string;
-    tier: number;
-    tag: string | null;
-    yields: number;
-    inputs: RecipeInput[];
-    station: StationRequirement | null;
-    skill: SkillRequirement | null;
-    tool: ToolRequirement | null;
+  id: string;
+  name: string;
+  tier: number;
+  tag: string | null;
+  yields: number;
+  inputs: RecipeInput[];
+  station: StationRequirement | null;
+  skill: SkillRequirement | null;
+  tool: ToolRequirement | null;
 }
 
 export interface RecipeInput {
-    id: string;
-    qty: number;
+  id: string;
+  qty: number;
 }
 
 export interface StationRequirement {
-    type: number;
-    tier: number;
-    name: string | null;
+  type: number;
+  tier: number;
+  name: string | null;
 }
 
 export interface SkillRequirement {
-    id: number;
-    name: string;
-    level: number;
+  id: number;
+  name: string;
+  level: number;
 }
 
 export interface ToolRequirement {
-    type: number;
-    level: number;
+  type: number;
+  level: number;
 }
 
 /** items-meta.json structure */
 export interface ItemsMetaFile {
-    version: number;
-    generated: string;
-    items: Record<string, ItemMeta>;
+  version: number;
+  generated: string;
+  items: Record<string, ItemMeta>;
 }
 
 export interface ItemMeta {
-    id: string;
-    name: string;
-    tier: number;
-    tag: string | null;
-    rarity: number;
-    volume: number;
-    market?: MarketStats;
-    equipment?: EquipmentStats[];
-    tool?: ToolStats;
-    food?: FoodStats;
+  id: string;
+  name: string;
+  tier: number;
+  tag: string | null;
+  rarity: number;
+  volume: number;
+  market?: MarketStats;
+  equipment?: EquipmentStats[];
+  tool?: ToolStats;
+  food?: FoodStats;
 }
 
 export interface MarketStats {
-    sellLow: number;
-    sellMed: number;
-    buyHigh: number;
-    buyMed: number;
+  sellLow: number;
+  sellMed: number;
+  buyHigh: number;
+  buyMed: number;
 }
 
 export interface EquipmentStats {
-    slot: number;
-    power: number;
-    armor: number;
-    effects: unknown[];  // TODO: type this when needed
+  slot: number;
+  power: number;
+  armor: number;
+  effects: unknown[]; // TODO: type this when needed
 }
 
 export interface ToolStats {
-    type: number;
-    power: number;
-    durability: number;
+  type: number;
+  power: number;
+  durability: number;
 }
 
 export interface FoodStats {
-    satiation: number;
-    effects: unknown[];  // TODO: type this when needed
+  satiation: number;
+  effects: unknown[]; // TODO: type this when needed
 }
 
 /** stations.json structure */
 export interface StationsFile {
-    version: number;
-    generated: string;
-    byType: Record<string, StationEntry>;
+  version: number;
+  generated: string;
+  byType: Record<string, StationEntry>;
 }
 
 export interface StationEntry {
-    name: string | null;
-    tiers: Record<string, string[]>;  // tier → item IDs
+  name: string | null;
+  tiers: Record<string, string[]>; // tier → item IDs
 }
 
 /** gathered.json structure */
 export interface GatheredFile {
-    version: number;
-    generated: string;
-    items: string[];  // Item IDs
+  version: number;
+  generated: string;
+  items: string[]; // Item IDs
 }
 
 // =============================================================================
@@ -125,32 +125,32 @@ export interface GatheredFile {
  * Item categories derived from tags and data.
  * Replaces the old RecipeType with something more flexible.
  */
-export type ItemCategory = 
-    | 'gathered'      // No recipe, raw resource
-    | 'intermediate'  // Crafted, used in other recipes
-    | 'refined'       // End-stage refined materials
-    | 'research'      // Research items
-    | 'study'         // Journals, carvings
-    | 'equipment'     // Wearable gear
-    | 'tool'          // Usable tools
-    | 'food'          // Consumable food
-    | 'building'      // Placeable structures
-    | 'other';        // Everything else
+export type ItemCategory =
+  | 'gathered' // No recipe, raw resource
+  | 'intermediate' // Crafted, used in other recipes
+  | 'refined' // End-stage refined materials
+  | 'research' // Research items
+  | 'study' // Journals, carvings
+  | 'equipment' // Wearable gear
+  | 'tool' // Usable tools
+  | 'food' // Consumable food
+  | 'building' // Placeable structures
+  | 'other'; // Everything else
 
 /**
  * Resolved recipe with all lookups done.
  * Inputs include name/tier for display.
  */
 export interface ResolvedRecipe extends RecipeEntry {
-    category: ItemCategory;
-    inputs: ResolvedInput[];
+  category: ItemCategory;
+  inputs: ResolvedInput[];
 }
 
 export interface ResolvedInput {
-    id: string;
-    name: string;
-    tier: number;
-    qty: number;
+  id: string;
+  name: string;
+  tier: number;
+  qty: number;
 }
 
 /**
@@ -158,13 +158,13 @@ export interface ResolvedInput {
  * Combines recipe + metadata when available.
  */
 export interface ItemInfo {
-    id: string;
-    name: string;
-    tier: number;
-    tag: string | null;
-    category: ItemCategory;
-    recipe: RecipeEntry | null;      // null for gathered items
-    meta: ItemMeta | null;           // null if not loaded
+  id: string;
+  name: string;
+  tier: number;
+  tag: string | null;
+  category: ItemCategory;
+  recipe: RecipeEntry | null; // null for gathered items
+  meta: ItemMeta | null; // null if not loaded
 }
 
 // =============================================================================
@@ -176,6 +176,6 @@ export type ItemKey = string;
 
 /** Result of parsing a key */
 export interface ParsedKey {
-    name: string;
-    tier: number;
+  name: string;
+  tier: number;
 }
