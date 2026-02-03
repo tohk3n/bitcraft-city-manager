@@ -5,25 +5,32 @@
   "private": true,
   "scripts": {
     "test": "vitest",
-    "build": "npm run fix && tsc",
-    "watch": "tsc --watch",
+    "build": "npm run lint && npm run build:ts && npm run build:scss",
     "deploy": "npm run build && vercel --prod",
     "lint": "eslint src/ts",
     "lint:fix": "eslint src/ts --fix",
-    "format": "prettier --write \"src/ts/**/*.ts\"",
-    "format:check": "prettier --check \"src/ts/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.{ts,scss}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,scss}\"",
     "check": "npm run format:check && npm run lint",
-    "fix": "npm run format && npm run lint:fix"
+    "fix": "npm run format && npm run lint:fix",
+    "build:ts": "tsc",
+    "build:scss": "sass src/scss:public/css --style=compressed --no-source-map",
+    "watch:ts": "tsc --watch",
+    "watch:scss": "sass --watch src/scss:public/css",
+    "dev": "concurrently \"npm run watch:ts\" \"npm run watch:scss\"",
+    "start": "vercel dev"
   },
   "devDependencies": {
-    "@types/node": "^25.1.0",
-    "typescript": "^5.4.0",
-    "vitest": "^4.0.18",
-    "eslint": "^9.0.0",
     "@eslint/js": "^9.0.0",
-    "typescript-eslint": "^8.0.0",
+    "@types/node": "^25.1.0",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "sass": "^1.97.3",
+    "typescript": "^5.4.0",
+    "typescript-eslint": "^8.0.0",
+    "vitest": "^4.0.18"
   },
   "repository": {
     "type": "git",
