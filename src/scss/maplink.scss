@@ -1,0 +1,175 @@
+#mlc-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  width: 100%;
+  max-width: 520px;
+  padding: 14px;
+
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+#checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#checkbox-row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+#checkbox-row input[type='checkbox'] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  cursor: pointer;
+  position: relative;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#checkbox-row input[type='checkbox']:hover {
+  border-color: var(--accent);
+}
+
+#checkbox-row input[type='checkbox']:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+#checkbox-row input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 5px;
+  width: 4px;
+  height: 8px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+#mlc-res-input,
+#mlc-player-input {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+#res-ids,
+#player-ids,
+#enemy-ids {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+#lnk-gen-btn,
+#id-matrix-btn {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#lnk-gen-btn:hover,
+#id-matrix-btn:hover {
+  background: var(--bg-tertiary);
+}
+
+#lnk-gen-btn:active,
+#id-matrix-btn:active {
+  background: var(--accent);
+  color: var(--bg-primary);
+  border-color: var(--accent);
+}
+#map-link {
+  color: var(--accent);
+  word-break: break-all;
+  text-decoration: none;
+}
+#map-link:visited {
+  word-break: break-all;
+  text-decoration: none;
+}
+#map-link:hover {
+  text-decoration: underline;
+}
+
+.hidden {
+  display: none;
+}
+
+.matrix-cell {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #999;
+  text-align: center;
+  vertical-align: middle;
+  background-color: var(--bg-secondary);
+}
+
+.matrix-cell:nth-child(even) {
+  background-color: var(--bg-primary);
+}
+
+.row-label {
+  font-weight: bold;
+  background-color: var(--bg-secondary);
+}
+.matrix-cell-inner {
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.matrix-cell-inner.none {
+  transition: background 0.2s;
+}
+
+.matrix-cell-inner:hover {
+  background: var(--bg-tertiary);
+}
+
+.matrix-cell-inner.full {
+  background: var(--accent);
+}
+.matrix-cell-inner.part {
+  background: linear-gradient(to bottom, var(--accent), var(--bg-quaternary));
+}
+.matrix-cell-inner.empty {
+  background-color: var(--text-secondary);
+}
+.matrix-cell-btn {
+  width: 100%;
+  height: 100%;
+  border: none;
+  color: inherit;
+  box-shadow: none;
+  background: transparent;
+  cursor: pointer;
+}
