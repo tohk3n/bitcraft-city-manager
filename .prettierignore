@@ -1,5 +1,6 @@
 # Built output
 public/js/
+public/css/
 
 # Dependencies
 node_modules/

@@ -2,8 +2,8 @@
   "buildCommand": "npm run build",
   "rewrites": [
     { "source": "/api/proxy", "destination": "/api/proxy" },
-    { "source": "/js/:path*", "destination": "/dist/js/:path*" },
-    { "source": "/css/:path*", "destination": "/src/css/:path*" },
+    { "source": "/js/:path*", "destination": "/public/js/:path*" },
+    { "source": "/css/:path*", "destination": "/public/css/:path*" },
     { "source": "/data/:path*", "destination": "/data/:path*" },
     { "source": "/", "destination": "/public/index.html" },
     { "source": "/:path*", "destination": "/public/:path*" }
