@@ -1,0 +1,246 @@
+/**
+ * Planner View - Header and tab chrome
+ * Dashboard and flowchart have their own styles.
+ */
+
+.pv-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 16px;
+}
+
+.pv-empty,
+.pv-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Header - unified bar with progress, tabs, and actions */
+.pv-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.pv-summary {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.pv-pct {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.pv-stats {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Actions group - tabs + copy buttons */
+.pv-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tabs - prominent pill-style toggle */
+.pv-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.pv-tab {
+  padding: 8px 18px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pv-tab:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.pv-tab.active {
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+#pv-export-csv {
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+/* Copy button group */
+.pv-copy-group {
+  display: flex;
+  gap: 4px;
+}
+
+.pv-copy {
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.pv-copy:hover {
+  color: var(--text-primary);
+  border-color: var(--accent);
+  background: rgba(88, 166, 255, 0.1);
+}
+
+.pv-copy.copied {
+  color: var(--status-complete);
+  border-color: var(--status-complete);
+  background: rgba(63, 185, 80, 0.1);
+}
+
+/* Secondary copy button - less prominent */
+.pv-copy-secondary {
+  color: var(--text-muted);
+  border-color: transparent;
+  background: var(--bg-tertiary);
+}
+
+.pv-copy-secondary:hover {
+  color: var(--text-secondary);
+  border-color: var(--border);
+  background: var(--bg-tertiary);
+}
+
+/* Content area */
+.pv-content {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pv-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.pv-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pv-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pv-progress-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pv-pct {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.pv-progress-bar-mini {
+  width: 60px;
+  height: 6px;
+  background: var(--bg-tertiary);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.pv-progress-fill-mini {
+  height: 100%;
+  background: var(--status-partial);
+  border-radius: 3px;
+}
+
+.pv-stats-mini {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Compact copy buttons */
+.pv-toolbar-right .pv-copy {
+  padding: 4px 8px;
+  font-size: 0.8rem;
+}
+
+/* Responsive - stack on narrow screens */
+@media (max-width: 700px) {
+  .pv-header {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .pv-summary {
+    width: 100%;
+  }
+
+  .pv-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 500px) {
+  .pv-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .pv-tabs {
+    flex: 1;
+  }
+
+  .pv-tab {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+  }
+
+  .pv-copy-group {
+    width: 100%;
+  }
+
+  .pv-copy {
+    flex: 1;
+  }
+}

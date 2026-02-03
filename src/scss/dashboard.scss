@@ -1,0 +1,283 @@
+/* Dashboard styles - material matrix, quick stats, crafting stations, inventory */
+
+/* Dashboard container */
+#dashboard {
+  margin-bottom: 24px;
+}
+
+/* Stats summary (legacy, may not be used) */
+#stats-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card .value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.stat-card .label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+/* Quick stats (Food & Scholar) */
+#quick-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.quick-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.quick-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+}
+
+.quick-header .icon {
+  font-size: 1.25rem;
+}
+
+.quick-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  flex: 1;
+}
+
+.quick-header .total {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.quick-body {
+  padding: 12px 16px;
+}
+
+.quick-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.quick-body tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.quick-body tr:last-child {
+  border-bottom: none;
+}
+
+.quick-body td {
+  padding: 8px 0;
+}
+
+.quick-body td.qty {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.quick-body .tier-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  margin-right: 6px;
+}
+
+.quick-body tr.more td {
+  color: var(--text-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+/* Crafting stations */
+#crafting-stations {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+#toggleStationsBtn {
+  width: 100%;
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+#station-box {
+  display: flex;
+  gap: 1rem;
+}
+
+#station-box.hidden {
+  display: none;
+}
+
+.stations-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+/* Inventory grid */
+#inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.inventory-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.inventory-card .card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: var(--bg-tertiary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.inventory-card .card-header:hover {
+  background: #282e36;
+}
+
+.inventory-card .card-header h4 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.inventory-card .card-header .total {
+  font-size: 0.9rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.inventory-card .card-header .chevron {
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.inventory-card.expanded .card-header .chevron {
+  transform: rotate(180deg);
+}
+
+.inventory-card .card-body {
+  display: none;
+  padding: 12px 16px;
+}
+
+.inventory-card.expanded .card-body {
+  display: block;
+}
+
+.inventory-card table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.inventory-card tr {
+  border-bottom: 1px solid var(--border);
+}
+
+.inventory-card tr:last-child {
+  border-bottom: none;
+}
+
+.inventory-card th {
+  text-align: left;
+  font-weight: 500;
+  padding: 8px 0;
+  color: var(--text-secondary);
+}
+
+.inventory-card td {
+  padding: 8px 0;
+  color: var(--text-primary);
+}
+
+.inventory-card td.qty {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.inventory-card .item-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inventory-card .tier-badge {
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+}
+
+/* Building breakdown (nested details) */
+.building-breakdown {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.building-breakdown summary {
+  cursor: pointer;
+  color: var(--text-secondary);
+}
+
+.building-breakdown ul {
+  margin: 8px 0 0 0;
+  padding-left: 16px;
+}
+
+.building-breakdown li {
+  padding: 2px 0;
+}
