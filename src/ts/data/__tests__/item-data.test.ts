@@ -224,7 +224,7 @@ describe('calculateInventoryValue', () => {
 
 describe('getMarketItems', () => {
   it('returns items with market data, sorted by default', () => {
-    const items = getMarketItems(mockItemsMeta,'sellMed', false);
+    const items = getMarketItems(mockItemsMeta, 'sellMed', false);
 
     expect(items.length).toBeGreaterThan(0);
     expect(items.every((i) => i.market !== undefined)).toBe(true);
