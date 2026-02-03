@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
-    "build": "npm run check && npm run build:ts && npm run build:scss",
+    "build": "npm run check && npm run build:ts",
     "deploy": "npm run build && vercel --prod",
     "lint": "eslint src/ts",
     "lint:fix": "eslint src/ts --fix",
