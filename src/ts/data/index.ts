@@ -11,11 +11,12 @@
  *   const category = categorize(plank, plank.tag, gathered.has(plank.id));
  *
  * File structure:
- *   - types.ts       Type definitions (this will move to types)
- *   - loader.ts      Data loading and caching
- *   - recipe-data.ts Recipe lookups and categorization
- *   - item-data.ts   Item metadata, market, equipment
+ *   - types.ts        Type definitions (this will move to types)
+ *   - loader.ts       Data loading and caching
+ *   - recipe-data.ts  Recipe lookups and categorization
+ *   - item-data.ts    Item metadata, market, equipment
  *   - station-data.ts Station lookups and craftable items
+ *   - package-data.ts Package lookups, item mappings, and multipliers
  */
 
 // =============================================================================
@@ -39,6 +40,8 @@ export type {
   StationsFile,
   StationEntry,
   GatheredFile,
+  PackagesFile,
+  PackageEntry,
 
   // Runtime types
   ItemCategory,
@@ -58,6 +61,7 @@ export {
   loadItemsMeta,
   loadStations,
   loadGathered,
+  loadPackages,
   loadCoreData,
   loadAllData,
   clearCache,
@@ -154,3 +158,25 @@ export {
   findStationForItem,
   getStationSummary,
 } from './station-data.js';
+
+// =============================================================================
+// PACKAGE DATA
+// =============================================================================
+
+export {
+  // Lookups
+  getPackageForItem,
+  getItemForPackage,
+
+  // Multipliers
+  getPackageMultiplier,
+  expandPackageQuantity,
+
+  // Type checks
+  isPackageable,
+  isPackage,
+
+  // Bulk
+  getAllPackageableItems,
+  getAllPackages,
+} from './package-data.js';
