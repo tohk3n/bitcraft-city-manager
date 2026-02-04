@@ -2,13 +2,6 @@
  * Planner - Controls and common styles
  */
 
-/* Status colors */
-:root {
-  --status-complete: #3fb950;
-  --status-partial: #d29922;
-  --status-missing: #f05050;
-}
-
 /* Controls */
 .planner-controls {
   display: flex;
