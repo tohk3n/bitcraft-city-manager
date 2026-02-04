@@ -18,10 +18,7 @@ import type { PackagesFile, PackageEntry } from './types.js';
  * Get the package entry for an item ID.
  * Returns the cargo ID, multiplier, and package name.
  */
-export function getPackageForItem(
-  packages: PackagesFile,
-  itemId: string
-): PackageEntry | null {
+export function getPackageForItem(packages: PackagesFile, itemId: string): PackageEntry | null {
   return packages.byItemId[itemId] ?? null;
 }
 
@@ -29,10 +26,7 @@ export function getPackageForItem(
  * Get the item entry for a cargo/package ID.
  * Returns the item ID, multiplier, and item name.
  */
-export function getItemForPackage(
-  packages: PackagesFile,
-  cargoId: string
-): PackageEntry | null {
+export function getItemForPackage(packages: PackagesFile, cargoId: string): PackageEntry | null {
   return packages.byCargoId[cargoId] ?? null;
 }
 
@@ -44,10 +38,7 @@ export function getItemForPackage(
  * Get the package multiplier for an item.
  * Returns 1 if the item has no package (safe default for multiplication).
  */
-export function getPackageMultiplier(
-  packages: PackagesFile,
-  itemId: string
-): number {
+export function getPackageMultiplier(packages: PackagesFile, itemId: string): number {
   return packages.byItemId[itemId]?.quantity ?? 1;
 }
 
