@@ -61,10 +61,10 @@
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s;
-}
 
-.fc-export:hover {
-  background: #7c5ac7;
+  &:hover {
+    background: #7c5ac7;
+  }
 }
 
 /* Tabs */
@@ -92,17 +92,17 @@
   align-items: center;
   gap: 8px;
   white-space: nowrap;
-}
 
-.fc-tab:hover {
-  color: var(--text-primary);
-  background: var(--bg-tertiary);
-}
+  &:hover {
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+  }
 
-.fc-tab.active {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-  border-color: var(--border);
+  &.active {
+    color: var(--text-primary);
+    background: var(--bg-secondary);
+    border-color: var(--border);
+  }
 }
 
 .fc-tab-status {
@@ -110,16 +110,16 @@
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
-}
 
-.fc-tab-status.complete {
-  background: var(--status-complete);
-}
-.fc-tab-status.partial {
-  background: var(--status-partial);
-}
-.fc-tab-status.missing {
-  background: var(--status-missing);
+  &.complete {
+    background: var(--status-complete);
+  }
+  &.partial {
+    background: var(--status-partial);
+  }
+  &.missing {
+    background: var(--status-missing);
+  }
 }
 
 .fc-tab-journals {
@@ -144,53 +144,217 @@
   font-size: 0.85rem;
   color: var(--text-secondary);
   cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
 }
 
-.fc-toggle input {
-  cursor: pointer;
+/* Node groups */
+.fc-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Collapsible nodes */
-.fc-node.collapsible {
-  cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.1s ease;
+.fc-children {
+  display: flex;
+  gap: 16px;
+  margin-top: 40px;
 }
 
-.fc-node.collapsible:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+/* Nodes */
+.fc-node {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  min-width: 130px;
+  max-width: 180px;
+  text-align: center;
+  position: relative;
+
+  /* Status borders */
+  &.complete {
+    border-color: var(--status-complete);
+  }
+  &.partial {
+    border-color: var(--status-partial);
+  }
+  &.missing {
+    border-color: var(--status-missing);
+  }
+
+  &.root {
+    background: var(--bg-tertiary);
+    min-width: 160px;
+
+    .fc-node-tier {
+      background: var(--bg-primary);
+    }
+
+    .fc-node-progress {
+      background: var(--bg-primary);
+    }
+  }
+
+  &.non-trackable {
+    border-style: dashed;
+    opacity: 0.85;
+  }
+
+  &.collapsed {
+    min-width: 100px;
+    padding: 6px 10px;
+    opacity: 0.7;
+
+    .fc-node-name {
+      font-size: 0.75rem;
+      margin-bottom: 2px;
+    }
+
+    .fc-node-meta {
+      margin-bottom: 0;
+    }
+  }
+
+  /* Collapsible interaction */
+  &.collapsible {
+    cursor: pointer;
+    transition:
+      transform 0.1s ease,
+      box-shadow 0.1s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  /* Collapsed (user-toggled) state */
+  &.is-collapsed {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+
+    .fc-node-name,
+    .fc-node-tier,
+    .fc-node-qty,
+    .fc-have,
+    .fc-need {
+      color: #fff;
+    }
+
+    .fc-sep {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .fc-node-tier {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .fc-node-progress {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .fc-node-progress-fill {
+      background: #fff;
+    }
+
+    .fc-collapse-indicator {
+      opacity: 1;
+    }
+  }
+
+  /* Status-specific progress fills */
+  &.complete .fc-node-progress-fill {
+    background: var(--status-complete);
+  }
+  &.partial .fc-node-progress-fill {
+    background: var(--status-partial);
+  }
+  &.missing .fc-node-progress-fill {
+    background: var(--status-missing);
+    width: 0 !important;
+  }
+
+  /* Hide deficit badge when complete */
+  &.complete .fc-node-deficit {
+    display: none;
+  }
 }
 
-.fc-node.is-collapsed {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
+/* Node children — kept flat, they don't need nesting beyond .fc-node */
+.fc-node-name {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  line-height: 1.2;
 }
 
-.fc-node.is-collapsed .fc-node-name,
-.fc-node.is-collapsed .fc-node-tier,
-.fc-node.is-collapsed .fc-node-qty,
-.fc-node.is-collapsed .fc-have,
-.fc-node.is-collapsed .fc-need {
-  color: #fff;
+.fc-node-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
 }
 
-.fc-node.is-collapsed .fc-sep {
-  color: rgba(255, 255, 255, 0.6);
+.fc-node-tier {
+  background: var(--bg-tertiary);
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-weight: 500;
 }
 
-.fc-node.is-collapsed .fc-node-tier {
-  background: rgba(255, 255, 255, 0.2);
+.fc-node-qty {
+  font-variant-numeric: tabular-nums;
 }
 
-.fc-node.is-collapsed .fc-node-progress {
-  background: rgba(255, 255, 255, 0.2);
+.fc-have {
+  color: var(--text-primary);
 }
 
-.fc-node.is-collapsed .fc-node-progress-fill {
-  background: #fff;
+.fc-sep {
+  color: var(--text-muted);
+  margin: 0 1px;
+}
+
+.fc-need {
+  color: var(--text-muted);
+}
+
+.fc-node-check {
+  color: var(--status-complete);
+  font-weight: 600;
+}
+
+.fc-node-progress {
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.fc-node-progress-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.fc-node-deficit {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 10px;
+  background: var(--status-missing);
+  color: white;
 }
 
 .fc-collapse-indicator {
@@ -199,8 +363,17 @@
   opacity: 0.7;
 }
 
-.fc-node.is-collapsed .fc-collapse-indicator {
-  opacity: 1;
+/* Collapsed cluster node */
+.fc-cluster {
+  min-width: 120px;
+  background: var(--bg-tertiary);
+  border-style: dashed;
+}
+
+.fc-cluster-icon {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin-bottom: 2px;
 }
 
 /* Viewport */
@@ -215,10 +388,10 @@
   cursor: grab;
   user-select: none;
   position: relative;
-}
 
-.fc-viewport.dragging {
-  cursor: grabbing;
+  &.dragging {
+    cursor: grabbing;
+  }
 }
 
 /* Zoom controls */
@@ -254,22 +427,22 @@
   transition:
     background 0.1s,
     border-color 0.1s;
-}
 
-.fc-zoom-btn:hover {
-  background: var(--bg-secondary);
-  border-color: var(--text-muted);
-}
+  &:hover {
+    background: var(--bg-secondary);
+    border-color: var(--text-muted);
+  }
 
-.fc-zoom-btn:active {
-  background: var(--bg-tertiary);
-}
+  &:active {
+    background: var(--bg-tertiary);
+  }
 
-.fc-zoom-btn.fc-zoom-reset {
-  width: auto;
-  padding: 0 10px;
-  font-size: 0.75rem;
-  margin-left: 4px;
+  &.fc-zoom-reset {
+    width: auto;
+    padding: 0 10px;
+    font-size: 0.75rem;
+    margin-left: 4px;
+  }
 }
 
 .fc-zoom-level {
@@ -313,185 +486,19 @@
   fill: none;
   stroke: var(--border);
   stroke-width: 2;
-}
 
-.fc-connector.complete {
-  stroke: var(--status-complete);
-}
-.fc-connector.partial {
-  stroke: var(--status-partial);
-}
+  &.complete {
+    stroke: var(--status-complete);
+  }
+  &.partial {
+    stroke: var(--status-partial);
+  }
 
-.fc-connector.collapsed-connector {
-  stroke: var(--accent);
-  stroke-width: 3;
-  stroke-dasharray: 6 3;
-}
-
-/* Node groups */
-.fc-group {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.fc-children {
-  display: flex;
-  gap: 16px;
-  margin-top: 40px;
-}
-
-/* Nodes */
-.fc-node {
-  background: var(--bg-primary);
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  min-width: 130px;
-  max-width: 180px;
-  text-align: center;
-  position: relative;
-}
-
-.fc-node.complete {
-  border-color: var(--status-complete);
-}
-.fc-node.partial {
-  border-color: var(--status-partial);
-}
-.fc-node.missing {
-  border-color: var(--status-missing);
-}
-
-.fc-node.root {
-  background: var(--bg-tertiary);
-  min-width: 160px;
-}
-
-.fc-node.non-trackable {
-  border-style: dashed;
-  opacity: 0.85;
-}
-
-.fc-node.collapsed {
-  min-width: 100px;
-  padding: 6px 10px;
-  opacity: 0.7;
-}
-
-.fc-node-name {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  line-height: 1.2;
-}
-
-.fc-node.collapsed .fc-node-name {
-  font-size: 0.75rem;
-  margin-bottom: 2px;
-}
-
-.fc-node-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-
-.fc-node.collapsed .fc-node-meta {
-  margin-bottom: 0;
-}
-
-.fc-node-tier {
-  background: var(--bg-tertiary);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-weight: 500;
-}
-
-.fc-node.root .fc-node-tier {
-  background: var(--bg-primary);
-}
-
-.fc-node-qty {
-  font-variant-numeric: tabular-nums;
-}
-
-.fc-have {
-  color: var(--text-primary);
-}
-.fc-sep {
-  color: var(--text-muted);
-  margin: 0 1px;
-}
-.fc-need {
-  color: var(--text-muted);
-}
-
-.fc-node-check {
-  color: var(--status-complete);
-  font-weight: 600;
-}
-
-.fc-node-progress {
-  height: 4px;
-  background: var(--bg-tertiary);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.fc-node.root .fc-node-progress {
-  background: var(--bg-primary);
-}
-
-.fc-node-progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.fc-node.complete .fc-node-progress-fill {
-  background: var(--status-complete);
-}
-.fc-node.partial .fc-node-progress-fill {
-  background: var(--status-partial);
-}
-.fc-node.missing .fc-node-progress-fill {
-  background: var(--status-missing);
-  width: 0 !important;
-}
-
-.fc-node-deficit {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 10px;
-  background: var(--status-missing);
-  color: white;
-}
-
-.fc-node.complete .fc-node-deficit {
-  display: none;
-}
-
-/* Collapsed cluster node */
-.fc-cluster {
-  min-width: 120px;
-  background: var(--bg-tertiary);
-  border-style: dashed;
-}
-
-.fc-cluster-icon {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  margin-bottom: 2px;
+  &.collapsed-connector {
+    stroke: var(--accent);
+    stroke-width: 3;
+    stroke-dasharray: 6 3;
+  }
 }
 
 /* Legend */
@@ -518,16 +525,16 @@
   height: 12px;
   border-radius: 3px;
   border: 2px solid;
-}
 
-.fc-legend-color.complete {
-  border-color: var(--status-complete);
-}
-.fc-legend-color.partial {
-  border-color: var(--status-partial);
-}
-.fc-legend-color.missing {
-  border-color: var(--status-missing);
+  &.complete {
+    border-color: var(--status-complete);
+  }
+  &.partial {
+    border-color: var(--status-partial);
+  }
+  &.missing {
+    border-color: var(--status-missing);
+  }
 }
 
 .fc-legend-spacer {

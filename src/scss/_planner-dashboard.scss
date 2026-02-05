@@ -1,10 +1,10 @@
 /**
  * Dashboard Styles
  * Dense, scannable, activity-grouped layout
- * 
+ *
  * Design principles:
  * - Tight spacing, not cramped
- * - Color carries meaning, not decoration  
+ * - Color carries meaning, not decoration
  * - Typography creates hierarchy
  * - Whitespace is intentional
  */
@@ -33,12 +33,10 @@
 .dash-toolbar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 14px;
-  background: var(--bg-secondary);
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  flex-wrap: wrap;
+  gap: 12px;
+  padding: 6px 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border);
 }
 
 .dash-filters {
@@ -68,15 +66,15 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   cursor: pointer;
-}
 
-.dash-select:hover {
-  border-color: var(--text-muted);
-}
+  &:hover {
+    border-color: var(--text-muted);
+  }
 
-.dash-select:focus {
-  outline: none;
-  border-color: var(--accent);
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
 }
 
 .dash-toggle {
@@ -88,29 +86,15 @@
   cursor: pointer;
   user-select: none;
   white-space: nowrap;
-}
 
-.dash-toggle input {
-  cursor: pointer;
-  accent-color: var(--accent);
-}
+  input {
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
 
-.dash-toggle:hover {
-  color: var(--text-primary);
-}
-
-.dash-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-  margin-bottom: 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-.dash-filters {
-  display: flex;
-  gap: 4px;
+  &:hover {
+    color: var(--text-primary);
+  }
 }
 
 .dash-select-mini {
@@ -129,11 +113,11 @@
   font-size: 0.75rem;
   color: var(--text-secondary);
   cursor: pointer;
-}
 
-.dash-toggle-mini input {
-  width: 12px;
-  height: 12px;
+  input {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 /* ============================================
@@ -151,9 +135,18 @@
   border-radius: 6px;
   border: 1px solid var(--border);
   overflow: hidden;
+
+  &.collapsed {
+    .dash-group-toggle {
+      transform: rotate(-90deg);
+    }
+
+    .dash-group-items {
+      display: none;
+    }
+  }
 }
 
-/* Group Header */
 .dash-group-header {
   display: grid;
   grid-template-columns: 16px auto 1fr 80px 48px 32px;
@@ -163,10 +156,14 @@
   cursor: pointer;
   user-select: none;
   transition: background 0.1s;
-}
 
-.dash-group-header:hover {
-  background: var(--bg-tertiary);
+  &:hover {
+    background: var(--bg-tertiary);
+
+    .dash-copy-group {
+      opacity: 0.7;
+    }
+  }
 }
 
 .dash-group-toggle {
@@ -174,10 +171,6 @@
   color: var(--text-muted);
   text-align: center;
   transition: transform 0.15s;
-}
-
-.dash-group.collapsed .dash-group-toggle {
-  transform: rotate(-90deg);
 }
 
 .dash-group-name {
@@ -193,7 +186,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Group progress bar */
 .dash-group-bar {
   width: 80px;
   height: 4px;
@@ -216,7 +208,6 @@
   text-align: right;
 }
 
-/* Copy button in header */
 .dash-copy-group {
   padding: 4px 8px;
   font-size: 0.8rem;
@@ -229,29 +220,20 @@
     opacity 0.15s,
     background 0.15s;
   color: var(--text-muted);
+
+  &:hover {
+    opacity: 1 !important;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+  }
 }
 
-.dash-group-header:hover .dash-copy-group {
-  opacity: 0.7;
-}
-
-.dash-copy-group:hover {
-  opacity: 1 !important;
-  background: var(--bg-primary);
-  color: var(--text-primary);
-}
-
-/* Group Items Container */
 .dash-group-items {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
   gap: 6px;
   padding: 8px 12px 12px;
   background: var(--bg-primary);
-}
-
-.dash-group.collapsed .dash-group-items {
-  display: none;
 }
 
 /* ============================================
@@ -270,11 +252,49 @@
   position: relative;
   overflow: hidden;
   transition: background 0.1s;
-  min-width: 0; /* Allow grid items to shrink */
-}
+  min-width: 0;
 
-.dash-item:hover {
-  background: var(--bg-tertiary);
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+
+  /* Status variants */
+  &.missing .dash-item-deficit {
+    color: var(--status-missing);
+  }
+  &.partial .dash-item-deficit {
+    color: var(--status-partial);
+  }
+  &.complete .dash-item-deficit {
+    color: var(--status-complete);
+  }
+
+  &.missing .dash-item-bar-fill {
+    background: var(--status-missing);
+    opacity: 0.4;
+  }
+
+  &.partial .dash-item-bar-fill {
+    background: var(--status-partial);
+    opacity: 0.4;
+  }
+
+  &.complete .dash-item-bar-fill {
+    background: var(--status-complete);
+    opacity: 0.3;
+  }
+
+  &.complete {
+    opacity: 0.5;
+
+    &:hover {
+      opacity: 0.7;
+    }
+  }
+
+  &[title] {
+    cursor: help;
+  }
 }
 
 .dash-item-name {
@@ -283,7 +303,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
-  min-width: 0; /* Allow text to truncate */
+  min-width: 0;
 }
 
 .dash-item-tier {
@@ -305,18 +325,6 @@
   flex-shrink: 0;
 }
 
-/* Status colors - only on deficit */
-.dash-item.missing .dash-item-deficit {
-  color: var(--status-missing);
-}
-.dash-item.partial .dash-item-deficit {
-  color: var(--status-partial);
-}
-.dash-item.complete .dash-item-deficit {
-  color: var(--status-complete);
-}
-
-/* Mini progress bar at bottom of chip */
 .dash-item-bar {
   position: absolute;
   bottom: 0;
@@ -329,33 +337,6 @@
 .dash-item-bar-fill {
   height: 100%;
   transition: width 0.2s;
-}
-
-.dash-item.missing .dash-item-bar-fill {
-  background: var(--status-missing);
-  opacity: 0.4;
-}
-.dash-item.partial .dash-item-bar-fill {
-  background: var(--status-partial);
-  opacity: 0.4;
-}
-.dash-item.complete .dash-item-bar-fill {
-  background: var(--status-complete);
-  opacity: 0.3;
-}
-
-/* Completed items are subtle */
-.dash-item.complete {
-  opacity: 0.5;
-}
-
-.dash-item.complete:hover {
-  opacity: 0.7;
-}
-
-/* Tooltip styling (native title works, but this adds hover indication) */
-.dash-item[title] {
-  cursor: help;
 }
 
 /* ============================================
@@ -371,10 +352,10 @@
 
   .dash-filters {
     width: 100%;
-  }
 
-  .dash-filters .dash-select {
-    flex: 1;
+    .dash-select {
+      flex: 1;
+    }
   }
 
   .dash-options {

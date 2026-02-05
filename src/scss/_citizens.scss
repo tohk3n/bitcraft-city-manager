@@ -15,59 +15,88 @@
   background: var(--bg-secondary);
   border-radius: 8px;
   overflow: hidden;
-}
 
-.citizens-table th {
-  padding: 10px 8px;
-  text-align: center;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: var(--bg-tertiary);
-  border-bottom: 1px solid var(--border);
-}
+  th {
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 500;
+    color: var(--text-muted);
+    background: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border);
 
-.citizens-table th:first-child,
-.citizens-table th:nth-child(2) {
-  text-align: left;
-}
+    &:first-child,
+    &:nth-child(2) {
+      text-align: left;
+    }
+  }
 
-.citizens-table .slot-header {
-  font-size: 0.7rem;
-  padding: 4px;
-}
+  .slot-header {
+    font-size: 0.7rem;
+    padding: 4px;
+  }
 
-.citizens-table td {
-  padding: 8px;
-  border-bottom: 1px solid var(--border);
-  text-align: center;
-}
+  td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+  }
 
-.citizens-table .citizen-name {
-  text-align: left;
-  font-weight: 500;
-  color: var(--text-primary);
-}
+  .citizen-name {
+    text-align: left;
+    font-weight: 500;
+    color: var(--text-primary);
+  }
 
-.citizens-table .citizen-id {
-  text-align: left;
-}
+  .citizen-id {
+    text-align: left;
+  }
 
-/* Gear cells */
-.citizens-table .gear-cell {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 4px;
-  border-radius: 3px;
-}
+  /* Gear cells */
+  .gear-cell {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 4px;
+    border-radius: 3px;
 
-.citizens-table .gear-cell.empty {
-  color: var(--text-muted);
-}
+    &.empty {
+      color: var(--text-muted);
+    }
 
-/* Loading animation for gear cells */
-.citizens-table .gear-cell.loading {
-  animation: pulse 1.2s ease-in-out infinite;
-  background: var(--bg-tertiary);
+    &.loading {
+      animation: pulse 1.2s ease-in-out infinite;
+      background: var(--bg-tertiary);
+    }
+
+    &.from-vault {
+      border: 2px dashed currentColor;
+    }
+  }
+
+  /* Rarity colors */
+  .rarity-common {
+    background: #555;
+    color: #fff;
+  }
+  .rarity-uncommon {
+    background: #5a7a00;
+    color: #fff;
+  }
+  .rarity-rare {
+    background: #1a5cb8;
+    color: #fff;
+  }
+  .rarity-epic {
+    background: #9a7800;
+    color: #fff;
+  }
+  .rarity-legendary {
+    background: #a02820;
+    color: #fff;
+  }
+  .rarity-mythic {
+    background: #6a00a0;
+    color: #fff;
+  }
 }
 
 @keyframes pulse {
@@ -80,37 +109,6 @@
     opacity: 1;
     background: var(--bg-primary);
   }
-}
-
-/* Rarity colors */
-.citizens-table .rarity-common {
-  background: #555;
-  color: #fff;
-}
-.citizens-table .rarity-uncommon {
-  background: #5a7a00;
-  color: #fff;
-}
-.citizens-table .rarity-rare {
-  background: #1a5cb8;
-  color: #fff;
-}
-.citizens-table .rarity-epic {
-  background: #9a7800;
-  color: #fff;
-}
-.citizens-table .rarity-legendary {
-  background: #a02820;
-  color: #fff;
-}
-.citizens-table .rarity-mythic {
-  background: #6a00a0;
-  color: #fff;
-}
-
-/* Vault gear indicator - dashed border to show it's from vault not equipped */
-.citizens-table .gear-cell.from-vault {
-  border: 2px dashed currentColor;
 }
 
 /* Per-row vault button */
@@ -132,26 +130,26 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s;
-}
 
-.vault-btn:hover:not(:disabled) {
-  background: var(--accent);
-  color: var(--bg-primary);
-  border-color: var(--accent);
-}
+  &:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+  }
 
-.vault-btn:disabled {
-  cursor: default;
-}
+  &:disabled {
+    cursor: default;
+  }
 
-.vault-btn.loaded {
-  background: var(--success);
-  color: var(--bg-primary);
-  border-color: var(--success);
-}
+  &.loaded {
+    background: var(--success);
+    color: var(--bg-primary);
+    border-color: var(--success);
+  }
 
-.vault-btn.error {
-  background: #f85149;
-  color: #fff;
-  border-color: #f85149;
+  &.error {
+    background: #f85149;
+    color: #fff;
+    border-color: #f85149;
+  }
 }
