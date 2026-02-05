@@ -8,12 +8,12 @@ header {
   margin-bottom: 24px;
   padding-bottom: 16px;
   border-bottom: 1px solid var(--border);
-}
 
-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
+  h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
 }
 
 /* Claim input */
@@ -21,9 +21,30 @@ header h1 {
   display: flex;
   gap: 12px;
   align-items: center;
+
+  button {
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    background: var(--accent);
+    color: var(--bg-primary);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+
+    &:hover {
+      background: var(--accent-hover);
+    }
+
+    &:disabled {
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      cursor: wait;
+    }
+  }
 }
 
-/* Input wrapper for autocomplete positioning */
 .claim-input-wrapper {
   position: relative;
 }
@@ -36,16 +57,16 @@ header h1 {
   width: 240px;
   background: var(--bg-secondary);
   color: var(--text-primary);
-}
 
-#claim-input-field:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
-}
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+  }
 
-#claim-input-field::placeholder {
-  color: var(--text-muted);
+  &::placeholder {
+    color: var(--text-muted);
+  }
 }
 
 /* Autocomplete suggestions dropdown */
@@ -64,114 +85,63 @@ header h1 {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   list-style: none;
   padding: 4px 0;
-}
 
-.suggestions li {
-  padding: 10px 12px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+  li {
+    padding: 10px 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 
-.suggestions li:hover,
-.suggestions li.highlighted {
-  background: var(--bg-tertiary);
-}
+    &:hover,
+    &.highlighted {
+      background: var(--bg-tertiary);
+    }
 
-.suggestions li .suggestion-name {
-  flex: 1;
-  font-weight: 500;
-  color: var(--text-primary);
-}
+    .suggestion-name {
+      flex: 1;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
 
-.suggestions li .suggestion-tier {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-}
+    .suggestion-tier {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
 
-.suggestions li .suggestion-tier.tier-1 {
-  background: #555;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-2 {
-  background: #5a7a00;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-3 {
-  background: #1a5cb8;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-4 {
-  background: #9a7800;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-5 {
-  background: #a02820;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-6 {
-  background: #6a00a0;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-7 {
-  background: #00a0a0;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-8 {
-  background: #a06000;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-9 {
-  background: #600040;
-  color: #fff;
-}
-.suggestions li .suggestion-tier.tier-10 {
-  background: #004060;
-  color: #fff;
-}
+      /* Tier colors — M4 will replace with $tier-colors map */
+      &.tier-1  { background: #555;    color: #fff; }
+      &.tier-2  { background: #5a7a00; color: #fff; }
+      &.tier-3  { background: #1a5cb8; color: #fff; }
+      &.tier-4  { background: #9a7800; color: #fff; }
+      &.tier-5  { background: #a02820; color: #fff; }
+      &.tier-6  { background: #6a00a0; color: #fff; }
+      &.tier-7  { background: #00a0a0; color: #fff; }
+      &.tier-8  { background: #a06000; color: #fff; }
+      &.tier-9  { background: #600040; color: #fff; }
+      &.tier-10 { background: #004060; color: #fff; }
+    }
 
-.suggestions li .suggestion-region {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-}
+    .suggestion-region {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+  }
 
-.suggestions .no-results {
-  padding: 12px;
-  text-align: center;
-  color: var(--text-muted);
-  font-style: italic;
-  cursor: default;
-}
+  .no-results {
+    padding: 12px;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    cursor: default;
 
-.suggestions .no-results:hover {
-  background: transparent;
-}
-
-#claim-input button {
-  padding: 8px 16px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  background: var(--accent);
-  color: var(--bg-primary);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-#claim-input button:hover {
-  background: var(--accent-hover);
-}
-
-#claim-input button:disabled {
-  background: var(--bg-tertiary);
-  color: var(--text-muted);
-  cursor: wait;
+    &:hover {
+      background: transparent;
+    }
+  }
 }
 
 /* Utility classes */
@@ -182,12 +152,12 @@ header h1 {
 /* Claim info (fallback) */
 #claim-info {
   margin-bottom: 24px;
-}
 
-#claim-info h2 {
-  margin: 0;
-  font-size: 1.25rem;
-  color: var(--text-primary);
+  h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    color: var(--text-primary);
+  }
 }
 
 /* Claim header */
@@ -212,59 +182,39 @@ header h1 {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-}
 
-.claim-title h2 {
-  margin: 0;
-  font-size: 1.4rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
+  h2 {
+    margin: 0;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
 
-.claim-title .tier-badge {
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-}
+  .tier-badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
 
-.claim-title .tier-badge.tier-1 {
-  background: #555;
-  color: #fff;
-}
-.claim-title .tier-badge.tier-2 {
-  background: #5a7a00;
-  color: #fff;
-}
-.claim-title .tier-badge.tier-3 {
-  background: #1a5cb8;
-  color: #fff;
-}
-.claim-title .tier-badge.tier-4 {
-  background: #9a7800;
-  color: #fff;
-}
-.claim-title .tier-badge.tier-5 {
-  background: #a02820;
-  color: #fff;
-}
-.claim-title .tier-badge.tier-6 {
-  background: #6a00a0;
-  color: #fff;
-}
-.claim-title .tier-badge.tier-7 {
-  background: #00a0a0;
-  color: #fff;
-}
+    /* Tier colors — M4 will replace with $tier-colors map */
+    &.tier-1 { background: #555;    color: #fff; }
+    &.tier-2 { background: #5a7a00; color: #fff; }
+    &.tier-3 { background: #1a5cb8; color: #fff; }
+    &.tier-4 { background: #9a7800; color: #fff; }
+    &.tier-5 { background: #a02820; color: #fff; }
+    &.tier-6 { background: #6a00a0; color: #fff; }
+    &.tier-7 { background: #00a0a0; color: #fff; }
+  }
 
-.claim-title .region-badge {
-  font-size: 0.8rem;
-  padding: 4px 10px;
-  border-radius: 4px;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
+  .region-badge {
+    font-size: 0.8rem;
+    padding: 4px 10px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
 }
 
 .claim-stats {
@@ -276,28 +226,28 @@ header h1 {
 .claim-stat {
   text-align: center;
   min-width: 80px;
-}
 
-.claim-stat .stat-label {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 4px;
-}
+  .stat-label {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+  }
 
-.claim-stat .stat-value {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
+  .stat-value {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+  }
 
-.claim-stat .stat-sub {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-top: 4px;
+  .stat-sub {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
 }
 
 .supplies-bar {
@@ -332,31 +282,31 @@ header h1 {
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border);
   padding-bottom: 12px;
-}
 
-#view-tabs .tab-btn {
-  padding: 8px 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid transparent;
-  border-radius: 6px 6px 0 0;
-  cursor: pointer;
-  transition: all 0.15s;
-}
+  .tab-btn {
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    cursor: pointer;
+    transition: all 0.15s;
 
-#view-tabs .tab-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-}
+    &:hover {
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
 
-#view-tabs .tab-btn.active {
-  color: var(--accent);
-  background: var(--bg-secondary);
-  border-color: var(--border);
-  border-bottom-color: var(--bg-secondary);
-  margin-bottom: -1px;
+    &.active {
+      color: var(--accent);
+      background: var(--bg-secondary);
+      border-color: var(--border);
+      border-bottom-color: var(--bg-secondary);
+      margin-bottom: -1px;
+    }
+  }
 }
 
 /* Shared tier badge (used in multiple views) */
@@ -379,18 +329,18 @@ header h1 {
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.15s;
-}
 
-.copy-btn:hover {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border-color: var(--accent);
-}
+  &:hover {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
 
-.copy-btn.copied {
-  background: var(--success);
-  color: var(--bg-primary);
-  border-color: var(--success);
+  &.copied {
+    background: var(--success);
+    color: var(--bg-primary);
+    border-color: var(--success);
+  }
 }
 
 /* Empty state (shared) */
