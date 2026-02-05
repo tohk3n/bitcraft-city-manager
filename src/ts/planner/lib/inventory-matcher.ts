@@ -1,10 +1,11 @@
 /**
  * Inventory Matcher
  *
- * Builds and queries inventory lookups from API data.
- * Handles package expansion and name normalization.
+ * Builds inventory lookups from API data.
+ * Package expansion uses canonical data from packages.json.
  */
 
+import { getItemForPackage } from '../../data/package-data.js';
 import type {
   ApiItem,
   ApiCargo,
@@ -12,13 +13,7 @@ import type {
   InventoryLookup,
   MetaLookups,
 } from '../../types/index.js';
-
-const PACKAGE_MULTIPLIERS: Record<string, number> = {
-  default: 100,
-  pebble: 500,
-  flower: 500,
-  fiber: 1000,
-};
+import type { PackagesFile } from '../../data/types.js';
 
 export function normalizeName(name: string): string {
   return name.toLowerCase().trim().replace(/\s+/g, ' ');
@@ -28,36 +23,11 @@ export function createKey(name: string, tier: number): string {
   return `${normalizeName(name)}:${tier}`;
 }
 
-function getPackageMultiplier(name: string, tag: string): number {
-  const lowerName = normalizeName(name);
-  const lowerTag = tag.toLowerCase();
-
-  if (lowerName.includes('flower') || lowerTag.includes('flower')) {
-    return PACKAGE_MULTIPLIERS.flower;
-  }
-  if (lowerName.includes('fiber') || lowerTag.includes('fiber')) {
-    return PACKAGE_MULTIPLIERS.fiber;
-  }
-  return PACKAGE_MULTIPLIERS.default;
-}
-
-function isPackage(name: string, tag: string): boolean {
-  const lowerName = name.toLowerCase();
-  const lowerTag = tag.toLowerCase();
-  return lowerTag.includes('package') || lowerName.includes('package');
-}
-
-function extractBaseItemName(name: string): string {
-  return name
-    .replace(/package\s+of\s+/i, '')
-    .replace(/\s+package$/i, '')
-    .trim();
-}
-
 export function buildInventoryLookup(
   buildings: Building[],
   itemMeta: Record<number, ApiItem>,
-  cargoMeta: Record<number, ApiCargo>
+  cargoMeta: Record<number, ApiCargo>,
+  packages: PackagesFile
 ): InventoryLookup {
   const lookup: InventoryLookup = new Map();
 
@@ -66,20 +36,26 @@ export function buildInventoryLookup(
       const contents = slot.contents;
       if (!contents) continue;
 
-      const meta =
-        contents.item_type === 'item' ? itemMeta[contents.item_id] : cargoMeta[contents.item_id];
+      const isCargo = contents.item_type === 'cargo';
+      const meta = isCargo ? cargoMeta[contents.item_id] : itemMeta[contents.item_id];
       if (!meta) continue;
 
-      const tag = meta.tag || '';
       let name = meta.name;
+      const tier = meta.tier ?? 0;
       let qty = contents.quantity;
 
-      if (isPackage(name, tag)) {
-        name = extractBaseItemName(name);
-        qty *= getPackageMultiplier(name, tag);
+      // If this is a cargo slot, check if it's a package
+      if (isCargo) {
+        const packageEntry = getItemForPackage(packages, String(contents.item_id));
+        if (packageEntry) {
+          // Use the base item's name and expand the quantity
+          name = packageEntry.name;
+          qty *= packageEntry.quantity;
+          // Tier comes from the cargo meta (package inherits the item's tier)
+        }
       }
 
-      const key = createKey(name, meta.tier ?? 0);
+      const key = createKey(name, tier);
       lookup.set(key, (lookup.get(key) || 0) + qty);
     }
   }
