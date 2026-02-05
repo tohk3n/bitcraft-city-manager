@@ -111,9 +111,15 @@
   border-radius: 50%;
   flex-shrink: 0;
 
-  &.complete { background: var(--status-complete); }
-  &.partial  { background: var(--status-partial); }
-  &.missing  { background: var(--status-missing); }
+  &.complete {
+    background: var(--status-complete);
+  }
+  &.partial {
+    background: var(--status-partial);
+  }
+  &.missing {
+    background: var(--status-missing);
+  }
 }
 
 .fc-tab-journals {
@@ -169,9 +175,15 @@
   position: relative;
 
   /* Status borders */
-  &.complete { border-color: var(--status-complete); }
-  &.partial  { border-color: var(--status-partial); }
-  &.missing  { border-color: var(--status-missing); }
+  &.complete {
+    border-color: var(--status-complete);
+  }
+  &.partial {
+    border-color: var(--status-partial);
+  }
+  &.missing {
+    border-color: var(--status-missing);
+  }
 
   &.root {
     background: var(--bg-tertiary);
@@ -255,15 +267,21 @@
   }
 
   /* Status-specific progress fills */
-  &.complete .fc-node-progress-fill { background: var(--status-complete); }
-  &.partial  .fc-node-progress-fill { background: var(--status-partial); }
-  &.missing  .fc-node-progress-fill {
+  &.complete .fc-node-progress-fill {
+    background: var(--status-complete);
+  }
+  &.partial .fc-node-progress-fill {
+    background: var(--status-partial);
+  }
+  &.missing .fc-node-progress-fill {
     background: var(--status-missing);
     width: 0 !important;
   }
 
   /* Hide deficit badge when complete */
-  &.complete .fc-node-deficit { display: none; }
+  &.complete .fc-node-deficit {
+    display: none;
+  }
 }
 
 /* Node children — kept flat, they don't need nesting beyond .fc-node */
@@ -296,14 +314,18 @@
   font-variant-numeric: tabular-nums;
 }
 
-.fc-have { color: var(--text-primary); }
+.fc-have {
+  color: var(--text-primary);
+}
 
 .fc-sep {
   color: var(--text-muted);
   margin: 0 1px;
 }
 
-.fc-need { color: var(--text-muted); }
+.fc-need {
+  color: var(--text-muted);
+}
 
 .fc-node-check {
   color: var(--status-complete);
@@ -465,8 +487,12 @@
   stroke: var(--border);
   stroke-width: 2;
 
-  &.complete { stroke: var(--status-complete); }
-  &.partial  { stroke: var(--status-partial); }
+  &.complete {
+    stroke: var(--status-complete);
+  }
+  &.partial {
+    stroke: var(--status-partial);
+  }
 
   &.collapsed-connector {
     stroke: var(--accent);
@@ -500,9 +526,15 @@
   border-radius: 3px;
   border: 2px solid;
 
-  &.complete { border-color: var(--status-complete); }
-  &.partial  { border-color: var(--status-partial); }
-  &.missing  { border-color: var(--status-missing); }
+  &.complete {
+    border-color: var(--status-complete);
+  }
+  &.partial {
+    border-color: var(--status-partial);
+  }
+  &.missing {
+    border-color: var(--status-missing);
+  }
 }
 
 .fc-legend-spacer {

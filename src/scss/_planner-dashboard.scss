@@ -259,9 +259,15 @@
   }
 
   /* Status variants */
-  &.missing .dash-item-deficit  { color: var(--status-missing); }
-  &.partial .dash-item-deficit  { color: var(--status-partial); }
-  &.complete .dash-item-deficit { color: var(--status-complete); }
+  &.missing .dash-item-deficit {
+    color: var(--status-missing);
+  }
+  &.partial .dash-item-deficit {
+    color: var(--status-partial);
+  }
+  &.complete .dash-item-deficit {
+    color: var(--status-complete);
+  }
 
   &.missing .dash-item-bar-fill {
     background: var(--status-missing);

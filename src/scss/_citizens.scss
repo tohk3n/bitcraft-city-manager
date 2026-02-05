@@ -73,12 +73,30 @@
   }
 
   /* Rarity colors */
-  .rarity-common    { background: #555;    color: #fff; }
-  .rarity-uncommon  { background: #5a7a00; color: #fff; }
-  .rarity-rare      { background: #1a5cb8; color: #fff; }
-  .rarity-epic      { background: #9a7800; color: #fff; }
-  .rarity-legendary { background: #a02820; color: #fff; }
-  .rarity-mythic    { background: #6a00a0; color: #fff; }
+  .rarity-common {
+    background: #555;
+    color: #fff;
+  }
+  .rarity-uncommon {
+    background: #5a7a00;
+    color: #fff;
+  }
+  .rarity-rare {
+    background: #1a5cb8;
+    color: #fff;
+  }
+  .rarity-epic {
+    background: #9a7800;
+    color: #fff;
+  }
+  .rarity-legendary {
+    background: #a02820;
+    color: #fff;
+  }
+  .rarity-mythic {
+    background: #6a00a0;
+    color: #fff;
+  }
 }
 
 @keyframes pulse {

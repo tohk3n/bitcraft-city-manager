@@ -180,14 +180,18 @@
   align-items: center;
 }
 
-.task-have { color: var(--text-primary); }
+.task-have {
+  color: var(--text-primary);
+}
 
 .task-sep {
   color: var(--text-muted);
   margin: 0 2px;
 }
 
-.task-need { color: var(--text-muted); }
+.task-need {
+  color: var(--text-muted);
+}
 
 .task-deficit {
   font-size: 0.9rem;
