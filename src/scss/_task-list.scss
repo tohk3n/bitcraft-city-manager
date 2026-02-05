@@ -32,11 +32,11 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
 
-.task-sort label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
+  label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
 }
 
 .task-select {
@@ -47,11 +47,24 @@
   border: 1px solid var(--border);
   border-radius: 4px;
   cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
 }
 
-.task-select:focus {
-  outline: none;
-  border-color: var(--accent);
+.task-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  input {
+    cursor: pointer;
+  }
 }
 
 /* Cards grid */
@@ -82,6 +95,15 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+
+  &.complete {
+    border-color: var(--status-complete);
+    opacity: 0.8;
+
+    .task-progress-fill {
+      background: var(--status-complete);
+    }
+  }
 }
 
 .task-header {
@@ -107,10 +129,10 @@
   opacity: 0.5;
   transition: opacity 0.15s;
   flex-shrink: 0;
-}
 
-.task-copy:hover {
-  opacity: 1;
+  &:hover {
+    opacity: 1;
+  }
 }
 
 .task-meta {
@@ -158,18 +180,14 @@
   align-items: center;
 }
 
-.task-have {
-  color: var(--text-primary);
-}
+.task-have { color: var(--text-primary); }
 
 .task-sep {
   color: var(--text-muted);
   margin: 0 2px;
 }
 
-.task-need {
-  color: var(--text-muted);
-}
+.task-need { color: var(--text-muted); }
 
 .task-deficit {
   font-size: 0.9rem;
@@ -177,30 +195,8 @@
   font-variant-numeric: tabular-nums;
   color: var(--status-missing);
   margin-top: auto;
-}
 
-.task-deficit.complete {
-  color: var(--status-complete);
-}
-
-.task-card.complete {
-  border-color: var(--status-complete);
-  opacity: 0.8;
-}
-
-.task-card.complete .task-progress-fill {
-  background: var(--status-complete);
-}
-
-.task-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.task-toggle input {
-  cursor: pointer;
+  &.complete {
+    color: var(--status-complete);
+  }
 }
