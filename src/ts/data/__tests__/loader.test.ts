@@ -4,6 +4,7 @@ import {
   loadItemsMeta,
   loadStations,
   loadGathered,
+  loadPackages,
   loadCoreData,
   loadAllData,
   clearCache,
@@ -40,6 +41,17 @@ const mockGatheredData = {
   items: ['1001', '1002', '1003'],
 };
 
+const mockPackagesData = {
+  version: 1,
+  generated: '2026-02-02',
+  byItemId: {
+    '2001': { cargoId: '3001', quantity: 100, name: 'Test Package' },
+  },
+  byCargoId: {
+    '3001': { itemId: '2001', quantity: 100, name: 'Test Item' },
+  },
+};
+
 function createMockFetch() {
   return vi.fn((url: string) => {
     let data;
@@ -47,6 +59,7 @@ function createMockFetch() {
     else if (url.includes('items-meta.json')) data = mockItemsMetaData;
     else if (url.includes('stations.json')) data = mockStationsData;
     else if (url.includes('gathered.json')) data = mockGatheredData;
+    else if (url.includes('packages.json')) data = mockPackagesData;
     else return Promise.resolve({ ok: false, status: 404 });
 
     return Promise.resolve({
@@ -115,6 +128,21 @@ describe('loader', () => {
     });
   });
 
+  describe('loadPackages', () => {
+    it('loads packages data', async () => {
+      const packages = await loadPackages();
+      expect(packages.version).toBe(1);
+      expect(packages.byItemId['2001'].cargoId).toBe('3001');
+      expect(packages.byCargoId['3001'].itemId).toBe('2001');
+    });
+
+    it('caches on subsequent calls', async () => {
+      await loadPackages();
+      await loadPackages();
+      expect(fetch).toHaveBeenCalledTimes(1);
+    });
+  });
+
   describe('loadCoreData', () => {
     it('loads recipes and gathered in parallel', async () => {
       const { recipes, gathered } = await loadCoreData();
@@ -125,11 +153,13 @@ describe('loader', () => {
 
   describe('loadAllData', () => {
     it('loads all data files', async () => {
-      const { recipes, itemsMeta, stations, gathered } = await loadAllData();
+      const { recipes, itemsMeta, stations, gathered, packages } = await loadAllData();
       expect(recipes.version).toBe(2);
       expect(itemsMeta.version).toBe(1);
       expect(stations.byType['20']).toBeDefined();
       expect(gathered.size).toBe(3);
+      expect(packages.version).toBe(1);
+      expect(packages.byItemId['2001']).toBeDefined();
     });
   });
 

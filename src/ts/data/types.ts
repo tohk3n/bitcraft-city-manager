@@ -10,7 +10,7 @@
 // FILE STRUCTURES (as stored in JSON)
 // =============================================================================
 
-/** recipesV2.json structure */
+/** recipes.json structure */
 export interface RecipesFile {
   version: number;
   generated: string;
@@ -24,6 +24,7 @@ export interface RecipeEntry {
   name: string;
   tier: number;
   tag: string | null;
+  entityType: 'item' | 'cargo';
   yields: number;
   inputs: RecipeInput[];
   station: StationRequirement | null;
@@ -34,6 +35,7 @@ export interface RecipeEntry {
 export interface RecipeInput {
   id: string;
   qty: number;
+  isCargo?: boolean; // true if input is a cargo entity
 }
 
 export interface StationRequirement {
@@ -115,6 +117,21 @@ export interface GatheredFile {
   version: number;
   generated: string;
   items: string[]; // Item IDs
+}
+
+/** packages.json structure */
+export interface PackagesFile {
+  version: number;
+  generated: string;
+  byItemId: Record<string, PackageEntry>; // item ID → package info
+  byCargoId: Record<string, PackageEntry>; // cargo ID → item info
+}
+
+export interface PackageEntry {
+  itemId?: string; // present in byCargoId entries
+  cargoId?: string; // present in byItemId entries
+  quantity: number;
+  name: string;
 }
 
 // =============================================================================

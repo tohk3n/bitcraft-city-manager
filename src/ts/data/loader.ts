@@ -2,7 +2,13 @@
  * Data Loader
  */
 
-import type { RecipesFile, ItemsMetaFile, StationsFile, GatheredFile } from './types.js';
+import type {
+  RecipesFile,
+  ItemsMetaFile,
+  StationsFile,
+  GatheredFile,
+  PackagesFile,
+} from './types.js';
 
 // =============================================================================
 // CACHE
@@ -14,6 +20,7 @@ interface DataCache {
   stations: StationsFile | null;
   gathered: GatheredFile | null;
   gatheredSet: Set<string> | null;
+  packages: PackagesFile | null;
 }
 
 const cache: DataCache = {
@@ -22,6 +29,7 @@ const cache: DataCache = {
   stations: null,
   gathered: null,
   gatheredSet: null,
+  packages: null,
 };
 
 // =============================================================================
@@ -69,6 +77,13 @@ export async function loadGathered(): Promise<Set<string>> {
   return cache.gatheredSet;
 }
 
+export async function loadPackages(): Promise<PackagesFile> {
+  if (!cache.packages) {
+    cache.packages = await fetchJson<PackagesFile>('/data/bitjita/packages.json');
+  }
+  return cache.packages;
+}
+
 export async function loadCoreData(): Promise<{
   recipes: RecipesFile;
   gathered: Set<string>;
@@ -82,14 +97,16 @@ export async function loadAllData(): Promise<{
   itemsMeta: ItemsMetaFile;
   stations: StationsFile;
   gathered: Set<string>;
+  packages: PackagesFile;
 }> {
-  const [recipes, itemsMeta, stations, gathered] = await Promise.all([
+  const [recipes, itemsMeta, stations, gathered, packages] = await Promise.all([
     loadRecipes(),
     loadItemsMeta(),
     loadStations(),
     loadGathered(),
+    loadPackages(),
   ]);
-  return { recipes, itemsMeta, stations, gathered };
+  return { recipes, itemsMeta, stations, gathered, packages };
 }
 
 // =============================================================================
@@ -105,6 +122,7 @@ export function clearCache(): void {
   cache.stations = null;
   cache.gathered = null;
   cache.gatheredSet = null;
+  cache.packages = null;
 }
 
 /**
