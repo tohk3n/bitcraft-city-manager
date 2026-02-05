@@ -19,18 +19,18 @@
   border-radius: 8px;
   padding: 16px;
   text-align: center;
-}
 
-.stat-card .value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--accent);
-}
+  .value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
 
-.stat-card .label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-top: 4px;
+  .label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
 }
 
 /* Quick stats (Food & Scholar) */
@@ -54,66 +54,66 @@
   gap: 10px;
   padding: 12px 16px;
   background: var(--bg-tertiary);
-}
 
-.quick-header .icon {
-  font-size: 1.25rem;
-}
+  .icon {
+    font-size: 1.25rem;
+  }
 
-.quick-header h4 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  flex: 1;
-}
+  h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 1;
+  }
 
-.quick-header .total {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--accent);
+  .total {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--accent);
+  }
 }
 
 .quick-body {
   padding: 12px 16px;
-}
 
-.quick-body table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
 
-.quick-body tr {
-  border-bottom: 1px solid var(--border);
-}
+  tr {
+    border-bottom: 1px solid var(--border);
 
-.quick-body tr:last-child {
-  border-bottom: none;
-}
+    &:last-child {
+      border-bottom: none;
+    }
 
-.quick-body td {
-  padding: 8px 0;
-}
+    &.more td {
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+    }
+  }
 
-.quick-body td.qty {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-  color: var(--text-secondary);
-}
+  td {
+    padding: 8px 0;
 
-.quick-body .tier-badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  margin-right: 6px;
-}
+    &.qty {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      color: var(--text-secondary);
+    }
+  }
 
-.quick-body tr.more td {
-  color: var(--text-muted);
-  text-align: center;
-  font-style: italic;
+  .tier-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    margin-right: 6px;
+  }
 }
 
 /* Crafting stations */
@@ -141,10 +141,10 @@
 #station-box {
   display: flex;
   gap: 1rem;
-}
 
-#station-box.hidden {
-  display: none;
+  &.hidden {
+    display: none;
+  }
 }
 
 .stations-section {
@@ -167,96 +167,98 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
-}
 
-.inventory-card .card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  background: var(--bg-tertiary);
-  cursor: pointer;
-  user-select: none;
-}
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--bg-tertiary);
+    cursor: pointer;
+    user-select: none;
 
-.inventory-card .card-header:hover {
-  background: #282e36;
-}
+    &:hover {
+      background: #282e36;
+    }
 
-.inventory-card .card-header h4 {
-  margin: 0;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
+    h4 {
+      margin: 0;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
 
-.inventory-card .card-header .total {
-  font-size: 0.9rem;
-  color: var(--accent);
-  font-weight: 500;
-}
+    .total {
+      font-size: 0.9rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
 
-.inventory-card .card-header .chevron {
-  color: var(--text-muted);
-  transition: transform 0.2s;
-}
+    .chevron {
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+  }
 
-.inventory-card.expanded .card-header .chevron {
-  transform: rotate(180deg);
-}
+  &.expanded {
+    .card-header .chevron {
+      transform: rotate(180deg);
+    }
 
-.inventory-card .card-body {
-  display: none;
-  padding: 12px 16px;
-}
+    .card-body {
+      display: block;
+    }
+  }
 
-.inventory-card.expanded .card-body {
-  display: block;
-}
+  .card-body {
+    display: none;
+    padding: 12px 16px;
+  }
 
-.inventory-card table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.85rem;
-}
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
 
-.inventory-card tr {
-  border-bottom: 1px solid var(--border);
-}
+  tr {
+    border-bottom: 1px solid var(--border);
 
-.inventory-card tr:last-child {
-  border-bottom: none;
-}
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 
-.inventory-card th {
-  text-align: left;
-  font-weight: 500;
-  padding: 8px 0;
-  color: var(--text-secondary);
-}
+  th {
+    text-align: left;
+    font-weight: 500;
+    padding: 8px 0;
+    color: var(--text-secondary);
+  }
 
-.inventory-card td {
-  padding: 8px 0;
-  color: var(--text-primary);
-}
+  td {
+    padding: 8px 0;
+    color: var(--text-primary);
 
-.inventory-card td.qty {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
+    &.qty {
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+  }
 
-.inventory-card .item-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  .item-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
 
-.inventory-card .tier-badge {
-  font-size: 0.7rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
+  .tier-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+  }
 }
 
 /* Building breakdown (nested details) */
@@ -266,18 +268,18 @@
   border-top: 1px dashed var(--border);
   font-size: 0.8rem;
   color: var(--text-muted);
-}
 
-.building-breakdown summary {
-  cursor: pointer;
-  color: var(--text-secondary);
-}
+  summary {
+    cursor: pointer;
+    color: var(--text-secondary);
+  }
 
-.building-breakdown ul {
-  margin: 8px 0 0 0;
-  padding-left: 16px;
-}
+  ul {
+    margin: 8px 0 0 0;
+    padding-left: 16px;
+  }
 
-.building-breakdown li {
-  padding: 2px 0;
+  li {
+    padding: 2px 0;
+  }
 }
