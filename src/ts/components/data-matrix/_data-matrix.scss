@@ -1,0 +1,47 @@
+// src/ts/components/data-matrix/_data-matrix.scss
+@use '../../../scss/variables' as *;
+
+.dm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+
+  th,
+  td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-align: center;
+    font-weight: 600;
+  }
+}
+
+.dm-row-label {
+  font-weight: 600;
+  white-space: nowrap;
+  color: var(--text-primary);
+}
+
+.dm-cell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+}
+
+.dm-clickable {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
+.dm-row-total {
+  text-align: right;
+  font-weight: 600;
+  color: var(--text-primary);
+}
