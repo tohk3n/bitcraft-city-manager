@@ -6,6 +6,7 @@
  */
 
 import { API } from '../api.js';
+import { loadCoreData } from '../data/loader.js';
 import { buildInventoryLookup, buildMetaLookups } from './lib/inventory-matcher.js';
 import { expandRecipes } from './lib/recipe-expander.js';
 import { applyCascade } from './lib/cascade-calc.js';
@@ -13,13 +14,13 @@ import { generateProgressReport, formatCompact } from './lib/progress-calc.js';
 import * as PlannerView from './planner-view.js';
 import type {
   CodexFile,
-  RecipesFile,
   ProcessedNode,
   ProgressReport,
   PlannerResults,
   TierRequirements,
   CalculateOptions,
 } from '../types/index.js';
+import type { RecipesFile, PackagesFile } from '../data/types.js';
 
 // Tier upgrade requirements: target tier -> { codexTier, count }
 const TIER_REQUIREMENTS: TierRequirements = {
@@ -36,30 +37,39 @@ const TIER_REQUIREMENTS: TierRequirements = {
 // Data caches
 let codexCache: CodexFile | null = null;
 let recipesCache: RecipesFile | null = null;
+let gatheredCache: Set<string> | null = null;
+let packagesCache: PackagesFile | null = null;
 let lastReport: (ProgressReport & { targetTier: number }) | null = null;
 
-async function loadData(): Promise<{ codex: CodexFile; recipes: RecipesFile }> {
-  if (!codexCache || !recipesCache) {
-    const [codexRes, recipesRes] = await Promise.all([
-      fetch('/data/codex.json'),
-      fetch('/data/recipes.json'),
-    ]);
-
+async function loadData(): Promise<{
+  codex: CodexFile;
+  recipes: RecipesFile;
+  gathered: Set<string>;
+  packages: PackagesFile;
+}> {
+  if (!codexCache) {
+    const codexRes = await fetch('/data/codex.json');
     if (!codexRes.ok) throw new Error('Failed to load codex.json');
-    if (!recipesRes.ok) throw new Error('Failed to load recipes.json');
-
     codexCache = await codexRes.json();
-    recipesCache = await recipesRes.json();
+  }
+
+  if (!recipesCache || !gatheredCache || !packagesCache) {
+    const { recipes, gathered, packages } = await loadCoreData();
+    recipesCache = recipes;
+    gatheredCache = gathered;
+    packagesCache = packages;
   }
 
   const codex = codexCache;
   const recipes = recipesCache;
+  const gathered = gatheredCache;
+  const packages = packagesCache;
 
-  if (!codex || !recipes) {
+  if (!codex || !recipes || !gathered || !packages) {
     throw new Error('Cache initialization failed');
   }
 
-  return { codex, recipes };
+  return { codex, recipes, gathered, packages };
 }
 
 export async function calculateRequirements(
@@ -72,15 +82,20 @@ export async function calculateRequirements(
 
   const codexCount = options.customCount ?? req.count;
 
-  const [{ codex, recipes }, inventoryData] = await Promise.all([
+  const [{ codex, recipes, gathered, packages }, inventoryData] = await Promise.all([
     loadData(),
     API.getClaimInventories(claimId),
   ]);
 
   const { itemMeta, cargoMeta } = buildMetaLookups(inventoryData.items, inventoryData.cargos);
-  const inventoryLookup = buildInventoryLookup(inventoryData.buildings || [], itemMeta, cargoMeta);
+  const inventoryLookup = buildInventoryLookup(
+    inventoryData.buildings || [],
+    itemMeta,
+    cargoMeta,
+    packages
+  );
 
-  const expanded = expandRecipes(codex, recipes, req.codexTier, codexCount);
+  const expanded = expandRecipes(codex, recipes, req.codexTier, codexCount, gathered);
   const processed = applyCascade(expanded, inventoryLookup);
   const report = generateProgressReport(processed);
 

@@ -84,12 +84,21 @@ export async function loadPackages(): Promise<PackagesFile> {
   return cache.packages;
 }
 
+// =============================================================================
+// COMPOSITE LOADERS
+// =============================================================================
+
 export async function loadCoreData(): Promise<{
   recipes: RecipesFile;
   gathered: Set<string>;
+  packages: PackagesFile;
 }> {
-  const [recipes, gathered] = await Promise.all([loadRecipes(), loadGathered()]);
-  return { recipes, gathered };
+  const [recipes, gathered, packages] = await Promise.all([
+    loadRecipes(),
+    loadGathered(),
+    loadPackages(),
+  ]);
+  return { recipes, gathered, packages };
 }
 
 export async function loadAllData(): Promise<{
