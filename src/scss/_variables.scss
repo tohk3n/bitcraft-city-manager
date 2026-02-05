@@ -20,3 +20,32 @@
   --status-partial: #d29922;
   --status-missing: #f05050;
 }
+
+/* ============================================
+   Color maps — SCSS-only, consumed via @each
+   ============================================ */
+
+/// Game tier colors (T1–T10). Used by .tier-N and .suggestion-tier.tier-N.
+$tier-colors: (
+  1: #555,
+  2: #5a7a00,
+  3: #1a5cb8,
+  4: #9a7800,
+  5: #a02820,
+  6: #6a00a0,
+  7: #00a0a0,
+  8: #a06000,
+  9: #600040,
+  10: #004060,
+);
+
+/// Item rarity colors. Independent from tiers — same palette today,
+/// but decoupled so either can change without breaking the other.
+$rarity-colors: (
+  common: #555,
+  uncommon: #5a7a00,
+  rare: #1a5cb8,
+  epic: #9a7800,
+  legendary: #a02820,
+  mythic: #6a00a0,
+);
