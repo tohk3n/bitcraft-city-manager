@@ -1,3 +1,5 @@
+@use 'variables';
+
 /* Layout — app shell, header, claim input, shared chrome */
 
 /* Header */
@@ -112,46 +114,11 @@ header {
       background: var(--bg-tertiary);
       color: var(--text-secondary);
 
-      /* Tier colors — M4 will replace with $tier-colors map */
-      &.tier-1 {
-        background: #555;
-        color: #fff;
-      }
-      &.tier-2 {
-        background: #5a7a00;
-        color: #fff;
-      }
-      &.tier-3 {
-        background: #1a5cb8;
-        color: #fff;
-      }
-      &.tier-4 {
-        background: #9a7800;
-        color: #fff;
-      }
-      &.tier-5 {
-        background: #a02820;
-        color: #fff;
-      }
-      &.tier-6 {
-        background: #6a00a0;
-        color: #fff;
-      }
-      &.tier-7 {
-        background: #00a0a0;
-        color: #fff;
-      }
-      &.tier-8 {
-        background: #a06000;
-        color: #fff;
-      }
-      &.tier-9 {
-        background: #600040;
-        color: #fff;
-      }
-      &.tier-10 {
-        background: #004060;
-        color: #fff;
+      @each $n, $bg in variables.$tier-colors {
+        &.tier-#{$n} {
+          background: $bg;
+          color: #fff;
+        }
       }
     }
 
@@ -228,34 +195,11 @@ header {
     background: var(--bg-tertiary);
     color: var(--text-secondary);
 
-    /* Tier colors — M4 will replace with $tier-colors map */
-    &.tier-1 {
-      background: #555;
-      color: #fff;
-    }
-    &.tier-2 {
-      background: #5a7a00;
-      color: #fff;
-    }
-    &.tier-3 {
-      background: #1a5cb8;
-      color: #fff;
-    }
-    &.tier-4 {
-      background: #9a7800;
-      color: #fff;
-    }
-    &.tier-5 {
-      background: #a02820;
-      color: #fff;
-    }
-    &.tier-6 {
-      background: #6a00a0;
-      color: #fff;
-    }
-    &.tier-7 {
-      background: #00a0a0;
-      color: #fff;
+    @each $n, $bg in variables.$tier-colors {
+      &.tier-#{$n} {
+        background: $bg;
+        color: #fff;
+      }
     }
   }
 
