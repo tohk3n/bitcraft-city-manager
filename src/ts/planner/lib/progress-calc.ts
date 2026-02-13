@@ -18,7 +18,13 @@ import type {
   ProgressReport,
   ActivityGroup,
   ResearchProgress,
+  MappingType,
+  Activity,
+  PlanItem,
+  PlanProgressSummary,
 } from '../../types/index.js';
+import { createKey } from './inventory-matcher.js';
+import { CONFIG } from '../../configuration/index.js';
 
 /**
  * Activity categories for grouping items.
@@ -32,7 +38,8 @@ const ACTIVITIES = {
   HUNTING: 'Hunting',
   CRAFTING: 'Crafting',
 } as const;
-type Activity = (typeof ACTIVITIES)[keyof typeof ACTIVITIES];
+
+const ACTIVITY_ORDER = CONFIG.PLANNER.ACTIVITY_ORDER;
 
 /**
  * Categorize an item by gathering/crafting activity.
@@ -331,6 +338,160 @@ export function generateCSV(report: ProgressReport): string {
     items.sort((a, b) => b.deficit - a.deficit);
 
     for (const item of items) {
+      const escapedName = item.name.includes(',') ? `"${item.name}"` : item.name;
+      lines.push(
+        [activity, escapedName, item.tier, item.required, item.have, item.deficit].join(',')
+      );
+    }
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Flatten a processed codex tree into a single deduplicated list of PlanItems.
+ *
+ * Walks both researches and studyJournals. Deduplicates by name:tier key,
+ * summing `required` across occurrences. Each item gets its activity and
+ * actionable flag computed once during flattening.
+ */
+export function flattenPlan(codex: ProcessedCodex): PlanItem[] {
+  const items = new Map<
+    string,
+    {
+      name: string;
+      tier: number;
+      required: number;
+      have: number;
+      mappingType: MappingType;
+      hasTrackableChildren: boolean;
+      trackable: boolean;
+    }
+  >();
+
+  function collect(node: ProcessedNode): void {
+    // Add this node if it qualifies
+    if (node.trackable && node.required > 0 && !node.satisfiedByParent) {
+      const key = createKey(node.name, node.tier);
+      const hasTrackableChildren = node.children.some((c) => c.trackable);
+      let item = items.get(key);
+
+      if (!item) {
+        item = {
+          name: node.name,
+          tier: node.tier,
+          required: 0,
+          have: node.have,
+          mappingType: node.mappingType,
+          hasTrackableChildren,
+          trackable: node.trackable,
+        };
+        items.set(key, item);
+      }
+
+      item.required += node.required;
+      if (hasTrackableChildren) {
+        item.hasTrackableChildren = true;
+      }
+    }
+
+    // Always recurse
+    for (const child of node.children) collect(child);
+  }
+
+  // Walk researches
+  for (const research of codex.researches) collect(research);
+
+  // Walk study journals (fixes missing journal sub-materials)
+  if (codex.studyJournals) collect(codex.studyJournals);
+
+  return Array.from(items.values())
+    .map((item): PlanItem => {
+      const deficit = Math.max(0, item.required - item.have);
+      return {
+        name: item.name,
+        tier: item.tier,
+        required: item.required,
+        have: item.have,
+        deficit,
+        pctComplete:
+          item.required > 0
+            ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
+            : 100,
+        activity: categorizeByActivity(item.name),
+        actionable: item.trackable && !item.hasTrackableChildren,
+        mappingType: item.mappingType,
+      };
+    })
+    .sort((a, b) => b.deficit - a.deficit);
+}
+
+/**
+ * Calculate aggregate progress from a PlanItem list.
+ */
+export function calculatePlanProgress(items: PlanItem[]): PlanProgressSummary {
+  let totalRequired = 0;
+  let totalContribution = 0;
+
+  for (const item of items) {
+    totalRequired += item.required;
+    totalContribution += Math.min(item.have, item.required);
+  }
+
+  return {
+    percent: totalRequired > 0 ? Math.round((totalContribution / totalRequired) * 100) : 100,
+    totalRequired,
+    totalContribution,
+    totalItems: items.length,
+    completeCount: items.filter((item) => item.deficit === 0).length,
+  };
+}
+
+/**
+ * Generate Discord-friendly export text from PlanItems.
+ */
+export function generatePlanExportText(items: PlanItem[], targetTier: number): string {
+  const progress = calculatePlanProgress(items);
+
+  if (progress.completeCount === progress.totalItems) {
+    return `**T${targetTier} Upgrade**\nAll requirements met!`;
+  }
+
+  const lines: string[] = [];
+  lines.push(`**T${targetTier} Upgrade**`);
+  lines.push(`Progress: ${progress.percent}% complete`);
+  lines.push('');
+
+  for (const activity of ACTIVITY_ORDER) {
+    const activityItems = items.filter((i) => i.activity === activity && i.deficit > 0);
+    if (activityItems.length === 0) continue;
+
+    activityItems.sort((a, b) => b.deficit - a.deficit);
+    lines.push(`**${activity.toUpperCase()}**`);
+
+    for (const item of activityItems) {
+      const tierStr = item.tier > 0 ? ` (T${item.tier})` : '';
+      lines.push(`- ${formatCompact(item.deficit)}x ${item.name}${tierStr}`);
+    }
+
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+/**
+ * Generate CSV from PlanItems.
+ */
+export function generatePlanCSV(items: PlanItem[]): string {
+  const lines = ['activity,name,tier,required,have,deficit'];
+
+  for (const activity of ACTIVITY_ORDER) {
+    const activityItems = items
+      .filter((i) => i.activity === activity && i.deficit > 0)
+      .sort((a, b) => b.deficit - a.deficit);
+
+    for (const item of activityItems) {
       const escapedName = item.name.includes(',') ? `"${item.name}"` : item.name;
       lines.push(
         [activity, escapedName, item.tier, item.required, item.have, item.deficit].join(',')
