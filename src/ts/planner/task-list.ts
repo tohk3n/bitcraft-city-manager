@@ -1,15 +1,17 @@
 /**
  * Task List - Filterable, sortable task cards
+ *
+ * Consumes PlanItem[] — activity and pctComplete are pre-computed.
  */
 
-import { formatCompact, categorizeByActivity } from './lib/progress-calc.js';
-import type { FirstTrackableItem } from '../types/index.js';
+import { formatCompact } from './lib/progress-calc.js';
+import type { PlanItem } from '../types/index.js';
 
 // Sort options
 type SortOption = 'deficit' | 'deficit-asc' | 'tier' | 'tier-asc' | 'activity' | 'name';
 
 // Module state
-let currentItems: FirstTrackableItem[] = [];
+let currentItems: PlanItem[] = [];
 let filterTier = '';
 let filterActivity = '';
 let sortBy: SortOption = 'deficit';
@@ -18,7 +20,7 @@ let hideComplete = true;
 /**
  * Render the task list with controls.
  */
-export function render(container: HTMLElement, items: FirstTrackableItem[]): void {
+export function render(container: HTMLElement, items: PlanItem[]): void {
   if (!items || items.length === 0) {
     container.innerHTML = '<div class="task-empty">All requirements met</div>';
     return;
@@ -34,7 +36,7 @@ export function render(container: HTMLElement, items: FirstTrackableItem[]): voi
   }
 
   const tiers = [...new Set(items.map((i) => i.tier))].sort((a, b) => a - b);
-  const activities = [...new Set(items.map((i) => categorizeByActivity(i.name)))].sort();
+  const activities = [...new Set(items.map((i) => i.activity))].sort();
 
   container.innerHTML = `
     <div class="task-controls">
@@ -99,7 +101,7 @@ function renderCards(container: HTMLElement): void {
   let items = currentItems.filter((item) => {
     if (hideComplete && item.deficit === 0) return false;
     if (filterTier && item.tier !== parseInt(filterTier, 10)) return false;
-    if (filterActivity && categorizeByActivity(item.name) !== filterActivity) return false;
+    if (filterActivity && item.activity !== filterActivity) return false;
     return true;
   });
 
@@ -123,12 +125,7 @@ function renderCards(container: HTMLElement): void {
 /**
  * Render a single task card.
  */
-function renderCard(item: FirstTrackableItem): string {
-  const pct =
-    item.required > 0
-      ? Math.round((Math.min(item.have, item.required) / item.required) * 100)
-      : 100;
-  const activity = categorizeByActivity(item.name);
+function renderCard(item: PlanItem): string {
   const isComplete = item.deficit === 0;
   const deficitText = isComplete ? 'Done' : `-${formatCompact(item.deficit)}`;
   const taskText = isComplete
@@ -143,11 +140,11 @@ function renderCard(item: FirstTrackableItem): string {
     </div>
     <div class="task-meta">
     <span class="task-tier">T${item.tier}</span>
-    <span class="task-activity">${activity}</span>
+    <span class="task-activity">${item.activity}</span>
     </div>
     <div class="task-progress">
     <div class="task-progress-bar">
-    <div class="task-progress-fill ${isComplete ? 'complete' : ''}" style="width: ${pct}%"></div>
+    <div class="task-progress-fill ${isComplete ? 'complete' : ''}" style="width: ${item.pctComplete}%"></div>
     </div>
     </div>
     <div class="task-counts">
@@ -163,7 +160,7 @@ function renderCard(item: FirstTrackableItem): string {
 /**
  * Sort items by criteria.
  */
-function sort(items: FirstTrackableItem[], by: SortOption): FirstTrackableItem[] {
+function sort(items: PlanItem[], by: SortOption): PlanItem[] {
   const sorted = [...items];
   switch (by) {
     case 'deficit':
@@ -175,11 +172,7 @@ function sort(items: FirstTrackableItem[], by: SortOption): FirstTrackableItem[]
     case 'tier-asc':
       return sorted.sort((a, b) => a.tier - b.tier || b.deficit - a.deficit);
     case 'activity':
-      return sorted.sort(
-        (a, b) =>
-          categorizeByActivity(a.name).localeCompare(categorizeByActivity(b.name)) ||
-          b.deficit - a.deficit
-      );
+      return sorted.sort((a, b) => a.activity.localeCompare(b.activity) || b.deficit - a.deficit);
     case 'name':
       return sorted.sort((a, b) => a.name.localeCompare(b.name));
     default:

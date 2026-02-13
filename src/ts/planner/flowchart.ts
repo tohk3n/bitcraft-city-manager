@@ -4,9 +4,13 @@
  * Renders the recipe tree with tabs, collapsible branches, and SVG connectors.
  */
 
-import { formatCompact, generateExportText } from './lib/progress-calc.js';
+import {
+  formatCompact,
+  calculatePlanProgress,
+  generatePlanExportText,
+} from './lib/progress-calc.js';
 import { CONFIG } from '../configuration/config.js';
-import type { ProcessedNode, ProgressReport } from '../types/index.js';
+import type { ProcessedNode, PlanItem } from '../types/index.js';
 
 // Extended node type for tabs (includes optional isStudyJournals flag)
 interface TabNode extends ProcessedNode {
@@ -24,7 +28,8 @@ const collapsedNodes = new Set<string>(); // Track collapsed nodes by "name:tier
 export function render(
   container: HTMLElement,
   researches: ProcessedNode[],
-  report: ProgressReport & { targetTier: number },
+  planItems: PlanItem[],
+  targetTier: number,
   studyJournals: ProcessedNode | null = null
 ): void {
   if (!researches || researches.length === 0) {
@@ -46,7 +51,7 @@ export function render(
     });
   }
 
-  const { overall } = report;
+  const overall = calculatePlanProgress(planItems);
 
   container.innerHTML = `
     <div class="fc-header">
@@ -160,7 +165,7 @@ export function render(
 
   // Export button
   container.querySelector('#fc-export')?.addEventListener('click', () => {
-    const text = generateExportText(report, report.targetTier);
+    const text = generatePlanExportText(planItems, targetTier);
     navigator.clipboard.writeText(text).then(() => {
       const btn = container.querySelector('#fc-export');
       if (btn) {

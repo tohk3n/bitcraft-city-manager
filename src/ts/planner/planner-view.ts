@@ -5,17 +5,22 @@
  * Provides both filtered and full copy options.
  */
 
-import { generateExportText, generateCSV } from './lib/progress-calc.js';
+import {
+  calculatePlanProgress,
+  generatePlanExportText,
+  generatePlanCSV,
+} from './lib/progress-calc.js';
 import * as PlannerDashboard from './planner-dashboard.js';
 import * as Flowchart from './flowchart.js';
-import type { ProcessedNode, ProgressReport } from '../types/index.js';
+import type { ProcessedNode, PlanItem } from '../types/index.js';
 
 type ViewMode = 'dashboard' | 'flowchart';
 
 // Module state
 let currentView: ViewMode = 'dashboard';
 let cachedResearches: ProcessedNode[] = [];
-let cachedReport: (ProgressReport & { targetTier: number }) | null = null;
+let cachedPlanItems: PlanItem[] = [];
+let cachedTargetTier = 0;
 let cachedStudyJournals: ProcessedNode | null = null;
 
 /**
@@ -24,11 +29,13 @@ let cachedStudyJournals: ProcessedNode | null = null;
 export function render(
   container: HTMLElement,
   researches: ProcessedNode[],
-  report: ProgressReport & { targetTier: number },
+  planItems: PlanItem[],
+  targetTier: number,
   studyJournals: ProcessedNode | null = null
 ): void {
   cachedResearches = researches;
-  cachedReport = report;
+  cachedPlanItems = planItems;
+  cachedTargetTier = targetTier;
   cachedStudyJournals = studyJournals;
 
   if (!researches || researches.length === 0) {
@@ -36,7 +43,7 @@ export function render(
     return;
   }
 
-  const { overall } = report;
+  const progress = calculatePlanProgress(planItems);
 
   container.innerHTML = `
         <div class="pv-container">
@@ -47,11 +54,11 @@ export function render(
                         <button class="pv-tab ${currentView === 'flowchart' ? 'active' : ''}" data-view="flowchart">Tree</button>
                     </div>
                     <div class="pv-progress-inline">
-                        <span class="pv-pct">${overall.percent}%</span>
+                        <span class="pv-pct">${progress.percent}%</span>
                         <div class="pv-progress-bar-mini">
-                            <div class="pv-progress-fill-mini" style="width: ${overall.percent}%"></div>
+                            <div class="pv-progress-fill-mini" style="width: ${progress.percent}%"></div>
                         </div>
-                        <span class="pv-stats-mini">${overall.completeCount}/${overall.totalItems}</span>
+                        <span class="pv-stats-mini">${progress.completeCount}/${progress.totalItems}</span>
                     </div>
                 </div>
                 <div class="pv-toolbar-right">
@@ -65,18 +72,14 @@ export function render(
     `;
 
   const contentEl = container.querySelector('#pv-content') as HTMLElement;
-  wireEvents(container, contentEl, report);
+  wireEvents(container, contentEl);
   renderContent(contentEl);
 }
 
 /**
  * Wire up all event handlers.
  */
-function wireEvents(
-  container: HTMLElement,
-  contentEl: HTMLElement,
-  report: ProgressReport & { targetTier: number }
-): void {
+function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   // Tab switching
   container.querySelectorAll<HTMLElement>('.pv-tab').forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -95,7 +98,7 @@ function wireEvents(
     const text =
       currentView === 'dashboard'
         ? PlannerDashboard.generateDashboardText()
-        : generateExportText(report, report.targetTier);
+        : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
   });
 
@@ -104,14 +107,14 @@ function wireEvents(
     const text =
       currentView === 'dashboard'
         ? PlannerDashboard.generateFullText()
-        : generateExportText(report, report.targetTier);
+        : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
   });
 
   // CSV Export
   container.querySelector('#pv-export-csv')?.addEventListener('click', () => {
-    const csv = generateCSV(report);
-    downloadCSV(csv, `planner-t${report.targetTier}-requirements.csv`);
+    const csv = generatePlanCSV(cachedPlanItems);
+    downloadCSV(csv, `planner-t${cachedTargetTier}-requirements.csv`);
   });
 }
 
@@ -119,12 +122,16 @@ function wireEvents(
  * Render the active view.
  */
 function renderContent(container: HTMLElement): void {
-  if (!cachedReport) return;
-
   if (currentView === 'dashboard') {
-    PlannerDashboard.render(container, cachedReport);
+    PlannerDashboard.render(container, cachedPlanItems, cachedTargetTier);
   } else {
-    Flowchart.render(container, cachedResearches, cachedReport, cachedStudyJournals);
+    Flowchart.render(
+      container,
+      cachedResearches,
+      cachedPlanItems,
+      cachedTargetTier,
+      cachedStudyJournals
+    );
   }
 }
 
