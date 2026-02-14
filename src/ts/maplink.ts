@@ -1,8 +1,12 @@
 // Map link composer functionality
-import { MAP_CONFIG } from './configuration/index.js';
+import { CONFIG, MAP_CONFIG } from './configuration/index.js';
 import type { NamedMatrix } from './types/index.js';
 import type { StateMatrixEntry } from './types/index.js';
 import { CELL_TYPE, LINK_PARAM } from './types/index.js';
+import { createLogger } from './logger.js';
+import type { MatrixColumn, MatrixConfig, MatrixRow } from './components/data-matrix/data-matrix';
+
+const log = createLogger('maplink');
 
 interface LinkDataMap {
   regionId?: string;
@@ -177,7 +181,8 @@ export const MAP_LINK = {
     }
     return result;
   },
-  cellButtonEvent(entryKey: string, tier: number): void {
+  cellButtonEvent(entryKey: string, tier: string): void {
+    log.debug(`Button clicked key $entryKey tier: $tier`, entryKey, tier);
     if (!entryKey) return;
     if (entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX.map) {
       this.resourceCellButtonEvent(entryKey, tier, MAP_CONFIG.RESOURCE_ID_MATRIX, 'res-ids');
@@ -188,14 +193,14 @@ export const MAP_LINK = {
   },
   resourceCellButtonEvent(
     entryKey: string,
-    tier: number,
+    tier: string,
     matrix: NamedMatrix,
     htmlId: string
   ): void {
     if (!entryKey) {
       return;
     }
-
+    log.debug('called resourceCellButtonEvent');
     const cellArea: Element | null = document.querySelector(
       `[data-row="${entryKey}"][data-tier="${tier}"]`
     );
@@ -203,7 +208,7 @@ export const MAP_LINK = {
     const isActive: boolean | undefined =
       cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
     if (isActive === undefined) return;
-    const index: number = tier - 1;
+    const index: number = parseInt(tier) - 1;
 
     //get corresponding ids for this row/tier
     const idValues: number[] = matrix.map[entryKey]?.[index];
@@ -216,7 +221,40 @@ export const MAP_LINK = {
     const fieldValues: string = inputField.value;
     MAP_LINK.syncMatrixState(fieldValues, matrix);
   },
+  createMatrixConfig(sourceMatrices: NamedMatrix[]): MatrixConfig {
+    const cols: MatrixColumn[] = [];
 
+    for (let i = 1; i <= CONFIG.MAX_TIER; i++) {
+      const key: string = i.toLocaleString();
+      const label: string = 'T' + i.toLocaleString();
+      cols.push({ key, label });
+    }
+    const rows: MatrixRow[] = [];
+    for (const namedResMatrix of sourceMatrices) {
+      for (const resourceName of Object.keys(namedResMatrix.map)) {
+        const key: string = resourceName;
+        const label = resourceName;
+        const cells = Object.fromEntries(
+          Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
+            return [i, 0];
+          })
+        ) as Record<string, number>;
+        rows.push({ key, label, cells });
+      }
+    }
+    const config: MatrixConfig = {
+      columns: cols,
+      rows,
+      showRowTotals: false,
+      onCellClick: (rowKey, colKey) => MAP_LINK.cellButtonEvent(rowKey, colKey),
+      renderCell: () => MAP_LINK.cellRenderer(),
+      cssClass: 'mm-cell',
+    };
+    return config;
+  },
+  cellRenderer() {
+    return '';
+  },
   // Uses an array of stateMatrixEntries to set states for all cells
   setMatrixState(stateObjectArray: StateMatrixEntry[]): void {
     const table: HTMLElement | null = document.getElementById('id-matrix');

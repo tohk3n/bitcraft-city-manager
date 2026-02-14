@@ -4,10 +4,10 @@ import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
-import type { NamedMatrix } from './types/index.js';
-import { CELL_TYPE } from './types/index.js';
 import { createLogger } from './logger.js';
 import { MAP_CONFIG } from './configuration/maplinkconfig.js';
+import type { MatrixConfig } from './components/data-matrix/data-matrix.js';
+import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 
 const log = createLogger('UI');
 // Base UI utilities
@@ -197,11 +197,8 @@ const BaseUI = {
     const matrixWrapper: HTMLElement | null = document.getElementById('id-matrix');
     if (!matrixWrapper) return;
 
-    this.renderResourceMatrix(
-      'id-matrix',
-      [MAP_CONFIG.RESOURCE_ID_MATRIX, MAP_CONFIG.ENEMY_ID_MATRIX],
-      true
-    );
+    this.renderResourceMatrix('id-matrix');
+
     btn?.addEventListener('click', (): void => MAP_LINK.generateLinkEvent());
 
     matrixBtn?.addEventListener('click', (): void => {
@@ -219,96 +216,16 @@ const BaseUI = {
   },
 
   // Generates table with clickable fields to add to input field for resource selection
-  renderResourceMatrix(
-    containerId: string,
-    resourceMatrix: NamedMatrix[],
-    addHeader: boolean
-  ): void {
+  renderResourceMatrix(containerId: string): void {
     const table: HTMLElement | null = document.getElementById(containerId);
     if (!table) return;
 
-    table.innerHTML = '';
+    const config: MatrixConfig = MAP_LINK.createMatrixConfig([
+      MAP_CONFIG.RESOURCE_ID_MATRIX,
+      MAP_CONFIG.ENEMY_ID_MATRIX,
+    ]);
 
-    /* ---------- Header ---------- */
-    const head: HTMLTableSectionElement = document.createElement('thead');
-    const headerRow: HTMLTableRowElement = document.createElement('tr');
-
-    // Empty top-left cell
-    const emptyTh: HTMLTableCellElement = document.createElement('th');
-    headerRow.appendChild(emptyTh);
-
-    // T1 - T10
-    if (addHeader) {
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const th: HTMLTableCellElement = document.createElement('th');
-        th.textContent = `T${t}`;
-        headerRow.appendChild(th);
-      }
-    }
-
-    head.appendChild(headerRow);
-    table.appendChild(head);
-
-    /* ---------- Body ---------- */
-    const body = document.createElement('tbody') as HTMLTableSectionElement;
-    Object.values(resourceMatrix).forEach((namedResMatrix) => {
-      Object.keys(namedResMatrix.map).forEach((resourceName) => {
-        const matrix: number[][] = namedResMatrix.map[resourceName];
-        const tr = document.createElement('tr') as HTMLTableRowElement;
-
-        // Row label (not clickable)
-        const nameCell = document.createElement('td') as HTMLTableCellElement;
-        nameCell.textContent = resourceName;
-        nameCell.classList.add('row-label');
-        tr.appendChild(nameCell);
-
-        // T1 - T10 cells
-        for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-          const td = document.createElement('td') as HTMLTableCellElement;
-          td.classList.add('matrix-cell');
-
-          // clickable area
-          const cellArea = document.createElement('div') as HTMLDivElement;
-          cellArea.classList.add('matrix-cell-inner');
-          // Needed for state of matrix
-          cellArea.classList.add(CELL_TYPE.NONE);
-          // data attributes for later logic
-          cellArea.dataset.row = resourceName;
-          cellArea.dataset.tier = String(t);
-          const currentIndex: number = t - 1;
-          const idValues: number[] = matrix?.[currentIndex] ?? [];
-          if (idValues.length > 0) {
-            const cellButton = document.createElement('button') as HTMLButtonElement;
-            cellButton.textContent = '';
-            cellButton.classList.add('matrix-cell-btn');
-            cellButton.addEventListener('click', (): void => {
-              if (resourceName !== undefined) {
-                MAP_LINK.cellButtonEvent(resourceName, t);
-              }
-              const resInputField = document.getElementById('res-ids') as HTMLInputElement | null;
-              const enemyInputField = document.getElementById(
-                'enemy-ids'
-              ) as HTMLInputElement | null;
-              if (resInputField) {
-                resInputField.dispatchEvent(new Event('input', { bubbles: true }));
-              } else if (enemyInputField) {
-                enemyInputField.dispatchEvent(new Event('input', { bubbles: true }));
-              }
-            });
-            cellArea.appendChild(cellButton);
-          } else {
-            cellArea.classList.add('empty');
-          }
-
-          td.appendChild(cellArea);
-          tr.appendChild(td);
-        }
-
-        body.appendChild(tr);
-      });
-    });
-
-    table.appendChild(body);
+    createDataMatrix(table, config);
   },
 };
 
