@@ -222,8 +222,8 @@ export const MAP_LINK = {
       const key: string = resourceName;
       const label = resourceName;
       const cells = Object.fromEntries(
-        Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
-          return [String(i), sourceMatrix.map[resourceName]?.[i] ?? []];
+        Array.from({ length: CONFIG.MAX_TIER + 1 }, (_, i) => {
+          return [String(i), sourceMatrix.map[resourceName]?.[i - 1] ?? []];
         })
       ) as Record<string, number[]>;
       rows.push({ key, label, cells });
@@ -246,16 +246,23 @@ export const MAP_LINK = {
       showRowTotals: false,
       onCellClick: (rowKey, colKey, value) =>
         MAP_LINK.resourceCellButtonEvent(rowKey, value as number[], MAP_CONFIG.RESOURCE_ID_MATRIX),
-      renderCell: (value) => {
-        const ids = value as number[];
-        if (!ids || ids.length === 0) return '';
-        const selected = ids.some((id) => this.selectedResourceIds.has(id));
-        const div = document.createElement('div');
-        div.classList.add('matrix-cell-inner');
-        if (selected) div.classList.add('active');
-        return div;
-      },
+      renderCell: (value) => this.resourceRenderer(value, this.selectedResourceIds),
     };
+  },
+  resourceRenderer(value: unknown, selectedIds: Set<number>) {
+    const ids = value as number[];
+
+    const div = document.createElement('div');
+    div.classList.add('matrix-cell-inner');
+    if (!ids || ids.length === 0) {
+      // no entries for this cell
+      div.classList.add('none');
+      return div;
+    }
+    const selected = ids.some((id) => selectedIds.has(id));
+    if (selected) div.classList.add('active');
+
+    return div;
   },
   createEnemyMatrixConfig(sourceMatrix: NamedMatrix): MatrixConfig {
     const cols: MatrixColumn[] = [];
@@ -277,15 +284,7 @@ export const MAP_LINK = {
           MAP_CONFIG.ENEMY_ID_MATRIX,
           'enemy-ids'
         ),
-      renderCell: (value) => {
-        const ids = value as number[];
-        if (!ids || ids.length === 0) return '';
-        const selected = ids.some((id) => this.selectedEnemyIds.has(id));
-        const div = document.createElement('div');
-        div.classList.add('matrix-cell-inner');
-        if (selected) div.classList.add('active');
-        return div;
-      },
+      renderCell: (value) => this.resourceRenderer(value, this.selectedEnemyIds),
     };
   },
 };

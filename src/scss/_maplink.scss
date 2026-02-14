@@ -148,6 +148,7 @@
   cursor: pointer;
 }
 .matrix-cell-inner.none {
+  background: var(--border);
   transition: background 0.2s;
 }
 
