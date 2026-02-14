@@ -75,7 +75,6 @@ function filterItems(items: PlanItem[], filters: Filters): PlanItem[] {
     if (filters.hideComplete && item.deficit === 0) return false;
     if (filters.actionableOnly && !item.actionable) return false;
     return !(filters.tier !== null && item.tier !== filters.tier);
-
   });
 }
 

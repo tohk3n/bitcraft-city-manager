@@ -102,7 +102,6 @@ function renderCards(container: HTMLElement): void {
     if (hideComplete && item.deficit === 0) return false;
     if (filterTier && item.tier !== parseInt(filterTier, 10)) return false;
     return !(filterActivity && item.activity !== filterActivity);
-
   });
 
   items = sort(items, sortBy);

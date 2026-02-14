@@ -194,7 +194,8 @@ const BaseUI = {
     const matrixWrapper: HTMLElement | null = document.getElementById('id-matrix');
     if (!matrixWrapper) return;
 
-    MAP_LINK.renderResourceMatrix('id-matrix');
+    MAP_LINK.renderResourceMatrix();
+    MAP_LINK.renderEnemyMatrix();
 
     btn?.addEventListener('click', (): void => MAP_LINK.generateLinkEvent());
 
