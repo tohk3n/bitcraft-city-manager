@@ -10,12 +10,12 @@ import { loadCoreData } from '../data/loader.js';
 import { buildInventoryLookup, buildMetaLookups } from './lib/inventory-matcher.js';
 import { expandRecipes } from './lib/recipe-expander.js';
 import { applyCascade } from './lib/cascade-calc.js';
-import { generateProgressReport, formatCompact } from './lib/progress-calc.js';
+import { flattenPlan, formatCompact } from './lib/progress-calc.js';
 import * as PlannerView from './planner-view.js';
 import type {
   CodexFile,
   ProcessedNode,
-  ProgressReport,
+  PlanItem,
   PlannerResults,
   TierRequirements,
   CalculateOptions,
@@ -39,7 +39,7 @@ let codexCache: CodexFile | null = null;
 let recipesCache: RecipesFile | null = null;
 let gatheredCache: Set<string> | null = null;
 let packagesCache: PackagesFile | null = null;
-let lastReport: (ProgressReport & { targetTier: number }) | null = null;
+let lastPlanItems: PlanItem[] | null = null;
 
 async function loadData(): Promise<{
   codex: CodexFile;
@@ -97,12 +97,12 @@ export async function calculateRequirements(
 
   const expanded = expandRecipes(codex, recipes, req.codexTier, codexCount, gathered);
   const processed = applyCascade(expanded, inventoryLookup);
-  const report = generateProgressReport(processed);
+  const planItems = flattenPlan(processed);
 
   const codexTier = codex.tiers[String(req.codexTier)];
   const codexName = codexTier?.name || `Tier ${req.codexTier} Codex`;
 
-  lastReport = { ...report, targetTier };
+  lastPlanItems = planItems;
 
   return {
     targetTier,
@@ -111,8 +111,7 @@ export async function calculateRequirements(
     codexName,
     researches: processed.researches,
     studyJournals: processed.studyJournals,
-    summary: report.secondLevel,
-    report,
+    planItems,
   };
 }
 
@@ -120,8 +119,8 @@ export function getTierRequirements(): TierRequirements {
   return TIER_REQUIREMENTS;
 }
 
-export function getLastReport(): (ProgressReport & { targetTier: number }) | null {
-  return lastReport;
+export function getLastPlanItems(): PlanItem[] | null {
+  return lastPlanItems;
 }
 
 // --- UI Rendering ---
@@ -189,13 +188,15 @@ export function renderControls(
 export function renderPlannerView(
   container: HTMLElement,
   researches: ProcessedNode[],
+  planItems: PlanItem[],
+  targetTier: number,
   studyJournals: ProcessedNode | null = null
 ): void {
-  if (!lastReport) {
+  if (!planItems || planItems.length === 0) {
     container.innerHTML = '<div class="pv-empty">No data</div>';
     return;
   }
-  PlannerView.render(container, researches, lastReport, studyJournals);
+  PlannerView.render(container, researches, planItems, targetTier, studyJournals);
 }
 
 export function renderLoading(container: HTMLElement): void {
