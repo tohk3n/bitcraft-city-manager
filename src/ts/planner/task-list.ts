@@ -101,8 +101,8 @@ function renderCards(container: HTMLElement): void {
   let items = currentItems.filter((item) => {
     if (hideComplete && item.deficit === 0) return false;
     if (filterTier && item.tier !== parseInt(filterTier, 10)) return false;
-    if (filterActivity && item.activity !== filterActivity) return false;
-    return true;
+    return !(filterActivity && item.activity !== filterActivity);
+
   });
 
   items = sort(items, sortBy);
