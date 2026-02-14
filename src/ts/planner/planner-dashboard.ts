@@ -1,23 +1,28 @@
 /**
  * Dashboard - Material requirements grouped by activity
+ *
+ * Consumes PlanItem[] — one flat list, one item type.
+ * Grouping, filtering, and sorting are view concerns applied here.
  */
 
-import { formatCompact, categorizeByActivity } from './lib/progress-calc.js';
-import type { TrackableItem, ProgressReport } from '../types/index.js';
+import { formatCompact } from './lib/progress-calc.js';
+import { CONFIG } from '../configuration/index.js';
+import type { PlanItem, Activity } from '../types/index.js';
 
 // =============================================================================
 // TYPES
 // =============================================================================
 
 interface ActivityGroup {
-  name: string;
-  items: TrackableItem[];
+  name: Activity;
+  items: PlanItem[];
 }
 
 interface Filters {
   tier: number | null;
   activity: string | null;
   hideComplete: boolean;
+  actionableOnly: boolean;
   sortBy: 'deficit' | 'tier' | 'name';
   compactNames: boolean;
 }
@@ -26,15 +31,7 @@ interface Filters {
 // CONSTANTS
 // =============================================================================
 
-const ACTIVITY_ORDER = [
-  'Mining',
-  'Logging',
-  'Foraging',
-  'Farming',
-  'Fishing',
-  'Hunting',
-  'Crafting',
-];
+const ACTIVITY_ORDER = CONFIG.PLANNER.ACTIVITY_ORDER;
 
 const TIER_PREFIXES = [
   'Basic',
@@ -55,15 +52,14 @@ const TIER_PREFIXES = [
 // PURE FUNCTIONS
 // =============================================================================
 
-function groupByActivity(items: TrackableItem[]): ActivityGroup[] {
-  const map = new Map<string, TrackableItem[]>();
+function groupByActivity(items: PlanItem[]): ActivityGroup[] {
+  const map = new Map<Activity, PlanItem[]>();
 
   for (const item of items) {
-    const activity = categorizeByActivity(item.name);
-    let group = map.get(activity);
+    let group = map.get(item.activity);
     if (!group) {
       group = [];
-      map.set(activity, group);
+      map.set(item.activity, group);
     }
     group.push(item);
   }
@@ -74,15 +70,16 @@ function groupByActivity(items: TrackableItem[]): ActivityGroup[] {
   });
 }
 
-function filterItems(items: TrackableItem[], filters: Filters): TrackableItem[] {
+function filterItems(items: PlanItem[], filters: Filters): PlanItem[] {
   return items.filter((item) => {
     if (filters.hideComplete && item.deficit === 0) return false;
+    if (filters.actionableOnly && !item.actionable) return false;
     if (filters.tier !== null && item.tier !== filters.tier) return false;
     return true;
   });
 }
 
-function sortItems(items: TrackableItem[], by: Filters['sortBy']): TrackableItem[] {
+function sortItems(items: PlanItem[], by: Filters['sortBy']): PlanItem[] {
   const copy = [...items];
   switch (by) {
     case 'deficit':
@@ -106,22 +103,11 @@ function stripTierPrefix(name: string): string {
   return name;
 }
 
-function sumDeficit(items: TrackableItem[]): number {
-  return items.reduce((sum, i) => sum + i.deficit, 0);
-}
-
-function calcPercent(items: TrackableItem[]): number {
-  const required = items.reduce((sum, i) => sum + i.required, 0);
-  if (required === 0) return 100;
-  const have = items.reduce((sum, i) => sum + Math.min(i.have, i.required), 0);
-  return Math.round((have / required) * 100);
-}
-
 // =============================================================================
 // RENDER FUNCTIONS
 // =============================================================================
 
-function renderItem(item: TrackableItem, compactNames: boolean): string {
+function renderItem(item: PlanItem, compactNames: boolean): string {
   const status = item.deficit === 0 ? 'complete' : item.pctComplete >= 50 ? 'partial' : 'missing';
 
   const displayName = compactNames ? stripTierPrefix(item.name) : item.name;
@@ -139,8 +125,10 @@ function renderItem(item: TrackableItem, compactNames: boolean): string {
 }
 
 function renderGroup(group: ActivityGroup, collapsed: boolean, compactNames: boolean): string {
-  const deficit = sumDeficit(group.items);
-  const percent = calcPercent(group.items);
+  const deficit = group.items.reduce((sum, i) => sum + i.deficit, 0);
+  const totalRequired = group.items.reduce((sum, i) => sum + i.required, 0);
+  const totalHave = group.items.reduce((sum, i) => sum + Math.min(i.have, i.required), 0);
+  const percent = totalRequired > 0 ? Math.round((totalHave / totalRequired) * 100) : 100;
 
   return `
         <div class="dash-group ${collapsed ? 'collapsed' : ''}" data-activity="${group.name}">
@@ -179,6 +167,10 @@ function renderToolbar(tiers: number[], activities: string[], filters: Filters):
                     <span>Hide ✓</span>
                 </label>
                 <label class="dash-toggle">
+                    <input type="checkbox" id="dash-actionable" ${filters.actionableOnly ? 'checked' : ''}>
+                    <span>Actionable</span>
+                </label>
+                <label class="dash-toggle">
                     <input type="checkbox" id="dash-compact" ${filters.compactNames ? 'checked' : ''}>
                     <span>Short names</span>
                 </label>
@@ -198,7 +190,7 @@ function renderToolbar(tiers: number[], activities: string[], filters: Filters):
 // TEXT EXPORT
 // =============================================================================
 
-function itemToText(item: TrackableItem): string {
+function itemToText(item: PlanItem): string {
   return `- ${item.deficit.toLocaleString()}x ${item.name} (T${item.tier})`;
 }
 
@@ -211,8 +203,7 @@ function groupToText(group: ActivityGroup): string {
 }
 
 function groupsToText(groups: ActivityGroup[], header: string): string {
-  const sections = groups.map(groupToText).filter((text) => text.split('\n').length > 1); // Has items beyond header
-
+  const sections = groups.map(groupToText).filter((text) => text.split('\n').length > 1);
   if (sections.length === 0) return '';
   return [header, '', ...sections].join('\n');
 }
@@ -221,12 +212,13 @@ function groupsToText(groups: ActivityGroup[], header: string): string {
 // MODULE STATE & CONTROLLER
 // =============================================================================
 
-let items: TrackableItem[] = [];
+let items: PlanItem[] = [];
 let targetTier = 0;
 const filters: Filters = {
   tier: null,
   activity: null,
   hideComplete: true,
+  actionableOnly: false,
   sortBy: 'deficit',
   compactNames: false,
 };
@@ -311,6 +303,11 @@ function wireToolbarEvents(): void {
     renderGroups();
   });
 
+  on<HTMLInputElement>('#dash-actionable', 'change', (el) => {
+    filters.actionableOnly = el.checked;
+    renderGroups();
+  });
+
   on<HTMLInputElement>('#dash-compact', 'change', (el) => {
     filters.compactNames = el.checked;
     renderGroups();
@@ -334,10 +331,10 @@ function copyText(text: string, btn: HTMLElement): void {
 // PUBLIC API
 // =============================================================================
 
-export function render(el: HTMLElement, report: ProgressReport & { targetTier: number }): void {
+export function render(el: HTMLElement, planItems: PlanItem[], tier: number): void {
   container = el;
-  items = report.trackableItems;
-  targetTier = report.targetTier;
+  items = planItems;
+  targetTier = tier;
 
   if (items.length === 0) {
     el.innerHTML = '<div class="dash-empty">No materials needed</div>';
@@ -345,9 +342,7 @@ export function render(el: HTMLElement, report: ProgressReport & { targetTier: n
   }
 
   const tiers = [...new Set(items.map((i) => i.tier))].sort((a, b) => a - b);
-  const activities = ACTIVITY_ORDER.filter((a) =>
-    items.some((i) => categorizeByActivity(i.name) === a)
-  );
+  const activities = ACTIVITY_ORDER.filter((a) => items.some((i) => i.activity === a));
 
   el.innerHTML = `
         <div class="dash">
@@ -361,22 +356,22 @@ export function render(el: HTMLElement, report: ProgressReport & { targetTier: n
 
 export function generateDashboardText(): string {
   const groups = getVisibleGroups();
-  const filterDesc = [filters.tier !== null ? `T${filters.tier}` : null, filters.activity]
+  const filterDesc = [
+    filters.tier !== null ? `T${filters.tier}` : null,
+    filters.activity,
+    filters.actionableOnly ? 'actionable' : null,
+  ]
     .filter(Boolean)
     .join(', ');
-
-  const header = filterDesc
-    ? `**T${targetTier} Upgrade** (${filterDesc} only)`
-    : `**T${targetTier} Upgrade**`;
-
+  const header = `**T${targetTier} Upgrade**${filterDesc ? ` (${filterDesc})` : ''}`;
   return groupsToText(groups, header);
 }
 
 export function generateFullText(): string {
-  const allGroups = groupByActivity(sortItems(items, 'deficit'));
-  return groupsToText(allGroups, `**T${targetTier} Upgrade**`);
-}
-
-export function hasActiveFilters(): boolean {
-  return filters.tier !== null || filters.activity !== null;
+  // Unfiltered — all items with deficit, grouped by activity
+  const allWithDeficit = items.filter((i) => i.deficit > 0);
+  const sorted = sortItems(allWithDeficit, 'deficit');
+  const groups = groupByActivity(sorted);
+  const header = `**T${targetTier} Upgrade**`;
+  return groupsToText(groups, header);
 }

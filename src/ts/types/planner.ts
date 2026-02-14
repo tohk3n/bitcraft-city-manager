@@ -1,6 +1,7 @@
 // Planner domain types
 
 import type { MappingType, ProcessedNode } from './codex.js';
+import type { CONFIG } from '../configuration/index.js';
 
 // =============================================================================
 // ITEM MAPPINGS
@@ -121,6 +122,8 @@ export interface ProgressReport {
   targetCount: number;
 }
 
+export type Activity = (typeof CONFIG)['PLANNER']['ACTIVITY_ORDER'][number];
+
 // =============================================================================
 // PLANNER STATE
 // =============================================================================
@@ -132,14 +135,33 @@ export interface PlannerResults {
   codexName: string;
   researches: ProcessedNode[];
   studyJournals: ProcessedNode | null;
-  summary: SecondLevelItem[];
-  report: ProgressReport;
+  planItems: PlanItem[];
 }
 
 export interface PlannerState {
   targetTier: number;
   codexCount: number | null;
   results: PlannerResults | null;
+}
+
+export interface PlanItem {
+  name: string;
+  tier: number;
+  required: number;
+  have: number;
+  deficit: number;
+  pctComplete: number;
+  activity: Activity;
+  actionable: boolean;
+  mappingType: MappingType;
+}
+
+export interface PlanProgressSummary {
+  percent: number;
+  totalRequired: number;
+  totalContribution: number;
+  totalItems: number;
+  completeCount: number;
 }
 
 // =============================================================================

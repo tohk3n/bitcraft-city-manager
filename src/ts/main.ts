@@ -150,7 +150,13 @@ async function loadPlanner(): Promise<void> {
     plannerState.results = results;
 
     // Render unified planner view (dashboard + flowchart tabs)
-    Planner.renderPlannerView(plannerContainer, results.researches, results.studyJournals);
+    Planner.renderPlannerView(
+      plannerContainer,
+      results.researches,
+      results.planItems,
+      results.targetTier,
+      results.studyJournals
+    );
   } catch (err) {
     const error = err as Error;
     log.error('Planner error:', error.message);

@@ -91,6 +91,7 @@ const CATEGORY_RULES: CategoryRule[] = [
   },
   { category: 'tool', tags: ['axe', 'pickaxe', 'hammer', 'saw', 'knife', 'rod', 'hoe', 'chisel'] },
   { category: 'food', tags: ['meal', 'food', 'tea', 'soup', 'stew', 'pie'] },
+  { category: 'other', tags: ['resource node'] }, // extraction sources, not inventory items
 ];
 
 // =============================================================================
