@@ -1,10 +1,10 @@
 // Map link composer functionality
 import { CONFIG, MAP_CONFIG } from './configuration/index.js';
 import type { NamedMatrix } from './types/index.js';
-import type { StateMatrixEntry } from './types/index.js';
-import { CELL_TYPE, LINK_PARAM } from './types/index.js';
+import { LINK_PARAM } from './types/index.js';
 import { createLogger } from './logger.js';
 import type { MatrixColumn, MatrixConfig, MatrixRow } from './components/data-matrix/data-matrix';
+import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 
 const log = createLogger('maplink');
 
@@ -14,7 +14,9 @@ interface LinkDataMap {
   playerId?: string;
   enemyId?: string;
 }
+
 export const MAP_LINK = {
+  selectedIds: new Set<number>(),
   // Gets values from checkboxes and input fields to generate link
   generateLinkEvent(): void {
     const checkboxes = Array.from(
@@ -132,94 +134,66 @@ export const MAP_LINK = {
   },
 
   // Add or remove new value to input field, separates by comma, leaves the rest intact
-  syncInputValue(value: string | number, activated: boolean, elementName: string): void {
-    const strValue = String(value);
+  syncInputValue(cellValues: number[], elementName: string): void {
     const inputField = document.getElementById(elementName) as HTMLInputElement | null;
     if (!inputField) return;
 
     const resultValue = inputField.value.trim();
-    const values: Set<string> = resultValue
-      ? new Set(resultValue.split(',').map((v) => v.trim()))
+    const inputFieldValues: Set<number> = resultValue
+      ? new Set(resultValue.split(',').map((v) => Number(v.trim())))
       : new Set();
 
-    if (activated) {
-      values.add(strValue);
+    let removeValues = false;
+    for (const val of cellValues) {
+      if (inputFieldValues.has(val)) {
+        removeValues = true;
+        break;
+      }
+    }
+
+    if (removeValues) {
+      for (const val of cellValues) {
+        inputFieldValues.delete(val);
+      }
     } else {
-      values.delete(strValue);
+      for (const val of cellValues) {
+        inputFieldValues.add(val);
+      }
     }
-    inputField.value = Array.from(values).join(',');
-  },
-  // Synchronize the resource ID matrix to match the input
-  syncMatrixState(resourceIdInput: string, matrix: NamedMatrix): void {
-    const inputIds: string[] = resourceIdInput.split(',');
-    if (!matrix) return;
-    const stateObject: StateMatrixEntry[] = MAP_LINK.buildStateMatrix(inputIds, matrix);
-    MAP_LINK.setMatrixState(stateObject);
-  },
-  buildStateMatrix(idsToCheck: string[], inputMatrix: NamedMatrix): StateMatrixEntry[] {
-    const idSet = new Set(idsToCheck.map(Number));
-    const result: StateMatrixEntry[] = [];
 
-    for (const [category, arrayOfArrays] of Object.entries(inputMatrix.map)) {
-      arrayOfArrays.forEach((ids: number[], index: number): void => {
-        const matches: number = ids.filter((id) => idSet.has(id)).length;
-        let state;
-        if (matches === 0) {
-          state = CELL_TYPE.NONE;
-        } else if (matches === ids.length) {
-          state = CELL_TYPE.FULL;
-        } else {
-          state = CELL_TYPE.PART;
-        }
-
-        result.push({
-          category,
-          col: index, // 0–9
-          state: state,
-        });
-      });
-    }
-    return result;
+    inputField.value = Array.from(inputFieldValues).join(',');
   },
-  cellButtonEvent(entryKey: string, tier: string): void {
-    log.debug(`Button clicked key $entryKey tier: $tier`, entryKey, tier);
+  cellButtonEvent(entryKey: string, value: number[]): void {
+    log.debug(`Button clicked key $entryKey`, entryKey);
     if (!entryKey) return;
     if (entryKey in MAP_CONFIG.RESOURCE_ID_MATRIX.map) {
-      this.resourceCellButtonEvent(entryKey, tier, MAP_CONFIG.RESOURCE_ID_MATRIX, 'res-ids');
+      this.syncInputValue(value, 'res-ids');
     }
     if (entryKey in MAP_CONFIG.ENEMY_ID_MATRIX.map) {
-      this.resourceCellButtonEvent(entryKey, tier, MAP_CONFIG.ENEMY_ID_MATRIX, 'enemy-ids');
+      this.syncInputValue(value, 'enemy-ids');
     }
+    value.forEach((id) => {
+      const key = id;
+      if (MAP_LINK.selectedIds.has(key)) {
+        MAP_LINK.selectedIds.delete(key);
+      } else {
+        MAP_LINK.selectedIds.add(key);
+      }
+    });
+    this.renderResourceMatrix('id-matrix');
   },
-  resourceCellButtonEvent(
-    entryKey: string,
-    tier: string,
-    matrix: NamedMatrix,
-    htmlId: string
-  ): void {
-    if (!entryKey) {
-      return;
-    }
-    log.debug('called resourceCellButtonEvent');
-    const cellArea: Element | null = document.querySelector(
-      `[data-row="${entryKey}"][data-tier="${tier}"]`
-    );
-    if (!cellArea) return;
-    const isActive: boolean | undefined =
-      cellArea?.classList.contains(CELL_TYPE.FULL) || cellArea?.classList.contains(CELL_TYPE.PART);
-    if (isActive === undefined) return;
-    const index: number = parseInt(tier) - 1;
+  // Generates table with clickable fields to add to input field for resource selection
+  renderResourceMatrix(containerId: string): void {
+    const table: HTMLElement | null = document.getElementById(containerId);
+    if (!table) return;
 
-    //get corresponding ids for this row/tier
-    const idValues: number[] = matrix.map[entryKey]?.[index];
-    if (!idValues) return;
-    //update input field
-    idValues.forEach((id) => this.syncInputValue(id, !isActive, htmlId));
-    //update matrix state
-    const inputField = document.getElementById(htmlId) as HTMLInputElement | null;
-    if (!inputField) return;
-    const fieldValues: string = inputField.value;
-    MAP_LINK.syncMatrixState(fieldValues, matrix);
+    const config: MatrixConfig = MAP_LINK.createMatrixConfig([
+      MAP_CONFIG.RESOURCE_ID_MATRIX,
+      MAP_CONFIG.ENEMY_ID_MATRIX,
+    ]);
+
+    createDataMatrix(table, config);
+    log.info('selectedIDs: ', this.selectedIds);
   },
   createMatrixConfig(sourceMatrices: NamedMatrix[]): MatrixConfig {
     const cols: MatrixColumn[] = [];
@@ -236,49 +210,26 @@ export const MAP_LINK = {
         const label = resourceName;
         const cells = Object.fromEntries(
           Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
-            return [i, 0];
+            return [String(i), namedResMatrix.map[resourceName]?.[i] ?? []];
           })
-        ) as Record<string, number>;
+        ) as Record<string, number[]>;
         rows.push({ key, label, cells });
       }
     }
-    const config: MatrixConfig = {
+    return {
       columns: cols,
       rows,
       showRowTotals: false,
-      onCellClick: (rowKey, colKey) => MAP_LINK.cellButtonEvent(rowKey, colKey),
-      renderCell: () => MAP_LINK.cellRenderer(),
-      cssClass: 'mm-cell',
+      onCellClick: (rowKey, colKey, value) => MAP_LINK.cellButtonEvent(rowKey, value as number[]),
+      renderCell: (value) => {
+        const ids = value as number[];
+        if (!ids || ids.length === 0) return '';
+        const selected = ids.some((id) => this.selectedIds.has(id));
+        const div = document.createElement('div');
+        div.classList.add('matrix-cell-inner');
+        if (selected) div.classList.add('active');
+        return div;
+      },
     };
-    return config;
-  },
-  cellRenderer() {
-    return '';
-  },
-  // Uses an array of stateMatrixEntries to set states for all cells
-  setMatrixState(stateObjectArray: StateMatrixEntry[]): void {
-    const table: HTMLElement | null = document.getElementById('id-matrix');
-    if (!table) return;
-    stateObjectArray.forEach((entry) => {
-      const cell: HTMLElement | null | undefined = MAP_LINK.getCell(
-        table,
-        entry.category,
-        entry.col + 1
-      );
-      if (cell) {
-        MAP_LINK.setCellState(cell, entry.state);
-      }
-    });
-  },
-  getCell(table: HTMLElement, row: string, tier: number): HTMLElement | null {
-    if (!table) return null;
-
-    return document.querySelector(`[data-row="${row}"][data-tier="${tier}"]`);
-  },
-  setCellState(cell: HTMLElement, state: CELL_TYPE): void {
-    if (!cell || !Object.values(CELL_TYPE).includes(state)) return;
-
-    cell.classList.remove(...Object.values(CELL_TYPE));
-    cell.classList.add(state);
   },
 };

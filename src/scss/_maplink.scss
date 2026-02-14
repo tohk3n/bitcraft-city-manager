@@ -125,7 +125,7 @@
   display: none;
 }
 
-.matrix-cell {
+.dm-cell {
   width: 40px;
   height: 40px;
   border: 1px solid #999;
@@ -134,7 +134,7 @@
   background-color: var(--bg-secondary);
 }
 
-.matrix-cell:nth-child(even) {
+.dm-cell:nth-child(even) {
   background-color: var(--bg-primary);
 }
 
@@ -155,15 +155,10 @@
   background: var(--bg-tertiary);
 }
 
-.matrix-cell-inner.full {
+.matrix-cell-inner.active {
   background: var(--accent);
 }
-.matrix-cell-inner.part {
-  background: linear-gradient(to bottom, var(--accent), var(--bg-quaternary));
-}
-.matrix-cell-inner.empty {
-  background-color: var(--text-secondary);
-}
+
 .matrix-cell-btn {
   width: 100%;
   height: 100%;

@@ -5,9 +5,6 @@ import { DashboardUI } from './dashboard.js';
 import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
 import { createLogger } from './logger.js';
-import { MAP_CONFIG } from './configuration/maplinkconfig.js';
-import type { MatrixConfig } from './components/data-matrix/data-matrix.js';
-import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 
 const log = createLogger('UI');
 // Base UI utilities
@@ -197,35 +194,13 @@ const BaseUI = {
     const matrixWrapper: HTMLElement | null = document.getElementById('id-matrix');
     if (!matrixWrapper) return;
 
-    this.renderResourceMatrix('id-matrix');
+    MAP_LINK.renderResourceMatrix('id-matrix');
 
     btn?.addEventListener('click', (): void => MAP_LINK.generateLinkEvent());
 
     matrixBtn?.addEventListener('click', (): void => {
       matrixWrapper?.classList.toggle('hidden');
     });
-
-    const resInputField = document.getElementById('res-ids') as HTMLInputElement | null;
-    resInputField?.addEventListener('blur', (): void => {
-      MAP_LINK.syncMatrixState(resInputField.value, MAP_CONFIG.RESOURCE_ID_MATRIX);
-    });
-    const enemyInputField = document.getElementById('enemy-ids') as HTMLInputElement | null;
-    enemyInputField?.addEventListener('blur', (): void => {
-      MAP_LINK.syncMatrixState(enemyInputField.value, MAP_CONFIG.ENEMY_ID_MATRIX);
-    });
-  },
-
-  // Generates table with clickable fields to add to input field for resource selection
-  renderResourceMatrix(containerId: string): void {
-    const table: HTMLElement | null = document.getElementById(containerId);
-    if (!table) return;
-
-    const config: MatrixConfig = MAP_LINK.createMatrixConfig([
-      MAP_CONFIG.RESOURCE_ID_MATRIX,
-      MAP_CONFIG.ENEMY_ID_MATRIX,
-    ]);
-
-    createDataMatrix(table, config);
   },
 };
 
