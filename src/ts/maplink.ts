@@ -3,7 +3,12 @@ import { CONFIG, MAP_CONFIG } from './configuration/index.js';
 import type { NamedMatrix } from './types/index.js';
 import { LINK_PARAM } from './types/index.js';
 import { createLogger } from './logger.js';
-import type { MatrixColumn, MatrixConfig, MatrixRow } from './components/data-matrix/data-matrix';
+import type {
+  DataMatrixHandle,
+  MatrixColumn,
+  MatrixConfig,
+  MatrixRow,
+} from './components/data-matrix/data-matrix';
 import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 
 const log = createLogger('mapLink');
@@ -14,11 +19,11 @@ interface LinkDataMap {
   playerId?: string;
   enemyId?: string;
 }
-
 export const MAP_LINK = {
   selectedResourceIds: new Set<number>(),
   selectedEnemyIds: new Set<number>(),
-
+  resourceHandle: null as DataMatrixHandle | null,
+  enemyHandle: null as DataMatrixHandle | null,
   // Gets values from checkboxes and input fields to generate link
   generateLinkEvent(): void {
     const checkboxes = Array.from(
@@ -135,8 +140,9 @@ export const MAP_LINK = {
     return value.replace(/,+$/, '').replace(/,{2,}/g, ','); // no duplicate commas;
   },
 
-  // Add or remove new value to input field, separates by comma, leaves the rest intact
-  syncInputValue(cellValues: number[], elementName: string): void {
+  // Add cellValues to input field if none of them is in selected Ids
+  // Removed if at least one value from cellValues is in selectedIds
+  syncInputValue(cellValues: number[], elementName: string, selectedIds: Set<number>): void {
     const inputField = document.getElementById(elementName) as HTMLInputElement | null;
     if (!inputField) return;
 
@@ -145,85 +151,66 @@ export const MAP_LINK = {
       ? new Set(resultValue.split(',').map((v) => Number(v.trim())))
       : new Set();
 
-    let removeValues = false;
+    const removeValues = cellValues.some((id) => selectedIds.has(id));
     for (const val of cellValues) {
-      if (inputFieldValues.has(val)) {
-        removeValues = true;
-        break;
-      }
-    }
-
-    if (removeValues) {
-      for (const val of cellValues) {
+      if (removeValues) {
         inputFieldValues.delete(val);
-      }
-    } else {
-      for (const val of cellValues) {
+      } else {
         inputFieldValues.add(val);
       }
     }
-
     inputField.value = Array.from(inputFieldValues).join(',');
   },
-  resourceCellButtonEvent(entryKey: string, value: number[], sourceMap: NamedMatrix): void {
-    log.debug(`Button clicked key $entryKey`, entryKey);
-    if (!entryKey) return;
-    if (entryKey in sourceMap.map) {
-      this.syncInputValue(value, 'res-ids');
-    }
-    value.forEach((id) => {
-      const key = id;
-      if (MAP_LINK.selectedResourceIds.has(key)) {
-        MAP_LINK.selectedResourceIds.delete(key);
-      } else {
-        MAP_LINK.selectedResourceIds.add(key);
-      }
-    });
-    this.renderResourceMatrix();
-  },
-  enemyCellButtonEvent(
+  cellButtonEvent(
     entryKey: string,
     value: number[],
-    idMap: NamedMatrix,
-    elementName: string
+    sourceMap: NamedMatrix,
+    elementName: string,
+    selectedIds: Set<number>,
+    after?: () => void
   ): void {
     log.debug(`Button clicked key $entryKey`, entryKey);
     if (!entryKey) return;
-    if (entryKey in idMap.map) {
-      this.syncInputValue(value, elementName);
+    if (entryKey in sourceMap.map) {
+      this.syncInputValue(value, elementName, selectedIds);
     }
-    value.forEach((id) => {
-      const key = id;
-      if (MAP_LINK.selectedEnemyIds.has(key)) {
-        MAP_LINK.selectedEnemyIds.delete(key);
-      } else {
-        MAP_LINK.selectedEnemyIds.add(key);
-      }
-    });
-    this.renderEnemyMatrix();
+    const remove = value.some((id) => selectedIds.has(id));
+    if (remove) {
+      value.forEach((id) => selectedIds.delete(id));
+    } else {
+      value.forEach((id) => selectedIds.add(id));
+    }
+    after?.();
   },
   // Generates table with clickable fields to add to input field for resource selection
   renderResourceMatrix(): void {
     const table: HTMLElement | null = document.getElementById('res-id-matrix');
     if (!table) return;
     const config: MatrixConfig = MAP_LINK.createResourceMatrixConfig(MAP_CONFIG.RESOURCE_ID_MATRIX);
-    createDataMatrix(table, config);
+    if (!this.resourceHandle) {
+      this.resourceHandle = createDataMatrix(table, config);
+    } else {
+      this.resourceHandle.update(config);
+    }
   },
   renderEnemyMatrix(): void {
     const table: HTMLElement | null = document.getElementById('enemy-id-matrix');
     if (!table) return;
     const config: MatrixConfig = MAP_LINK.createEnemyMatrixConfig(MAP_CONFIG.ENEMY_ID_MATRIX);
-    createDataMatrix(table, config);
+    if (!this.enemyHandle) {
+      this.enemyHandle = createDataMatrix(table, config);
+    } else {
+      this.enemyHandle.update(config);
+    }
   },
   buildRows(sourceMatrix: NamedMatrix): MatrixRow[] {
     const rows: MatrixRow[] = [];
-
     for (const resourceName of Object.keys(sourceMatrix.map)) {
       const key: string = resourceName;
       const label = resourceName;
       const cells = Object.fromEntries(
-        Array.from({ length: CONFIG.MAX_TIER + 1 }, (_, i) => {
-          return [String(i), sourceMatrix.map[resourceName]?.[i - 1] ?? []];
+        Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
+          return [String(i + 1), sourceMatrix.map[resourceName]?.[i] ?? []];
         })
       ) as Record<string, number[]>;
       rows.push({ key, label, cells });
@@ -245,7 +232,17 @@ export const MAP_LINK = {
       rows,
       showRowTotals: false,
       onCellClick: (rowKey, colKey, value) =>
-        MAP_LINK.resourceCellButtonEvent(rowKey, value as number[], MAP_CONFIG.RESOURCE_ID_MATRIX),
+        MAP_LINK.cellButtonEvent(
+          rowKey,
+          value as number[],
+          MAP_CONFIG.RESOURCE_ID_MATRIX,
+          'res-ids',
+          this.selectedResourceIds,
+          () => {
+            MAP_LINK.renderResourceMatrix();
+            MAP_LINK.generateLinkEvent();
+          }
+        ),
       renderCell: (value) => this.resourceRenderer(value, this.selectedResourceIds),
     };
   },
@@ -278,11 +275,16 @@ export const MAP_LINK = {
       rows,
       showRowTotals: false,
       onCellClick: (rowKey, colKey, value) =>
-        MAP_LINK.enemyCellButtonEvent(
+        MAP_LINK.cellButtonEvent(
           rowKey,
           value as number[],
           MAP_CONFIG.ENEMY_ID_MATRIX,
-          'enemy-ids'
+          'enemy-ids',
+          this.selectedEnemyIds,
+          () => {
+            MAP_LINK.renderEnemyMatrix();
+            MAP_LINK.generateLinkEvent();
+          }
         ),
       renderCell: (value) => this.resourceRenderer(value, this.selectedEnemyIds),
     };
