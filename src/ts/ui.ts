@@ -180,7 +180,18 @@ const BaseUI = {
     for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
       html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
     }
+
     checkboxContainer.innerHTML = html;
+
+    // Add link generation to check boxes
+    const checkboxes =
+      checkboxContainer.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+
+    checkboxes.forEach((cb) => {
+      cb.addEventListener('change', () => {
+        MAP_LINK.generateLinkEvent();
+      });
+    });
 
     // Add input validation for resource and player IDs
     MAP_LINK.addCommaNumberValidation('res-ids');
