@@ -152,11 +152,14 @@ export const MAP_LINK = {
       : new Set();
 
     const removeValues = cellValues.some((id) => selectedIds.has(id));
+    // order matters, so we handle the selected Ids her as well
     for (const val of cellValues) {
       if (removeValues) {
         inputFieldValues.delete(val);
+        selectedIds.delete(val);
       } else {
         inputFieldValues.add(val);
+        selectedIds.add(val);
       }
     }
     inputField.value = Array.from(inputFieldValues).join(',');
@@ -173,12 +176,8 @@ export const MAP_LINK = {
     if (!entryKey) return;
     if (entryKey in sourceMap.map) {
       this.syncInputValue(value, elementName, selectedIds);
-    }
-    const remove = value.some((id) => selectedIds.has(id));
-    if (remove) {
-      value.forEach((id) => selectedIds.delete(id));
     } else {
-      value.forEach((id) => selectedIds.add(id));
+      return;
     }
     after?.();
   },
@@ -217,6 +216,21 @@ export const MAP_LINK = {
     }
     return rows;
   },
+  mapCellRenderer(value: unknown, selectedIds: Set<number>) {
+    const ids = value as number[];
+
+    const div = document.createElement('div');
+    div.classList.add('matrix-cell-inner');
+    if (!ids || ids.length === 0) {
+      // no entries for this cell
+      div.classList.add('none');
+      return div;
+    }
+    const selected = ids.some((id) => selectedIds.has(id));
+    if (selected) div.classList.add('active');
+
+    return div;
+  },
   createResourceMatrixConfig(sourceMatrix: NamedMatrix): MatrixConfig {
     const cols: MatrixColumn[] = [];
 
@@ -243,23 +257,8 @@ export const MAP_LINK = {
             MAP_LINK.generateLinkEvent();
           }
         ),
-      renderCell: (value) => this.resourceRenderer(value, this.selectedResourceIds),
+      renderCell: (value) => this.mapCellRenderer(value, this.selectedResourceIds),
     };
-  },
-  resourceRenderer(value: unknown, selectedIds: Set<number>) {
-    const ids = value as number[];
-
-    const div = document.createElement('div');
-    div.classList.add('matrix-cell-inner');
-    if (!ids || ids.length === 0) {
-      // no entries for this cell
-      div.classList.add('none');
-      return div;
-    }
-    const selected = ids.some((id) => selectedIds.has(id));
-    if (selected) div.classList.add('active');
-
-    return div;
   },
   createEnemyMatrixConfig(sourceMatrix: NamedMatrix): MatrixConfig {
     const cols: MatrixColumn[] = [];
@@ -286,7 +285,7 @@ export const MAP_LINK = {
             MAP_LINK.generateLinkEvent();
           }
         ),
-      renderCell: (value) => this.resourceRenderer(value, this.selectedEnemyIds),
+      renderCell: (value) => this.mapCellRenderer(value, this.selectedEnemyIds),
     };
   },
 };
