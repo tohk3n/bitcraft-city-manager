@@ -28,6 +28,7 @@ const claimData: ClaimData = {
   claimInfo: null,
   inventories: null,
   citizens: null,
+  citizensData: null,
   buildings: null,
   items: null,
 };
@@ -172,7 +173,13 @@ async function loadPlanner(): Promise<void> {
 // Load citizens data (lazy loaded when tab clicked)
 async function loadCitizens(): Promise<void> {
   if (!claimData.claimId) return;
-  await CitizensUI.loadAndRender(claimData.claimId);
+
+  const result = await CitizensUI.loadAndRender(
+    claimData.claimId,
+    claimData.citizensData ?? undefined
+  );
+
+  if (result) claimData.citizensData = result;
 }
 
 // Load items data (lazy loaded when tab clicked)
