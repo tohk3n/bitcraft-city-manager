@@ -5,6 +5,7 @@ import type {
   ClaimSearchResponse,
   ClaimInventoriesResponse,
   ClaimCitizensResponse,
+  ClaimMembersResponse,
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
@@ -45,6 +46,10 @@ export const API = {
 
   getClaimCitizens(claimId: string): Promise<ClaimCitizensResponse> {
     return this.fetch<ClaimCitizensResponse>(`/claims/${claimId}/citizens`);
+  },
+
+  getClaimMembers(claimId: string): Promise<ClaimMembersResponse> {
+    return this.fetch<ClaimMembersResponse>(`/claims/${claimId}/members`);
   },
 
   getClaimBuildings(claimId: string): Promise<Building[]> {
