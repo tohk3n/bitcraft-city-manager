@@ -8,7 +8,6 @@ import * as ClaimSearch from './claim-search.js';
 import type {
   ClaimData,
   PlannerState,
-  EquipmentSlot,
   CalculateOptions,
   ClaimInventoriesResponse,
   InventoryProcessResult,
@@ -17,6 +16,7 @@ import type {
   ClaimResponse,
   Building,
 } from './types/index.js';
+import { CitizensUI } from './citizens.js';
 
 const log = createLogger('Main');
 
@@ -52,6 +52,7 @@ async function loadClaim(claimId: string): Promise<void> {
     // Load inventories (includes item metadata)
     const data: ClaimInventoriesResponse = await API.getClaimInventories(claimId);
     claimData.claimId = claimId;
+    CitizensUI.reset();
     claimData.inventories = data;
 
     // Try to get claim name and details
@@ -171,60 +172,7 @@ async function loadPlanner(): Promise<void> {
 // Load citizens data (lazy loaded when tab clicked)
 async function loadCitizens(): Promise<void> {
   if (!claimData.claimId) return;
-
-  // Return cached if available
-  if (claimData.citizens) {
-    UI.renderCitizens(claimData.citizens);
-    return;
-  }
-
-  UI.showCitizensLoading(true);
-
-  try {
-    const citizensData = await API.getClaimCitizens(claimData.claimId);
-    const citizens = citizensData.citizens || [];
-
-    // Render skeleton table immediately with empty equipment
-    const citizensWithEmptyGear = citizens.map((c) => ({ ...c, equipment: [] as EquipmentSlot[] }));
-    claimData.citizens = { citizens: citizensWithEmptyGear };
-    UI.renderCitizens(claimData.citizens);
-    UI.showCitizensLoading(false);
-
-    // Fetch all equipment in parallel (fast)
-    const equipmentResults = await Promise.all(
-      citizens.map(async (citizen) => {
-        try {
-          const equipment = await API.getPlayerEquipment(citizen.entityId);
-          return { id: citizen.entityId, equipment: equipment.equipment || [] };
-        } catch (e) {
-          const error = e as Error;
-          log.warn(`Failed to load equipment for ${citizen.entityId}:`, error.message);
-          return { id: citizen.entityId, equipment: [] as EquipmentSlot[] };
-        }
-      })
-    );
-
-    // Update DOM progressively with staggered timing (smooth)
-    for (let i = 0; i < equipmentResults.length; i++) {
-      const result = equipmentResults[i];
-
-      // Stagger updates ~30ms apart for visual smoothness
-      setTimeout(() => {
-        UI.updateCitizenEquipment(result.id, result.equipment);
-
-        // Update cached data
-        if (claimData.citizens) {
-          const cached = claimData.citizens.citizens.find((c) => c.entityId === result.id);
-          if (cached) cached.equipment = result.equipment;
-        }
-      }, i * 30);
-    }
-  } catch (err) {
-    const error = err as Error;
-    log.error('Failed to load citizens:', error.message);
-    UI.showError('Failed to load citizens data.');
-    UI.showCitizensLoading(false);
-  }
+  await CitizensUI.loadAndRender(claimData.claimId);
 }
 
 // Load items data (lazy loaded when tab clicked)
