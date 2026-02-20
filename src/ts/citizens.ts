@@ -249,9 +249,10 @@ function daysSince(date: Date): number {
 }
 
 function relativeTime(date: Date): string {
+  if (isNaN(date.getTime())) return 'unknown';
   const days = daysSince(date);
   if (days === 0) return 'today';
-  if (days === 1) return '1d ago';
+  if (days === 1) return 'yesterday';
   if (days < 30) return `${days}d ago`;
   if (days < 365) return `${Math.floor(days / 30)}mo ago`;
   return `${Math.floor(days / 365)}y ago`;
@@ -261,7 +262,7 @@ function activityClass(date: Date): string {
   const days = daysSince(date);
   if (days <= 7) return 'cz-active';
   if (days <= 30) return 'cz-stale';
-  return 'cz-inactive';
+  return 'cz-inactive'; // also covers NaN from invalid dates
 }
 
 function mergeData(members: ClaimMember[], citizensResp: CitizensApiResponse): CitizensData {
@@ -274,7 +275,7 @@ function mergeData(members: ClaimMember[], citizensResp: CitizensApiResponse): C
     return {
       entityId: m.playerEntityId || m.entityId,
       userName: m.userName || c?.userName || 'Unknown',
-      lastLogin: new Date(m.lastLoginTimestamp),
+      lastLogin: m.lastLoginTimestamp ? new Date(m.lastLoginTimestamp) : new Date(0),
       totalSkills: c?.totalSkills || 0,
       highestLevel: c?.highestLevel || 0,
       totalLevel: c?.totalLevel || 0,
