@@ -1,270 +1,384 @@
-// Citizens view rendering
-// Handles: citizen table, equipment display, vault loading
-import { API } from './api.js';
-import type {
-  ClaimCitizensResponse,
-  EquipmentSlot,
-  VaultCollectible,
-  EquipmentSlotName,
-  GearType,
-  VaultCache,
-  Citizen,
-  PlayerVaultResponse,
-  Rarity,
-} from './types/index.js';
-import { CITIZEN_CONFIG } from './configuration/citizenconfig.js';
+// Citizens view — master-detail roster with search and activity filtering
+//
+// Two API calls on tab open: members + citizens. fin
+// Members give login times. Citizens gives skills.
+// TODO: Add Equipment/vault loading for more information.
 
-// Internal state for citizens module
-let _citizensData: ClaimCitizensResponse | null = null;
-const _vaultCache: VaultCache = {};
+import { API } from './api.js';
+import { createLogger } from './logger.js';
+import type { ClaimMember, CitizensApiResponse, CitizenWithSkills } from './types/index.js';
+
+const log = createLogger('Citizens');
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+interface CitizenRecord {
+  entityId: string;
+  userName: string;
+  lastLogin: Date;
+  totalSkills: number;
+  highestLevel: number;
+  totalLevel: number;
+  totalXP: number;
+  skills: Record<string, number> | null;
+}
+
+type ActivityThreshold = 0 | 7 | 14 | 30 | 60;
+type SortField = 'name' | 'lastLogin' | 'totalLevel' | 'highestLevel';
+
+interface State {
+  records: CitizenRecord[];
+  view: 'roster' | 'detail';
+  selectedId: string | null;
+  search: string;
+  activityDays: ActivityThreshold;
+  sortBy: SortField;
+  skillNames: Record<string, string>;
+}
+
+// TODO: Move to claimData next after State migration
+const state: State = {
+  records: [],
+  view: 'roster',
+  selectedId: null,
+  search: '',
+  activityDays: 30,
+  sortBy: 'name',
+  skillNames: {},
+};
+
+// =============================================================================
+// DATA
+// =============================================================================
+
+function daysSince(date: Date): number {
+  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function relativeTime(date: Date): string {
+  const days = daysSince(date);
+  if (days === 0) return 'today';
+  if (days === 1) return '1d ago';
+  if (days < 30) return `${days}d ago`;
+  if (days < 365) return `${Math.floor(days / 30)}mo ago`;
+  return `${Math.floor(days / 365)}y ago`;
+}
+
+function activityClass(date: Date): string {
+  const days = daysSince(date);
+  if (days <= 7) return 'cz-active';
+  if (days <= 30) return 'cz-stale';
+  return 'cz-inactive';
+}
+
+/**
+ * Members and citizens are two separate API responses about the same people.
+ * Members has login times + permissions. Citizens has skills.
+ * playerEntityId on members should match entityId on citizens.
+ */
+function mergeData(
+  members: ClaimMember[],
+  citizensResp: CitizensApiResponse
+): { records: CitizenRecord[]; skillNames: Record<string, string> } {
+  const citizens = citizensResp.citizens || [];
+  const skillNames = citizensResp.skillNames || {};
+  const byId = new Map(citizens.map((c) => [c.entityId, c as CitizenWithSkills]));
+
+  const records: CitizenRecord[] = members.map((m) => {
+    const c = byId.get(m.playerEntityId) || byId.get(m.entityId);
+
+    return {
+      entityId: m.playerEntityId || m.entityId,
+      userName: m.userName || c?.userName || 'Unknown',
+      lastLogin: new Date(m.lastLoginTimestamp),
+      totalSkills: c?.totalSkills || 0,
+      highestLevel: c?.highestLevel || 0,
+      totalLevel: c?.totalLevel || 0,
+      totalXP: c?.totalXP || 0,
+      skills: c?.skills || null,
+    };
+  });
+
+  return { records, skillNames };
+}
+
+function filtered(): CitizenRecord[] {
+  let result = state.records;
+
+  if (state.activityDays > 0) {
+    result = result.filter((r) => daysSince(r.lastLogin) <= state.activityDays);
+  }
+
+  if (state.search) {
+    const q = state.search.toLowerCase();
+    result = result.filter((r) => r.userName.toLowerCase().includes(q));
+  }
+
+  const s = state.sortBy;
+  return [...result].sort((a, b) => {
+    if (s === 'name') return a.userName.localeCompare(b.userName);
+    if (s === 'lastLogin') return b.lastLogin.getTime() - a.lastLogin.getTime();
+    if (s === 'totalLevel') return b.totalLevel - a.totalLevel;
+    return b.highestLevel - a.highestLevel;
+  });
+}
+
+// =============================================================================
+// RENDER
+// =============================================================================
+
+function toolbar(count: number, total: number): string {
+  const opt = (val: string, label: string, current: string) =>
+    `<option value="${val}"${val === current ? ' selected' : ''}>${label}</option>`;
+
+  return `
+    <div class="cz-toolbar">
+      <div class="cz-toolbar-row">
+        <input type="text" id="cz-search" class="cz-search"
+               placeholder="Search members..." value="${state.search}">
+        <select id="cz-activity" class="cz-select">
+          ${opt('0', 'All members', String(state.activityDays))}
+          ${opt('7', 'Active 7d', String(state.activityDays))}
+          ${opt('14', 'Active 14d', String(state.activityDays))}
+          ${opt('30', 'Active 30d', String(state.activityDays))}
+          ${opt('60', 'Active 60d', String(state.activityDays))}
+        </select>
+        <select id="cz-sort" class="cz-select">
+          ${opt('name', 'Name', state.sortBy)}
+          ${opt('lastLogin', 'Last login', state.sortBy)}
+          ${opt('totalLevel', 'Total level', state.sortBy)}
+          ${opt('highestLevel', 'Highest skill', state.sortBy)}
+        </select>
+      </div>
+      <span class="cz-toolbar-count">
+        ${count === total ? `${total} members` : `${count} of ${total}`}
+      </span>
+    </div>`;
+}
+
+function rosterRow(r: CitizenRecord): string {
+  return `
+    <button class="cz-member-row" data-id="${r.entityId}">
+      <span class="cz-dot ${activityClass(r.lastLogin)}"></span>
+      <span class="cz-name">${r.userName}</span>
+      <span class="cz-meta">
+        <span class="cz-login">${relativeTime(r.lastLogin)}</span>
+        ${r.totalLevel > 0 ? `<span class="cz-level">Lv ${r.totalLevel}</span>` : ''}
+      </span>
+    </button>`;
+}
+
+function roster(): string {
+  const rows = filtered();
+  const bar = toolbar(rows.length, state.records.length);
+
+  if (rows.length === 0) {
+    const msg = state.records.length === 0 ? 'No members found.' : 'No members match your search.';
+    return `${bar}<p class="empty-state">${msg}</p>`;
+  }
+
+  return `${bar}<div class="cz-roster">${rows.map(rosterRow).join('')}</div>`;
+}
+
+function detail(r: CitizenRecord): string {
+  let skillsHtml = '';
+  if (r.skills && Object.keys(r.skills).length > 0) {
+    const entries = Object.entries(r.skills)
+      .map(([id, level]) => ({ name: state.skillNames[id] || id, level }))
+      .sort((a, b) => b.level - a.level);
+
+    skillsHtml = `
+      <div class="cz-section">
+        <h4 class="cz-heading">Skills</h4>
+        <div class="cz-skills">
+          ${entries
+            .map(
+              (s) => `
+            <div class="cz-skill">
+              <span class="cz-skill-name">${s.name}</span>
+              <span class="cz-skill-level">${s.level}</span>
+            </div>`
+            )
+            .join('')}
+        </div>
+      </div>`;
+  }
+
+  return `
+    <div class="cz-detail">
+      <button id="cz-back" class="cz-back">&larr; Back</button>
+      <div class="cz-detail-header">
+        <span class="cz-dot ${activityClass(r.lastLogin)}"></span>
+        <h3 class="cz-detail-name">${r.userName}</h3>
+        <button class="copy-btn" data-id="${r.entityId}" title="Copy ID">${r.entityId}</button>
+      </div>
+      <div class="cz-section">
+        <div class="cz-stats">
+          <div class="cz-stat">
+            <span class="cz-stat-label">Last login</span>
+            <span class="cz-stat-value">${relativeTime(r.lastLogin)}</span>
+          </div>
+          <div class="cz-stat">
+            <span class="cz-stat-label">Total level</span>
+            <span class="cz-stat-value">${r.totalLevel}</span>
+          </div>
+          <div class="cz-stat">
+            <span class="cz-stat-label">Highest skill</span>
+            <span class="cz-stat-value">${r.highestLevel}</span>
+          </div>
+          <div class="cz-stat">
+            <span class="cz-stat-label">Total XP</span>
+            <span class="cz-stat-value">${r.totalXP.toLocaleString()}</span>
+          </div>
+        </div>
+      </div>
+      ${skillsHtml}
+    </div>`;
+}
+
+// =============================================================================
+// WIRING
+// =============================================================================
+
+function wire(el: HTMLElement): void {
+  if (state.view === 'detail') {
+    wireDetail(el);
+  } else {
+    wireRoster(el);
+  }
+}
+
+function wireRoster(el: HTMLElement): void {
+  const search = el.querySelector<HTMLInputElement>('#cz-search');
+  if (search) {
+    search.addEventListener('input', () => {
+      state.search = search.value;
+      // Only re-render the roster area, not the toolbar
+      const rosterEl = el.querySelector('.cz-roster');
+      const countEl = el.querySelector('.cz-toolbar-count');
+      const rows = filtered();
+      if (rosterEl) rosterEl.innerHTML = rows.map(rosterRow).join('');
+      if (countEl)
+        countEl.textContent =
+          rows.length === state.records.length
+            ? `${state.records.length} members`
+            : `${rows.length} of ${state.records.length}`;
+      wireRowClicks(el);
+    });
+    // Auto-focus search on roster render
+    search.focus();
+  }
+
+  el.querySelector<HTMLSelectElement>('#cz-activity')?.addEventListener('change', (e) => {
+    state.activityDays = parseInt((e.target as HTMLSelectElement).value, 10) as ActivityThreshold;
+    paint(el);
+  });
+
+  el.querySelector<HTMLSelectElement>('#cz-sort')?.addEventListener('change', (e) => {
+    state.sortBy = (e.target as HTMLSelectElement).value as SortField;
+    paint(el);
+  });
+
+  wireRowClicks(el);
+}
+
+function wireRowClicks(el: HTMLElement): void {
+  el.querySelectorAll<HTMLButtonElement>('.cz-member-row').forEach((row) => {
+    row.addEventListener('click', () => {
+      state.selectedId = row.dataset.id || null;
+      state.view = 'detail';
+      paint(el);
+    });
+  });
+}
+
+function wireDetail(el: HTMLElement): void {
+  el.querySelector<HTMLButtonElement>('#cz-back')?.addEventListener('click', () => {
+    state.view = 'roster';
+    state.selectedId = null;
+    paint(el);
+  });
+
+  el.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id || '';
+      navigator.clipboard.writeText(id).then(() => {
+        const original = btn.textContent;
+        btn.textContent = '✔';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = original;
+          btn.classList.remove('copied');
+        }, 1500);
+      });
+    });
+  });
+}
+
+// =============================================================================
+// PAINT — render-then-wire
+// =============================================================================
+
+function paint(el: HTMLElement): void {
+  if (state.view === 'detail' && state.selectedId) {
+    const record = state.records.find((r) => r.entityId === state.selectedId);
+    if (record) {
+      el.innerHTML = detail(record);
+      wire(el);
+      return;
+    }
+    // Stale selection — fall back
+    state.view = 'roster';
+    state.selectedId = null;
+  }
+
+  el.innerHTML = roster();
+  wire(el);
+}
+
+// =============================================================================
+// PUBLIC
+// =============================================================================
 
 export const CitizensUI = {
-  // Render citizens table with equipment matrix
-  renderCitizens(data: ClaimCitizensResponse): void {
-    const grid: HTMLElement | null = document.getElementById('citizens-grid');
-    if (!grid) return;
+  async loadAndRender(claimId: string): Promise<void> {
+    const el = document.getElementById('citizens-grid');
+    if (!el) return;
 
-    _citizensData = data;
-    const citizens: Citizen[] = data.citizens || [];
-
-    if (citizens.length === 0) {
-      grid.innerHTML = '<p class="empty-state">No citizens found for this claim.</p>';
+    if (state.records.length > 0) {
+      paint(el);
       return;
     }
 
-    // Equipment slot order - from config
-    const slots: string[] = CITIZEN_CONFIG.EQUIPMENT_SLOTS;
-    const slotNames: string[] = CITIZEN_CONFIG.SLOT_DISPLAY_NAMES;
-    const gearTypes: string[] = CITIZEN_CONFIG.GEAR_TYPES;
-    const gearTypeShort: string[] = gearTypes.map((g) => g.split(' ')[0]);
-
-    let html = '<table class="citizens-table"><thead><tr>';
-    html += '<th></th><th>Name</th><th>ID</th>';
-    gearTypeShort.forEach((type) => {
-      html += `<th colspan="6">${type}</th>`;
-    });
-    html += '</tr><tr><th></th><th></th><th></th>';
-    for (let i = 0; i < 3; i++) {
-      slotNames.forEach((name) => {
-        html += `<th class="slot-header">${name.charAt(0)}</th>`;
-      });
-    }
-    html += '</tr></thead><tbody>';
-
-    for (const citizen of citizens) {
-      const odataId: string = citizen.entityId;
-
-      html += `<tr data-player-id="${odataId}">`;
-      html += `<td class="vault-btn-cell"><button class="vault-btn" data-player-id="${odataId}" title="Load vault gear">+</button></td>`;
-      html += `<td class="citizen-name">${citizen.userName || 'Unknown'}</td>`;
-      html += `<td class="citizen-id"><button class="copy-btn" data-id="${odataId}" title="Copy ID">${odataId}</button></td>`;
-
-      // For each gear type
-      for (const gearType of gearTypes) {
-        // For each slot
-        for (const slot of slots) {
-          const equipped: EquipmentSlot | undefined = citizen.equipment.find(
-            (e) => e.primary === slot && e.item?.tags === gearType
-          );
-
-          const cellId = `cell-${odataId}-${gearType.split(' ')[0].toLowerCase()}-${slot}`;
-
-          if (equipped && equipped.item) {
-            const tier: number = equipped.item.tier || 0;
-            const rarity: string = (equipped.item.rarityString || '').toLowerCase();
-            const rarityClass: string = rarity ? `rarity-${rarity}` : '';
-            html += `<td id="${cellId}" class="gear-cell ${rarityClass}" title="${equipped.item.name}" data-equipped="true" data-tier="${tier}">T${tier}</td>`;
-          } else {
-            html += `<td id="${cellId}" class="gear-cell empty loading" data-equipped="false" data-tier="0">-</td>`;
-          }
-        }
-      }
-
-      html += '</tr>';
-    }
-
-    html += '</tbody></table>';
-    grid.innerHTML = html;
-
-    // Add vault load handlers
-    grid.querySelectorAll<HTMLButtonElement>('.vault-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this._loadPlayerVault(btn.dataset.playerId || '', btn);
-      });
-    });
-
-    // Add copy handlers
-    grid.querySelectorAll<HTMLButtonElement>('.copy-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.copyToClipboard(btn.dataset.id || '', btn);
-      });
-    });
-  },
-
-  // Update a single citizen's equipment cells (for progressive loading)
-  updateCitizenEquipment(playerId: string, equipment: EquipmentSlot[]): void {
-    const slots: string[] = CITIZEN_CONFIG.EQUIPMENT_SLOTS;
-    const gearTypes: string[] = CITIZEN_CONFIG.GEAR_TYPES;
-
-    for (const gearType of gearTypes) {
-      const gearKey: string = gearType.split(' ')[0].toLowerCase();
-
-      for (const slot of slots) {
-        const cellId = `cell-${playerId}-${gearKey}-${slot}`;
-        const cell: HTMLElement | null = document.getElementById(cellId);
-        if (!cell) continue;
-
-        // Always remove loading class
-        cell.classList.remove('loading');
-
-        const equipped: EquipmentSlot | undefined = equipment.find(
-          (e) => e.primary === slot && e.item?.tags === gearType
-        );
-
-        if (equipped && equipped.item) {
-          const tier: number = equipped.item.tier || 0;
-          const rarity: string = (equipped.item.rarityString || '').toLowerCase();
-          const rarityClass: string = rarity ? `rarity-${rarity}` : '';
-          cell.className = `gear-cell ${rarityClass}`;
-          cell.textContent = `T${tier}`;
-          cell.title = equipped.item.name;
-          cell.dataset.equipped = 'true';
-          cell.dataset.tier = String(tier);
-        }
-      }
-    }
-  },
-
-  // Load vault gear for a player
-  async _loadPlayerVault(playerId: string, btn: HTMLButtonElement): Promise<void> {
-    // Don't reload if already loaded
-    if (_vaultCache[playerId]) {
-      btn.textContent = 'ok';
-      btn.disabled = true;
-      return;
-    }
-
-    btn.textContent = '...';
-    btn.disabled = true;
+    el.innerHTML = '<p class="cz-loading">Loading members...</p>';
 
     try {
-      const data: PlayerVaultResponse = await API.getPlayerVault(playerId);
-      const items: VaultCollectible[] = this._parseVaultCollectibles(data);
-      _vaultCache[playerId] = items;
+      const [members, citizens] = await Promise.all([
+        API.getClaimMembers(claimId),
+        API.getClaimCitizens(claimId),
+      ]);
 
-      this._fillVaultGear(playerId, items);
-      btn.textContent = 'ok';
-      btn.classList.add('loaded');
+      const merged = mergeData(members.members, citizens);
+      state.records = merged.records;
+      state.skillNames = merged.skillNames;
+      log.info(`Loaded ${merged.records.length} members`);
+
+      paint(el);
     } catch (err) {
-      console.error(`Failed to load vault for ${playerId}:`, err);
-      btn.textContent = '!';
-      btn.classList.add('error');
-      btn.disabled = false;
+      const error = err as Error;
+      log.error('Failed to load citizens:', error.message);
+      el.innerHTML = `<p class="empty-state">Failed to load members: ${error.message}</p>`;
     }
   },
 
-  // Parse vault collectibles into gear items
-  _parseVaultCollectibles(data: { collectibles?: VaultCollectible[] }): VaultCollectible[] {
-    const collectibles: VaultCollectible[] = data.collectibles || [];
-
-    // Filter to just clothing/armor items with valid tiers
-    const validTypes: number[] = Object.values(CITIZEN_CONFIG.SLOT_TYPE_CODES);
-    const clothingTags: string[] = CITIZEN_CONFIG.CLOTHING_TAGS;
-
-    const filtered: VaultCollectible[] = collectibles.filter((item) => {
-      return (
-        validTypes.includes(item.type) &&
-        clothingTags.includes(item.tag) &&
-        item.tier &&
-        item.tier > 0
-      );
-    });
-
-    return filtered;
-  },
-
-  // Fill in vault gear that's better than equipped
-  _fillVaultGear(playerId: string, vaultItems: VaultCollectible[]): void {
-    const slots = CITIZEN_CONFIG.EQUIPMENT_SLOTS as EquipmentSlotName[];
-    const gearTypes = CITIZEN_CONFIG.GEAR_TYPES as GearType[];
-
-    for (const gearType of gearTypes) {
-      const gearKey: string = gearType.split(' ')[0].toLowerCase();
-
-      for (const slot of slots) {
-        const cellId = `cell-${playerId}-${gearKey}-${slot}`;
-        const cell: HTMLElement | null = document.getElementById(cellId);
-
-        if (!cell) continue;
-
-        const currentTier: number = parseInt(cell.dataset.tier || '0', 10);
-        const bestVaultItem: VaultCollectible | null = this._getBestVaultItem(
-          vaultItems,
-          slot,
-          gearType
-        );
-
-        if (bestVaultItem && bestVaultItem.tier > currentTier) {
-          const rarity: string = (bestVaultItem.rarityStr || '').toLowerCase();
-          const rarityClass: string = rarity ? `rarity-${rarity}` : '';
-
-          // Update cell with vault item (add 'from-vault' class to distinguish)
-          cell.className = `gear-cell from-vault ${rarityClass}`;
-          cell.textContent = `T${bestVaultItem.tier}`;
-          cell.title = `${bestVaultItem.name} (in vault)`;
-          cell.dataset.tier = String(bestVaultItem.tier);
-        }
-      }
-    }
-  },
-
-  // Find best vault item for a given slot and gear type
-  _getBestVaultItem(
-    vaultItems: VaultCollectible[],
-    slot: EquipmentSlotName,
-    gearType: GearType
-  ): VaultCollectible | null {
-    const targetType: number = CITIZEN_CONFIG.SLOT_TYPE_CODES[slot];
-
-    // Match tag - vault uses both "X Clothing" and "X Armor" patterns
-    const gearBase: string = gearType.split(' ')[0]; // "Cloth", "Leather", "Metal"
-    const possibleTags: string[] = [`${gearBase} Clothing`, `${gearBase} Armor`];
-
-    // Filter items that match the gear type and slot type
-    const matches: VaultCollectible[] = vaultItems.filter((item) => {
-      return item.type === targetType && possibleTags.includes(item.tag);
-    });
-
-    if (matches.length === 0) return null;
-
-    // Sort by tier desc, then rarity
-    matches.sort((a, b) => {
-      const tierDiff = (b.tier || 0) - (a.tier || 0);
-      if (tierDiff !== 0) return tierDiff;
-      const aRarity: number = CITIZEN_CONFIG.RARITY_ORDER.indexOf(
-        (a.rarityStr || '').toLowerCase() as Rarity
-      );
-      const bRarity: number = CITIZEN_CONFIG.RARITY_ORDER.indexOf(
-        (b.rarityStr || '').toLowerCase() as Rarity
-      );
-      return bRarity - aRarity;
-    });
-
-    return matches[0];
-  },
-
-  // Copy text to clipboard with visual feedback
-  copyToClipboard(text: string, btn: HTMLButtonElement): void {
-    navigator.clipboard.writeText(text).then(() => {
-      const original = btn.textContent;
-      btn.textContent = '✔';
-      btn.classList.add('copied');
-      setTimeout(() => {
-        btn.textContent = original;
-        btn.classList.remove('copied');
-      }, 1500);
-    });
+  reset(): void {
+    state.records = [];
+    state.view = 'roster';
+    state.selectedId = null;
+    state.search = '';
+    state.skillNames = {};
   },
 };

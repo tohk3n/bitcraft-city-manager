@@ -111,6 +111,20 @@ export interface ClaimCitizensResponse {
   citizens: Citizen[];
 }
 
+export interface CitizensApiResponse extends ClaimCitizensResponse {
+  skillNames?: Record<string, string>;
+}
+
+export interface CitizenWithSkills {
+  entityId: string;
+  userName?: string;
+  skills?: Record<string, number>;
+  totalSkills?: number;
+  highestLevel?: number;
+  totalLevel?: number;
+  totalXP?: number;
+}
+
 export interface PlayerEquipmentResponse {
   equipment: EquipmentSlot[];
 }
