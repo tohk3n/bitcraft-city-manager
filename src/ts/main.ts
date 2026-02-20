@@ -1,33 +1,49 @@
-// Main entry point - imports all modules and wires up the app
+// Main entry point — wires up modules, manages tab switching and data loading
 import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
 import { processInventory, processCraftingStations } from './inventory.js';
+import { CitizensUI } from './citizens.js';
 import * as Planner from './planner/planner.js';
 import * as ClaimSearch from './claim-search.js';
 import type {
-  ClaimData,
   PlannerState,
   CalculateOptions,
   ClaimInventoriesResponse,
+  ClaimCitizensResponse,
   InventoryProcessResult,
   ClaimBuildingsResponse,
   CraftingStationsResult,
   ClaimResponse,
   Building,
+  ApiItem,
 } from './types/index.js';
-import { CitizensUI } from './citizens.js';
+import type { CitizensData } from './citizens.js';
 
 const log = createLogger('Main');
 
 const loadBtn = document.getElementById('load-btn');
 
-// Store loaded data for switching views
-const claimData: ClaimData = {
+// Loaded data cache — one field per lazy-loaded tab
+// citizens: raw API response for the IDs tab (name/ID lookup)
+// citizensData: enriched roster data for the citizens tab (skills, gear, etc.)
+// TODO: IDs tab should consume citizensData.records instead of a separate API type
+interface AppData {
+  claimId: string | null;
+  claimInfo: ClaimResponse | null;
+  inventories: ClaimInventoriesResponse | null;
+  citizens: ClaimCitizensResponse | null;
+  citizensData: CitizensData | null;
+  buildings: ClaimBuildingsResponse | null;
+  items: ApiItem[] | null;
+}
+
+const claimData: AppData = {
   claimId: null,
   claimInfo: null,
   inventories: null,
   citizens: null,
+  citizensData: null,
   buildings: null,
   items: null,
 };
@@ -172,7 +188,13 @@ async function loadPlanner(): Promise<void> {
 // Load citizens data (lazy loaded when tab clicked)
 async function loadCitizens(): Promise<void> {
   if (!claimData.claimId) return;
-  await CitizensUI.loadAndRender(claimData.claimId);
+
+  const result = await CitizensUI.loadAndRender(
+    claimData.claimId,
+    claimData.citizensData ?? undefined
+  );
+
+  if (result) claimData.citizensData = result;
 }
 
 // Load items data (lazy loaded when tab clicked)
@@ -244,9 +266,7 @@ function setupTabs(): void {
   // ID filter
   const filterInput = document.getElementById('ids-filter') as HTMLInputElement | null;
   filterInput?.addEventListener('input', () => {
-    const activeTab = document.querySelector<HTMLElement>('.ids-tab-btn.active');
-    const activeType = activeTab?.dataset.type || 'citizens';
-    UI.filterIdList(filterInput.value, activeType);
+    UI.filterIdList(filterInput.value);
   });
 }
 

@@ -1,12 +1,35 @@
-/* Citizens view — roster + detail */
+@use 'variables';
+@use 'sass:color';
+
+// Bright rarity colors for text-on-dark
+$rarity-fg: (
+  common: #8b949e,
+  uncommon: #a3be5c,
+  rare: #58a6ff,
+  epic: #d4a02a,
+  legendary: #f47067,
+  mythic: #bc8cff,
+);
+
+@each $name, $color in $rarity-fg {
+  .cz-r-#{$name} {
+    color: $color;
+  }
+}
+.cz-r-none {
+  color: var(--text-muted);
+}
+
+// --- LOADING ---
 
 .cz-loading {
   text-align: center;
   padding: 40px;
-  color: var(--text-secondary);
+  color: var(--text-muted);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
 
-/* Toolbar */
+// --- TOOLBAR ---
 
 .cz-toolbar {
   display: flex;
@@ -64,7 +87,7 @@
   white-space: nowrap;
 }
 
-/* Roster */
+// --- ROSTER ---
 
 .cz-roster {
   display: flex;
@@ -123,7 +146,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Activity dot */
+// --- ACTIVITY DOT ---
 
 .cz-dot {
   width: 8px;
@@ -142,16 +165,21 @@
   }
 }
 
-/* Detail view */
+// --- DETAIL TOP ---
 
 .cz-detail {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
+}
+
+.cz-detail-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 .cz-back {
-  align-self: flex-start;
   padding: 6px 12px;
   font-size: 0.85rem;
   font-weight: 500;
@@ -160,9 +188,7 @@
   border: 1px solid var(--border);
   border-radius: 6px;
   cursor: pointer;
-  transition:
-    background 0.15s,
-    color 0.15s;
+  flex-shrink: 0;
 
   &:hover {
     background: var(--bg-tertiary);
@@ -174,79 +200,180 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 
 .cz-detail-name {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.cz-section {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-}
-
-.cz-heading {
-  margin: 0 0 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Stats */
-
-.cz-stats {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.cz-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 80px;
-}
-
-.cz-stat-label {
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.cz-stat-value {
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.cz-detail-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+// --- PROFILE GRID ---
+// Seven columns. No decorative lines. Whitespace is the structure.
+
+.cz-grid {
+  display: grid;
+  grid-template-columns:
+    [skill] auto
+    [bar] auto
+    [tool] auto
+    [gap] 20px
+    [slot] auto
+    [cloth] auto
+    [lthr] auto
+    [metal] auto;
+  column-gap: 8px;
+  align-items: baseline;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.cz-row {
+  display: contents;
+}
+
+// Header row — just the gear type labels, left zone is empty
+.cz-row-hdr > span {
+  padding-bottom: 4px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+// --- LEFT ZONE ---
+
+.cz-c-skill {
+  grid-column: skill;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.cz-c-tool {
+  grid-column: tool;
+  white-space: nowrap;
+}
+
+.cz-stashed {
+  color: var(--text-muted);
+  font-size: 0.7rem;
+}
+
+.cz-c-bar {
+  grid-column: bar;
+  white-space: nowrap;
+}
+
+// The track is the full bar width. The fill sits inside it.
+.cz-bar-track {
+  display: inline-block;
+  width: 20ch;
+  height: 1.4em;
+  background: var(--bg-tertiary);
+  overflow: hidden;
+  vertical-align: middle;
+  position: relative;
+}
+
+.cz-bar-fill {
+  display: inline-block;
+  height: 100%;
+  text-align: center;
+  min-width: 2ch;
+  font-weight: 700;
+  font-size: 0.75rem;
   font-variant-numeric: tabular-nums;
-}
 
-/* Skills */
-
-.cz-skills {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.cz-skill {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 10px;
-  border-radius: 4px;
-
-  &:nth-child(odd) {
-    background: var(--bg-tertiary);
+  @each $name, $color in $rarity-fg {
+    &.cz-r-#{$name} {
+      background: $color;
+      color: color.adjust($color, $lightness: -30%);
+    }
   }
+  &.cz-r-none {
+    background: #6e7681;
+    color: #3a3f47;
+  }
+}
+
+// --- RIGHT ZONE ---
+
+.cz-g-gap {
+  grid-column: gap;
+}
+
+.cz-g-slot {
+  grid-column: slot;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-size: 0.75rem;
+}
+
+.cz-g-hdr {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.cz-g-cell {
+  font-weight: 600;
+
+  &.cz-g-empty {
+    color: var(--bg-tertiary);
+    font-weight: 400;
+  }
+
+  &.cz-vault {
+    font-style: italic;
+    border-bottom: 1px dashed currentColor;
+  }
+}
+
+// --- SPACER ---
+// Not a line. Just air.
+
+.cz-spacer {
+  grid-column: 1 / -1;
+  height: 8px;
+}
+
+// --- LEGEND ---
+// Bottom right. Reference material, no preamble.
+
+// Legend sits inline with the last skill row, in the gear zone columns.
+
+.cz-legend-content {
+  grid-column: slot / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+}
+
+.cz-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.cz-vault-sample {
+  font-style: italic;
+  border-bottom: 1px dashed var(--text-muted);
 }
 
 .cz-skill-name {

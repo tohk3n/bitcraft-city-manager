@@ -2,7 +2,6 @@
 import { CONFIG } from './configuration/config.js';
 import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
-import { CitizensUI } from './citizens.js';
 import { IdsUI } from './ids.js';
 import { createLogger } from './logger.js';
 
@@ -217,4 +216,4 @@ const BaseUI = {
 };
 
 // Combine all UI modules into single export
-export const UI = Object.assign({}, BaseUI, DashboardUI, CitizensUI, IdsUI);
+export const UI = Object.assign({}, BaseUI, DashboardUI, IdsUI);

@@ -10,6 +10,7 @@ import type {
   VaultCollectible,
 } from './api.js';
 import type { MaterialCategory } from './inventory.js';
+import type { CitizensData } from '../citizens.js';
 
 // =============================================================================
 // VIEW STATE
@@ -94,10 +95,10 @@ export interface ClaimData {
   claimInfo: ClaimResponse | null;
   inventories: ClaimInventoriesResponse | null;
   citizens: ClaimCitizensResponse | null;
+  citizensData: CitizensData | null;
   buildings: ClaimBuildingsResponse | null;
   items: ApiItem[] | null;
 }
-
 // =============================================================================
 // RESOURCE MATRIX
 // =============================================================================
