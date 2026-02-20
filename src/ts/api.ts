@@ -9,6 +9,7 @@ import type {
   ItemsResponse,
   ItemResponse,
   PlayerEquipmentResponse,
+  PlayerInventoriesResponse,
   PlayerVaultResponse,
   Building,
 } from './types/index.js';
@@ -68,8 +69,8 @@ export const API = {
     return this.fetch<PlayerEquipmentResponse>(`/players/${playerId}/equipment`);
   },
 
-  getPlayerInventories(playerId: string): Promise<unknown> {
-    return this.fetch<unknown>(`/players/${playerId}/inventories`);
+  getPlayerInventories(playerId: string): Promise<PlayerInventoriesResponse> {
+    return this.fetch<PlayerInventoriesResponse>(`/players/${playerId}/inventories`);
   },
 
   getPlayerVault(playerId: string): Promise<PlayerVaultResponse> {
