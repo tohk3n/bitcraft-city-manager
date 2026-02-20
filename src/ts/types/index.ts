@@ -1,9 +1,10 @@
-// Type definitions index - single import point
+// Type definitions index — single import point
 // Internal organization can evolve without breaking consumers
 
 export * from './enums.js';
 export * from './api.js';
 export * from './api-members.js';
+export * from './api-players.js';
 export * from './codex.js';
 export * from './dashboard.js';
 export * from './inventory.js';
