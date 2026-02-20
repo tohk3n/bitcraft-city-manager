@@ -375,3 +375,15 @@ $rarity-fg: (
   font-style: italic;
   border-bottom: 1px dashed var(--text-muted);
 }
+
+.cz-skill-name {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.cz-skill-level {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
