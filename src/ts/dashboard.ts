@@ -57,9 +57,33 @@ export const DashboardUI = {
     );
     this.renderSubView(
       inventory,
-      DASHBOARD_CONFIG.FORESTRY_TAGS,
-      DASHBOARD_CONFIG.FORESTRY_ITEMS_ADDITIONAL,
-      'forestry-view'
+      DASHBOARD_CONFIG.WOODWORKING_TAGS,
+      DASHBOARD_CONFIG.WOODWORKING_ITEMS_ADDITIONAL,
+      'woodworking-view'
+    );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.MASONRY_TAGS,
+      DASHBOARD_CONFIG.MASONRY_ITEMS_ADDITIONAL,
+      'masonry-view'
+    );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.SMITHING_TAGS,
+      DASHBOARD_CONFIG.SMITHING_ITEMS_ADDITIONAL,
+      'smithing-view'
+    );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.FISHING_TAGS,
+      DASHBOARD_CONFIG.FISHING_ITEMS_ADDITIONAL,
+      'smithing-view'
+    );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.SCHOLAR_TAGS,
+      DASHBOARD_CONFIG.SCHOLAR_ITEMS_ADDITIONAL,
+      'smithing-view'
     );
     this.wireButtons();
     this.show('dashboard');
