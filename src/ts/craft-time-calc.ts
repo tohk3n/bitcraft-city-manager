@@ -150,7 +150,7 @@ export function calcRestTime(
  * Calculate everything for a single craft operation.
  *
  * craftCount: how many of this item you're making (multiplies effort).
- * Defaults to 1 
+ * Defaults to 1
  * Planner integration will want to pass deficit quantities.
  */
 export function calculateCraftTime(
