@@ -30,6 +30,10 @@ export interface RecipeEntry {
   station: StationRequirement | null;
   skill: SkillRequirement | null;
   tool: ToolRequirement | null;
+  actions?: number | null;
+  swingTime?: number | null;
+  staminaPerSwing?: number | null;
+  xpPerSwing?: number | null;
 }
 
 export interface RecipeInput {
