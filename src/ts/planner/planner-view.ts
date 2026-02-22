@@ -122,6 +122,8 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
  * Render the active view.
  */
 function renderContent(container: HTMLElement): void {
+  setViewportLock(currentView === 'flowchart');
+
   if (currentView === 'dashboard') {
     PlannerDashboard.render(container, cachedPlanItems, cachedTargetTier);
   } else {
@@ -171,4 +173,8 @@ export function renderLoading(container: HTMLElement): void {
 
 export function renderEmpty(container: HTMLElement): void {
   container.innerHTML = '<div class="pv-empty">Select a target tier</div>';
+}
+
+function setViewportLock(locked: boolean): void {
+  document.body.classList.toggle('viewport-lock', locked);
 }

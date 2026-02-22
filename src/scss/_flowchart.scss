@@ -555,3 +555,94 @@
   padding: 48px;
   color: var(--text-secondary);
 }
+
+/* ============================================
+   Viewport Lock — fill screen, no page scroll
+   ============================================ */
+
+body.viewport-lock {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  padding-bottom: 0;
+
+  // ── Main wrapper — the missing link ───────────────
+  > main {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // ── Fixed chrome ──────────────────────────────────
+  header,
+  #claim-input,
+  #claim-header,
+  #claim-info,
+  #view-tabs,
+  #error {
+    flex-shrink: 0;
+  }
+
+  // ── Planner section fills remaining space ─────────
+  #view-planner {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  // ── Planner internals (unchanged) ─────────────────
+  #planner-controls {
+    flex-shrink: 0;
+  }
+
+  #planner-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .pv-container {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+  }
+
+  .pv-toolbar {
+    flex-shrink: 0;
+  }
+
+  .pv-content {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .fc-header {
+    flex-shrink: 0;
+  }
+
+  .fc-tabs {
+    flex-shrink: 0;
+  }
+
+  .fc-options {
+    flex-shrink: 0;
+  }
+
+  .fc-viewport {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .fc-legend {
+    flex-shrink: 0;
+  }
+}
