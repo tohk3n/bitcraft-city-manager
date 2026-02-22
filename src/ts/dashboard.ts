@@ -485,7 +485,6 @@ export const DashboardUI = {
     const completeTagSet = new Set(completeTags);
 
     const map: ResourceMatrix = {};
-    let result = null;
 
     for (const category of Object.values(inventory)) {
       for (const [tag, tagGroup] of Object.entries(category)) {
@@ -494,19 +493,27 @@ export const DashboardUI = {
           if (!includesTag && !additionalSet.has(item.name)) {
             continue;
           }
-
-          if (!map[tag]) {
-            map[tag] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+          // add for tag row
+          if (includesTag) {
+            if (!map[tag]) {
+              map[tag] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+            }
+            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
+            map[tag][tierIndex].push(item.qty);
           }
-
-          const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
-          map[tag][tierIndex].push(item.qty);
+          // Add single row for additional items -> can be used to show single lines of an item
+          if (additionalSet.has(item.name)) {
+            if (!map[item.name]) {
+              map[item.name] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+            }
+            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
+            map[item.name][tierIndex].push(item.qty);
+          }
         }
       }
     }
 
-    result = { map };
-    return result;
+    return { map };
   },
   createMatrixConfig(named: NamedMatrix): MatrixConfig {
     const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
