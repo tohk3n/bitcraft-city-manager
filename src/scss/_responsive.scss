@@ -1,0 +1,221 @@
+/**
+ * Responsive Breakpoints
+ *
+ * Single source of truth for all responsive behavior.
+ * Imported last in main.scss so overrides land cleanly.
+ *
+ * Breakpoints:
+ *   ≤ 600px  — mobile (phones, 390px minimum target)
+ *   ≥ 1800px — wide (multi-column opportunities)
+ *
+ * Existing per-component media queries left in place:
+ *   _planner-view.scss    (700px, 500px)
+ *   _planner-dashboard.scss (600px, 400px)
+ *   _calculator.scss       (768px)
+ */
+
+/* ============================================
+   MOBILE — ≤ 600px
+   ============================================ */
+
+@media (max-width: 600px) {
+  // ── Body ────────────────────────────────────────
+  body {
+    padding: 12px;
+  }
+
+  // ── Header — stack title and search ─────────────
+  header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+
+    h1 {
+      font-size: 1.25rem;
+    }
+  }
+
+  #claim-input {
+    width: 100%;
+  }
+
+  .claim-input-wrapper {
+    flex: 1;
+  }
+
+  #claim-input-field {
+    width: 100%;
+  }
+
+  // ── Claim header — stack stats below title ──────
+  .claim-header-content {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .claim-stats {
+    gap: 16px;
+  }
+
+  .claim-stat {
+    min-width: 60px;
+
+    .stat-value {
+      font-size: 0.95rem;
+    }
+  }
+
+  // ── Nav tabs — horizontal scroll ────────────────
+  #view-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; // Firefox
+    flex-wrap: nowrap;
+    gap: 0;
+    padding-bottom: 0;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+    }
+  }
+
+  // ── Planner controls — stack ────────────────────
+  .planner-controls {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  // ── Dashboard toolbar — wrap filters ────────────
+  .dash-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .dash-options {
+    margin-left: 0;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  // ── Dashboard items — single column ─────────────
+  .dash-group-items {
+    grid-template-columns: 1fr;
+  }
+
+  .dash-group-header {
+    // Collapse bar and pct on narrow screens
+    grid-template-columns: 16px auto 1fr 32px;
+
+    .dash-group-bar,
+    .dash-group-pct {
+      display: none;
+    }
+  }
+
+  // ── Flowchart — tighter padding ─────────────────
+  .fc-header {
+    flex-wrap: wrap;
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .fc-progress-bar {
+    max-width: 100%;
+  }
+
+  .fc-tab {
+    padding: 8px 10px;
+    font-size: 0.75rem;
+  }
+
+  .fc-viewport {
+    padding: 12px;
+  }
+
+  .fc-legend {
+    gap: 12px;
+    padding: 8px 12px;
+    font-size: 0.7rem;
+  }
+
+  // ── Citizens — grid scrolls horizontally ────────
+  .cz-grid {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 12px;
+    font-size: 0.7rem;
+  }
+
+  .cz-detail-top {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .cz-detail-name {
+    font-size: 0.95rem;
+  }
+
+  .cz-detail-meta {
+    width: 100%;
+    font-size: 0.75rem;
+  }
+
+  // Roster table — tighter
+  .cz-roster-row {
+    padding: 8px 10px;
+    font-size: 0.8rem;
+  }
+
+  // ── Inventory cards — single column ─────────────
+  #inventory-grid {
+    grid-template-columns: 1fr;
+  }
+
+  // ── Quick stats — single column ─────────────────
+  #quick-stats {
+    grid-template-columns: 1fr;
+  }
+
+  // ── IDs table — full width ──────────────────────
+  .ids-table {
+    max-width: 100%;
+    font-size: 0.8rem;
+  }
+
+  #ids-filter {
+    max-width: 100%;
+  }
+}
+
+/* ============================================
+   WIDE — ≥ 1800px
+   Mostly breathing room. Content that auto-fits
+   (inventory grid, stats) already expands naturally
+   with the wider body max-width.
+   ============================================ */
+
+@media (min-width: 1800px) {
+  // ── Dashboard items — 3-column at ultra-wide ────
+  .dash-group-items {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  // ── Inventory grid — wider minimum ──────────────
+  #inventory-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+
+  // ── Quick stats — 3-column ──────────────────────
+  #quick-stats {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}

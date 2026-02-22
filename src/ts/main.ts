@@ -229,6 +229,8 @@ function setupTabs(): void {
     tab.addEventListener('click', () => {
       const view = tab.dataset.view;
 
+      document.body.classList.remove('viewport-lock');
+
       // Update active tab
       tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
