@@ -3,7 +3,6 @@ import type { NamedMatrix } from '../types/index.js';
 export const MAP_CONFIG = {
   // Matrix containing IDs for huntable animals
   ENEMY_ID_MATRIX: {
-    type: 'enemy',
     map: {
       Animals: [[2], [5], [7, 8], [4, 9, 10, 11], [3, 13], [6], [15], [12], [14], [16]],
     },
@@ -11,7 +10,6 @@ export const MAP_CONFIG = {
 
   // Matrix to show resource IDs
   RESOURCE_ID_MATRIX: {
-    type: 'resource',
     map: {
       Trees: [
         [11, 12, 14, 19, 21, 1011009, 1011010, 1012009, 1012010],
