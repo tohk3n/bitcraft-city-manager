@@ -34,6 +34,7 @@ const log = createLogger('Dashboard');
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
+    log.info(data);
     const { inventory, foodItems, supplyCargo } = data;
     const foods: Items = DashboardUI.filterFridge(
       foodItems,
@@ -42,7 +43,18 @@ export const DashboardUI = {
     );
     this.renderQuickStats(foods, supplyCargo, 'quick-stats');
     this.renderInventory(inventory, 'inventory-grid');
-    this.renderTailoring(inventory, 'tailor-view');
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.FARMING_TAGS,
+      DASHBOARD_CONFIG.FARMING_ITEMS_ADDITIONAL,
+      'farming-view'
+    );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.TAILOR_TAGS,
+      DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
+      'tailor-view'
+    );
     this.wireButtons();
     this.show('dashboard');
   },
@@ -464,23 +476,11 @@ export const DashboardUI = {
 
     this.show('inventory');
   },
-  // Render Tailoring sub view
-  renderTailoring(inventory: ProcessedInventory, view: string): void {
-    const filteredInventory: NamedMatrix = this.filterInventory(
-      DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.TAILOR_TYPES,
-      inventory
-    );
-    const config: MatrixConfig = this.createMatrixConfig(filteredInventory);
-    const el: HTMLElement | null = document.getElementById(view);
-    if (!el) return;
-    createDataMatrix(el, config);
-  },
   // Filters so only allowedItems are kept
   filterInventory(
-    additionalItems: string[],
+    inventory: ProcessedInventory,
     completeTags: string[],
-    inventory: ProcessedInventory
+    additionalItems: string[]
   ): NamedMatrix {
     const additionalSet = new Set(additionalItems);
     const completeTagSet = new Set(completeTags);
@@ -515,6 +515,23 @@ export const DashboardUI = {
     }
 
     return { map };
+  },
+  // Used to render a sub view matrix containing the specified items by tag or name
+  renderSubView(
+    inventory: ProcessedInventory,
+    completeTags: string[],
+    singleItems: string[],
+    view: string
+  ): void {
+    const filteredInventory: NamedMatrix = this.filterInventory(
+      inventory,
+      completeTags,
+      singleItems
+    );
+    const config: MatrixConfig = this.createMatrixConfig(filteredInventory);
+    const el: HTMLElement | null = document.getElementById(view);
+    if (!el) return;
+    createDataMatrix(el, config);
   },
   createMatrixConfig(named: NamedMatrix): MatrixConfig {
     const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {

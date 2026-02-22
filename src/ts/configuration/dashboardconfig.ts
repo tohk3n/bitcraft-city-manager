@@ -145,7 +145,7 @@ export const DASHBOARD_CONFIG = {
   BG_CONST: 'background: rgba(88, 166, 255, 0.2);',
   // Array containing the tailoring item names to be shown in the tailoring sub view
   TAILOR_ITEMS_ADDITIONAL: ["Clothmaker's Mordant"],
-  TAILOR_TYPES: [
+  TAILOR_TAGS: [
     'Cloth',
     'Cloth Strip',
     'Filament',
@@ -154,6 +154,19 @@ export const DASHBOARD_CONFIG = {
     'Refined Cloth',
     'Roots',
   ],
+  FARMING_TAGS: [
+    'Filament Seeds',
+    'Grain Seeds',
+    'Vegetable Seeds',
+    'Fertilizer',
+    'Berry',
+    'Mushroom',
+    'Flower',
+    'Grain',
+    'Vegetable',
+    'Filament',
+  ],
+  FARMING_ITEMS_ADDITIONAL: ['Water Bucket'],
 };
 // Initialize reverse lookup
 for (const [category, tags] of Object.entries(DASHBOARD_CONFIG.TAG_CATEGORIES)) {
