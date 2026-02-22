@@ -181,21 +181,9 @@ export const DASHBOARD_CONFIG = {
     'Nail',
   ],
   WOODWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Bucket'],
-  LEATHERWORKING_TAGS: [
-    'Cleaned Pelt',
-    'Leather',
-    'Raw Meat',
-    'Tannin',
-    'Pelt',
-  ],
+  LEATHERWORKING_TAGS: ['Cleaned Pelt', 'Leather', 'Raw Meat', 'Tannin', 'Pelt'],
   LEATHERWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Hideworking Salt'],
-  MASONRY_TAGS: [
-    'Pebbles',
-    'Clay',
-    '',
-    'Tannin',
-    'Pelt',
-  ],
+  MASONRY_TAGS: ['Pebbles', 'Clay', '', 'Tannin', 'Pelt'],
   MASONRY_ITEMS_ADDITIONAL: ['Brickworking Ash'],
   SMITHING_TAGS: [
     'Wood Logs',
@@ -219,19 +207,15 @@ export const DASHBOARD_CONFIG = {
     'Crushed Shells',
     'Fish Oil',
     'Lake Fish',
-    'Lake Fish Filets',
+    'Lake Fish Filet',
     'Ocean Fish',
-    'Ocean Fish Filets',
+    'Ocean Fish Filet',
   ],
   FISHING_ITEMS_ADDITIONAL: [],
-  SCHOLAR_TAGS: [
-    'Ancient Hieroglyphs',
-    'Ink',
-    'Journal',
-    'Parchment',
-    'Pigment',
-  ],
+  SCHOLAR_TAGS: ['Ancient Hieroglyphs', 'Ink', 'Journal', 'Parchment', 'Pigment'],
   SCHOLAR_ITEMS_ADDITIONAL: ['Water Bucket', 'Sugar'],
+  COOKING_TAGS: ['Grain', 'Vegetable', 'Dough', 'Food', 'Ocean Fish Filet', 'Lake Fish Filet'],
+  COOKING_ITEMS_ADDITIONAL: ['Sugar', 'Salt'],
 };
 // Initialize reverse lookup
 for (const [category, tags] of Object.entries(DASHBOARD_CONFIG.TAG_CATEGORIES)) {

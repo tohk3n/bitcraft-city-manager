@@ -63,6 +63,12 @@ export const DashboardUI = {
     );
     this.renderSubView(
       inventory,
+      DASHBOARD_CONFIG.LEATHERWORKING_TAGS,
+      DASHBOARD_CONFIG.LEATHERWORKING_ITEMS_ADDITIONAL,
+      'leatherworking-view'
+    );
+    this.renderSubView(
+      inventory,
       DASHBOARD_CONFIG.MASONRY_TAGS,
       DASHBOARD_CONFIG.MASONRY_ITEMS_ADDITIONAL,
       'masonry-view'
@@ -77,13 +83,19 @@ export const DashboardUI = {
       inventory,
       DASHBOARD_CONFIG.FISHING_TAGS,
       DASHBOARD_CONFIG.FISHING_ITEMS_ADDITIONAL,
-      'smithing-view'
+      'fishing-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.SCHOLAR_TAGS,
       DASHBOARD_CONFIG.SCHOLAR_ITEMS_ADDITIONAL,
-      'smithing-view'
+      'scholar-view'
+    );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.COOKING_TAGS,
+      DASHBOARD_CONFIG.COOKING_ITEMS_ADDITIONAL,
+      'cooking-view'
     );
     this.wireButtons();
     this.show('dashboard');
