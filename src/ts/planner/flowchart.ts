@@ -11,6 +11,7 @@ import {
 } from './lib/progress-calc.js';
 import { CONFIG } from '../configuration/config.js';
 import type { ProcessedNode, PlanItem } from '../types/index.js';
+import { applyTabA11y } from '../aria.js';
 
 // Extended node type for tabs (includes optional isStudyJournals flag)
 interface TabNode extends ProcessedNode {
@@ -113,6 +114,9 @@ export function render(
         </div>
         </div>
         `;
+
+  const fcTabContainer = container.querySelector<HTMLElement>('.fc-tabs');
+  if (fcTabContainer) applyTabA11y(fcTabContainer, '.fc-tab');
 
   let activeIndex = 0;
   const treeEl = container.querySelector('#fc-tree') as HTMLElement;

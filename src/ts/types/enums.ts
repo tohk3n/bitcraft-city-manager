@@ -19,6 +19,10 @@ export enum LINK_PARAM {
 export enum KeyboardKey {
   ArrowDown = 'ArrowDown',
   ArrowUp = 'ArrowUp',
+  ArrowLeft = 'ArrowLeft',
+  ArrowRight = 'ArrowRight',
+  Home = 'Home',
+  End = 'End',
   Enter = 'Enter',
   Escape = 'Escape',
 }

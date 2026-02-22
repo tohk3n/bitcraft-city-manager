@@ -71,6 +71,16 @@ header {
   }
 }
 
+/* Keyboard focus — visible ring on tab/arrow nav, hidden on mouse click */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 /* Autocomplete suggestions dropdown */
 .suggestions {
   position: absolute;
@@ -344,4 +354,17 @@ header {
   padding: 40px;
   color: var(--text-muted);
   font-style: italic;
+}
+
+/* Screen-reader only — content hidden visually but announced */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

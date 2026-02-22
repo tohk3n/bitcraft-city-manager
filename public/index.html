@@ -9,7 +9,7 @@
 <body>
   <header>
     <h1>Bitcraft City Manager</h1>
-    <section id="claim-input">
+    <section id="claim-input" role="search" aria-label="Load a settlement">
       <div class="claim-input-wrapper">
         <input type="text" id="claim-input-field"
                placeholder="City name or Claim ID"
@@ -26,7 +26,7 @@
   </header>
 
   <main>
-    <section id="error" class="hidden">
+    <section id="error" class="hidden" role="alert">
       <p id="error-message"></p>
     </section>
 
@@ -69,12 +69,12 @@
     <!-- Planner View -->
     <section id="view-planner" class="view-section hidden">
       <div id="planner-controls"></div>
-      <div id="planner-content"></div>
+      <div id="planner-content" aria-live="polite"></div>
     </section>
 
     <!-- Citizens View -->
     <section id="view-citizens" class="view-section hidden">
-      <div id="citizens-grid"></div>
+      <div id="citizens-grid" aria-live="polite"></div>
     </section>
 
     <!-- ID Lookup View -->
@@ -120,7 +120,7 @@
 
     <!-- Calculator View -->
     <section id="view-calculator" class="view-section hidden">
-      <div id="calculator-content"></div>
+      <div id="calculator-content" aria-live="polite"></div>
     </section>
   </main>
 
