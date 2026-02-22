@@ -167,6 +167,19 @@ export const DASHBOARD_CONFIG = {
     'Filament',
   ],
   FARMING_ITEMS_ADDITIONAL: ['Water Bucket'],
+  FORESTRY_TAGS: [
+    'Trunk',
+    'Wood Log',
+    'Stripped Wood',
+    'Plank',
+    'Bark',
+    'Timber',
+    "Potter's Mix",
+    'Pebbles',
+    'Clay',
+    'Sapling',
+  ],
+  FORESTRY_ITEMS_ADDITIONAL: ['Water Bucket'],
 };
 // Initialize reverse lookup
 for (const [category, tags] of Object.entries(DASHBOARD_CONFIG.TAG_CATEGORIES)) {

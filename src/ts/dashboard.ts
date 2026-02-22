@@ -55,6 +55,12 @@ export const DashboardUI = {
       DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
       'tailor-view'
     );
+    this.renderSubView(
+      inventory,
+      DASHBOARD_CONFIG.FORESTRY_TAGS,
+      DASHBOARD_CONFIG.FORESTRY_ITEMS_ADDITIONAL,
+      'forestry-view'
+    );
     this.wireButtons();
     this.show('dashboard');
   },
