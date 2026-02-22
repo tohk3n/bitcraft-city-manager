@@ -34,7 +34,6 @@ const log = createLogger('Dashboard');
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
-    log.info('render Dashboard');
     const { inventory, foodItems, supplyCargo } = data;
     const foods: Items = DashboardUI.filterFridge(
       foodItems,
@@ -63,7 +62,6 @@ export const DashboardUI = {
           .forEach((s) => s.classList.add('hidden'));
         const viewEl = document.getElementById(`${view}`);
         viewEl?.classList.remove('hidden');
-        log.info(view);
       });
     });
   },
@@ -332,7 +330,6 @@ export const DashboardUI = {
     return result;
   },
   generateMatrixHtml(stations: StationsByName, names: string[], title: string): string {
-    log.info('start generate Matrix for:', stations);
     if (names.length === 0) return '';
 
     let total = 0;
