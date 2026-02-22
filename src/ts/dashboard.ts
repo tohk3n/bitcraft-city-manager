@@ -41,7 +41,7 @@ export const DashboardUI = {
       DASHBOARD_CONFIG.FRIDGE,
       FILTER_TYPE.RARITY_RARE
     );
-    this.renderQuickStats(foods, supplyCargo, 'overview');
+    this.renderQuickStats(foods, supplyCargo, 'quick-stats');
     this.renderInventory(inventory, 'inventory-grid');
     this.renderTailoring(inventory, 'tailor-view');
     this.wireButtons();
@@ -370,7 +370,11 @@ export const DashboardUI = {
   // Inventory grid with expandable category cards
   renderInventory(inventory: ProcessedInventory, view: string): void {
     const grid: HTMLElement | null = document.getElementById(view);
-    if (!grid) return;
+    log.debug('start rendering inventory');
+    if (!grid) {
+      log.debug('inventory-grid not found ', view);
+      return;
+    }
 
     // Exclude Food and Scholar from main grid (shown in quick stats)
     const exclude: string[] = DASHBOARD_CONFIG.INVENTORY_GRID_EXCLUDE;
