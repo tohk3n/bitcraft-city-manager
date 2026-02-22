@@ -32,7 +32,13 @@
     margin-top: 4px;
   }
 }
-/* Sub tab buttons for profession views */
+/* Profession views */
+#dashboard {
+  .dm-table {
+    width: auto;
+  }
+}
+
 #sub-views {
   .sub-btn {
     padding: 6px 16px;
@@ -42,6 +48,19 @@
     border: 1px solid var(--border);
     border-radius: 4px;
     cursor: pointer;
+
+    &:hover {
+      color: var(--text-primary);
+      background: var(--bg-secondary);
+    }
+
+    &.active {
+      color: var(--accent);
+      background: var(--bg-secondary);
+      border-color: var(--border);
+      border-bottom-color: var(--bg-secondary);
+      margin-bottom: -1px;
+    }
   }
 }
 /* Quick stats (Food & Scholar) */
