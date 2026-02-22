@@ -32,7 +32,18 @@
     margin-top: 4px;
   }
 }
-
+/* Sub tab buttons for profession views */
+#sub-views {
+  .sub-btn {
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+}
 /* Quick stats (Food & Scholar) */
 #quick-stats {
   display: grid;

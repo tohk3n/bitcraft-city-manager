@@ -9,7 +9,9 @@ import type {
   InventoryProcessResult,
   Item,
   Items,
+  NamedMatrix,
   ProcessedInventory,
+  ResourceMatrix,
   Rule,
   StationsByName,
   StationSummary,
@@ -20,22 +22,50 @@ import type {
 import { FILTER_TYPE, FOOD_BUFF, SUPPLY_CAT } from './types/index.js';
 import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
 import { createLogger } from './logger.js';
+import type {
+  MatrixColumn,
+  MatrixConfig,
+  MatrixRow,
+} from './components/data-matrix/data-matrix.js';
+import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 
 const log = createLogger('Dashboard');
 
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
+    log.info('render Dashboard');
     const { inventory, foodItems, supplyCargo } = data;
     const foods: Items = DashboardUI.filterFridge(
       foodItems,
       DASHBOARD_CONFIG.FRIDGE,
       FILTER_TYPE.RARITY_RARE
     );
-    this.renderQuickStats(foods, supplyCargo);
-    this.renderInventory(inventory);
-
+    this.renderQuickStats(foods, supplyCargo, 'overview');
+    this.renderInventory(inventory, 'inventory-grid');
+    this.renderTailoring(inventory, 'tailor-view');
+    this.wireButtons();
     this.show('dashboard');
+  },
+  // Used to set subview button listener
+  wireButtons(): void {
+    const viewTabs = document.querySelectorAll<HTMLElement>('#sub-views .sub-btn');
+    viewTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const view = tab.dataset.view;
+
+        // Update active tab
+        viewTabs.forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        // Show correct view
+        document
+          .querySelectorAll('#dashboard .dash-view')
+          .forEach((s) => s.classList.add('hidden'));
+        const viewEl = document.getElementById(`${view}`);
+        viewEl?.classList.remove('hidden');
+        log.info(view);
+      });
+    });
   },
   filterFridge(food: Items, fridge: string[], filter: FILTER_TYPE): Items {
     // defines what we show in the food tab
@@ -59,8 +89,8 @@ export const DashboardUI = {
   },
 
   // Food and Supply quick stats
-  renderQuickStats(foodItems: Items, supplies: Items): void {
-    const container: HTMLElement | null = document.getElementById('quick-stats');
+  renderQuickStats(foodItems: Items, supplies: Items, view: string): void {
+    const container: HTMLElement | null = document.getElementById(view);
     if (!container) return;
 
     // Food section
@@ -338,8 +368,8 @@ export const DashboardUI = {
     return out;
   },
   // Inventory grid with expandable category cards
-  renderInventory(inventory: ProcessedInventory): void {
-    const grid: HTMLElement | null = document.getElementById('inventory-grid');
+  renderInventory(inventory: ProcessedInventory, view: string): void {
+    const grid: HTMLElement | null = document.getElementById(view);
     if (!grid) return;
 
     // Exclude Food and Scholar from main grid (shown in quick stats)
@@ -432,5 +462,74 @@ export const DashboardUI = {
     });
 
     this.show('inventory');
+  },
+  // Render Tailoring sub view
+  renderTailoring(inventory: ProcessedInventory, view: string): void {
+    const filteredInventory: NamedMatrix = this.filterInventory(
+      DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.TAILOR_TYPES,
+      inventory
+    );
+    const config: MatrixConfig = this.createMatrixConfig(filteredInventory);
+    const el: HTMLElement | null = document.getElementById(view);
+    if (!el) return;
+    createDataMatrix(el, config);
+  },
+  // Filters so only allowedItems are kept
+  filterInventory(
+    additionalItems: string[],
+    completeTags: string[],
+    inventory: ProcessedInventory
+  ): NamedMatrix {
+    const additionalSet = new Set(additionalItems);
+    const completeTagSet = new Set(completeTags);
+
+    const map: ResourceMatrix = {};
+    let result = null;
+
+    for (const category of Object.values(inventory)) {
+      for (const [tag, tagGroup] of Object.entries(category)) {
+        const includesTag = completeTagSet.has(tag);
+        for (const item of Object.values(tagGroup.items)) {
+          if (!includesTag && !additionalSet.has(item.name)) {
+            continue;
+          }
+
+          if (!map[tag]) {
+            map[tag] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+          }
+
+          const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
+          map[tag][tierIndex].push(item.qty);
+        }
+      }
+    }
+
+    result = { map };
+    return result;
+  },
+  createMatrixConfig(named: NamedMatrix): MatrixConfig {
+    const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
+      const tier = i + 1;
+      return { key: String(tier), label: `T${tier}` };
+    });
+
+    const rows: MatrixRow[] = Object.entries(named.map).map(([tag, tiers]) => {
+      const cells = Object.fromEntries(
+        tiers.map((qtyList, i) => [String(i + 1), qtyList.reduce((sum, q) => sum + q, 0)])
+      ) as Record<string, number>;
+
+      return {
+        key: tag,
+        label: tag,
+        cells,
+      };
+    });
+
+    return {
+      columns,
+      rows,
+      showRowTotals: false,
+    };
   },
 };

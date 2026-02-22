@@ -143,6 +143,17 @@ export const DASHBOARD_CONFIG = {
   ],
   //TODO check if this can not be done with css
   BG_CONST: 'background: rgba(88, 166, 255, 0.2);',
+  // Array containing the tailoring item names to be shown in the tailoring sub view
+  TAILOR_ITEMS_ADDITIONAL: ["Clothmaker's Mordant"],
+  TAILOR_TYPES: [
+    'Cloth',
+    'Cloth Strip',
+    'Filament',
+    'Plant Fiber',
+    'Rope',
+    'Refined Cloth',
+    'Roots',
+  ],
 };
 // Initialize reverse lookup
 for (const [category, tags] of Object.entries(DASHBOARD_CONFIG.TAG_CATEGORIES)) {

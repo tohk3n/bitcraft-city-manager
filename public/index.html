@@ -46,15 +46,22 @@
 
     <!-- Inventory View -->
     <section id="view-inventory" class="view-section">
-      <div id="dashboard" class="hidden">
-        <div id="quick-stats">
-          <div id="food-stats"></div>
-          <div id="supply-stats"></div>
-        </div>
-        <div id="crafting-stations" class="hidden"></div>
+      <div id="sub-views">
+        <button class="sub-btn active" data-view="overview">Overview</button>
+        <button class="sub-btn" data-view="tailor-view">Tailoring</button>
       </div>
-      <div id="inventory" class="hidden">
-        <div id="inventory-grid"></div>
+      <div id="dashboard" class="hidden">
+        <div id="overview" class="dash-view">
+          <div id="quick-stats">
+            <div id="food-stats"></div>
+            <div id="supply-stats"></div>
+          </div>
+          <div id="crafting-stations"></div>
+          <div id="inventory">
+            <div id="inventory-grid"></div>
+          </div>
+        </div>
+        <div id="tailor-view" class="dash-view"></div>
       </div>
     </section>
 
