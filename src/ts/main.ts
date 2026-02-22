@@ -19,6 +19,7 @@ import type {
   ApiItem,
 } from './types/index.js';
 import type { CitizensData } from './citizens.js';
+import * as Calculator from './calculator-view.js';
 
 const log = createLogger('Main');
 
@@ -242,6 +243,9 @@ function setupTabs(): void {
         if (!plannerState.results) {
           loadPlanner();
         }
+      } else if (view === 'calculator') {
+        const container = document.getElementById('calculator-content');
+        if (container) Calculator.render(container);
       }
     });
   });
