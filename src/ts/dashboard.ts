@@ -570,10 +570,47 @@ export const DashboardUI = {
       completeTags,
       singleItems
     );
-    const config: MatrixConfig = this.createMatrixConfig(filteredInventory);
+    const sortedInventory: NamedMatrix = this.sortInventory(
+      filteredInventory,
+      completeTags,
+      singleItems
+    );
+    const config: MatrixConfig = this.createMatrixConfig(sortedInventory);
     const el: HTMLElement | null = document.getElementById(view);
     if (!el) return;
     createDataMatrix(el, config);
+  },
+  sortInventory(inventory: NamedMatrix, firstList: string[], secondList: string[]): NamedMatrix {
+    const firstIndex = new Map(firstList.map((t, i) => [t, i]));
+    const lastIndex = new Map(secondList.map((t, i) => [t, i]));
+
+    const entries = Object.entries(inventory.map);
+
+    const sorted = entries.sort(([tagA], [tagB]) => {
+      const aFirst = firstIndex.has(tagA);
+      const bFirst = firstIndex.has(tagB);
+      const aLast = lastIndex.has(tagA);
+      const bLast = lastIndex.has(tagB);
+
+      if (aFirst && bFirst) {
+        return (firstIndex.get(tagA) ?? 0) - (firstIndex.get(tagB) ?? 0);
+      }
+
+      if (aLast && bLast) {
+        return (lastIndex.get(tagA) ?? 0) - (lastIndex.get(tagB) ?? 0);
+      }
+
+      if (aFirst) return -1;
+      if (bFirst) return 1;
+
+      if (aLast) return 1;
+      if (bLast) return -1;
+
+      // just in case something, somehow made it in that is not in the tags or adds
+      return 0;
+    });
+
+    return { map: Object.fromEntries(sorted) };
   },
   createMatrixConfig(named: NamedMatrix): MatrixConfig {
     const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
