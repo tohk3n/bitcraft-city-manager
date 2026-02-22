@@ -28,6 +28,7 @@ import type {
   MatrixRow,
 } from './components/data-matrix/data-matrix.js';
 import { createDataMatrix } from './components/data-matrix/data-matrix.js';
+import { applyTabA11y } from './aria.js';
 
 const log = createLogger('Dashboard');
 
@@ -48,6 +49,9 @@ export const DashboardUI = {
   },
   // Used to set subview button listener
   wireButtons(): void {
+    const subViews = document.getElementById('sub-views');
+    if (subViews) applyTabA11y(subViews, '.sub-btn');
+
     const viewTabs = document.querySelectorAll<HTMLElement>('#sub-views .sub-btn');
     viewTabs.forEach((tab) => {
       tab.addEventListener('click', () => {

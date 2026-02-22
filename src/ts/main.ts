@@ -20,6 +20,7 @@ import type {
 } from './types/index.js';
 import type { CitizensData } from './citizens.js';
 import * as Calculator from './calculator-view.js';
+import { applyTabA11y } from './aria.js';
 
 const log = createLogger('Main');
 
@@ -217,6 +218,12 @@ async function loadItems(): Promise<void> {
 
 // Tab switching
 function setupTabs(): void {
+  const tabContainer = document.getElementById('view-tabs');
+  if (tabContainer) applyTabA11y(tabContainer, '.tab-btn');
+
+  const idsTabContainer = document.getElementById('ids-tabs');
+  if (idsTabContainer) applyTabA11y(idsTabContainer, '.ids-tab-btn');
+
   const tabs = document.querySelectorAll<HTMLElement>('#view-tabs .tab-btn');
   tabs.forEach((tab) => {
     tab.addEventListener('click', () => {
