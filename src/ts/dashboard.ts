@@ -580,37 +580,18 @@ export const DashboardUI = {
     if (!el) return;
     createDataMatrix(el, config);
   },
-  sortInventory(inventory: NamedMatrix, firstList: string[], secondList: string[]): NamedMatrix {
-    const firstIndex = new Map(firstList.map((t, i) => [t, i]));
-    const lastIndex = new Map(secondList.map((t, i) => [t, i]));
+  sortInventory(inventory: NamedMatrix, tags: string[], additionalItems: string[]): NamedMatrix {
+    // Build a single priority list: tags first, then additional items
+    // Each entry's array index would become its sort rank
+    const priority = new Map([...tags, ...additionalItems].map((t, i) => [t, i])); // tag, index
 
     const entries = Object.entries(inventory.map);
 
-    const sorted = entries.sort(([tagA], [tagB]) => {
-      const aFirst = firstIndex.has(tagA);
-      const bFirst = firstIndex.has(tagB);
-      const aLast = lastIndex.has(tagA);
-      const bLast = lastIndex.has(tagB);
+    // Items with a priority rank sort by that rank
+    // Items not in the priority map get Infinity, pushing them to the end
+    entries.sort(([a], [b]) => (priority.get(a) ?? Infinity) - (priority.get(b) ?? Infinity));
 
-      if (aFirst && bFirst) {
-        return (firstIndex.get(tagA) ?? 0) - (firstIndex.get(tagB) ?? 0);
-      }
-
-      if (aLast && bLast) {
-        return (lastIndex.get(tagA) ?? 0) - (lastIndex.get(tagB) ?? 0);
-      }
-
-      if (aFirst) return -1;
-      if (bFirst) return 1;
-
-      if (aLast) return 1;
-      if (bLast) return -1;
-
-      // just in case something, somehow made it in that is not in the tags or adds
-      return 0;
-    });
-
-    return { map: Object.fromEntries(sorted) };
+    return { map: Object.fromEntries(entries) };
   },
   createMatrixConfig(named: NamedMatrix): MatrixConfig {
     const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {

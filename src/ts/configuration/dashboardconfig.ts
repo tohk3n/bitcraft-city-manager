@@ -183,7 +183,15 @@ export const DASHBOARD_CONFIG = {
   WOODWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Bucket'],
   LEATHERWORKING_TAGS: ['Cleaned Pelt', 'Leather', 'Raw Meat', 'Tannin', 'Pelt'],
   LEATHERWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Hideworking Salt'],
-  MASONRY_TAGS: ['Stone Chunk', 'Pebbles', 'Clay', "Potter's Mix", 'Unfired Brick', 'Brick', 'Stone Slab'],
+  MASONRY_TAGS: [
+    'Stone Chunk',
+    'Pebbles',
+    'Clay',
+    "Potter's Mix",
+    'Unfired Brick',
+    'Brick',
+    'Stone Slab',
+  ],
   MASONRY_ITEMS_ADDITIONAL: ['Brickworking Ash', 'Refined Brick'],
   SMITHING_TAGS: [
     'Wood Logs',
