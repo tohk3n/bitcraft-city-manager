@@ -34,10 +34,7 @@ const collapsedNodes = new Set<string>(); // Track collapsed nodes by "name:tier
 /**
  * Render the flowchart view.
  */
-export function render(
-  container: HTMLElement,
-  options: FlowchartRenderOptions
-): void {
+export function render(container: HTMLElement, options: FlowchartRenderOptions): void {
   const { researches, planItems, targetTier, studyJournals } = options;
   if (!researches || researches.length === 0) {
     container.innerHTML = '<div class="fc-empty">No data</div>';
