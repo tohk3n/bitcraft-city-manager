@@ -144,7 +144,6 @@ export const DASHBOARD_CONFIG = {
   //TODO check if this can not be done with css
   BG_CONST: 'background: rgba(88, 166, 255, 0.2);',
   // Array containing the tailoring item names to be shown in the tailoring sub view
-  TAILOR_ITEMS_ADDITIONAL: ["Clothmaker's Mordant"],
   TAILOR_TAGS: [
     'Cloth',
     'Cloth Strip',
@@ -154,6 +153,8 @@ export const DASHBOARD_CONFIG = {
     'Refined Cloth',
     'Roots',
   ],
+  TAILOR_ITEMS_ADDITIONAL: ["Clothmaker's Mordant"],
+  TAILOR_PACKAGES: [],
   FARMING_TAGS: [
     'Filament Seeds',
     'Grain Seeds',
@@ -167,6 +168,7 @@ export const DASHBOARD_CONFIG = {
     'Filament',
   ],
   FARMING_ITEMS_ADDITIONAL: ['Water Bucket'],
+  FARMING_PACKAGES: [],
   WOODWORKING_TAGS: [
     'Trunk',
     'Wood Log',
@@ -181,8 +183,10 @@ export const DASHBOARD_CONFIG = {
     'Nail',
   ],
   WOODWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Bucket'],
+  WOODWORKING_PACKAGES: [],
   LEATHERWORKING_TAGS: ['Cleaned Pelt', 'Leather', 'Raw Meat', 'Tannin', 'Pelt'],
   LEATHERWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Hideworking Salt'],
+  LEATHERWORKING_PACKAGES: [],
   MASONRY_TAGS: [
     'Stone Chunk',
     'Pebbles',
@@ -193,6 +197,7 @@ export const DASHBOARD_CONFIG = {
     'Stone Slab',
   ],
   MASONRY_ITEMS_ADDITIONAL: ['Brickworking Ash', 'Refined Brick'],
+  MASONRY_PACKAGES: [],
   SMITHING_TAGS: [
     'Wood Logs',
     'Ore',
@@ -207,6 +212,7 @@ export const DASHBOARD_CONFIG = {
     'Rope',
   ],
   SMITHING_ITEMS_ADDITIONAL: ['Metalsmelting Flux'],
+  SMITHING_PACKAGES: [],
   FISHING_TAGS: [
     'Bait',
     'Baitfish',
@@ -220,10 +226,13 @@ export const DASHBOARD_CONFIG = {
     'Ocean Fish Filet',
   ],
   FISHING_ITEMS_ADDITIONAL: [],
+  FISHING_PACKAGES: [],
   SCHOLAR_TAGS: ['Ancient Hieroglyphs', 'Ink', 'Journal', 'Parchment', 'Pigment'],
   SCHOLAR_ITEMS_ADDITIONAL: ['Water Bucket', 'Sugar'],
+  SCHOLAR_PACKAGES: [],
   COOKING_TAGS: ['Grain', 'Vegetable', 'Dough', 'Food', 'Ocean Fish Filet', 'Lake Fish Filet'],
   COOKING_ITEMS_ADDITIONAL: ['Sugar', 'Salt'],
+  COOKING_PACKAGES: [],
 };
 // Initialize reverse lookup
 for (const [category, tags] of Object.entries(DASHBOARD_CONFIG.TAG_CATEGORIES)) {

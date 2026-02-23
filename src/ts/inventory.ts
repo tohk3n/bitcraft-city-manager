@@ -42,10 +42,11 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
     materialMatrix[cat as MaterialCategory] = createTierQuantities();
   }
 
-  // Food totals by item
+  // Food items
   const foodItems: Items = {};
-
-  // Scholar totals by tier
+  // Packages
+  const packages: Items = {};
+  // Supply items (cargo)
   const supplies: Items = {};
 
   for (const building of buildings) {
@@ -80,6 +81,12 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       }
       if (DASHBOARD_CONFIG.SUPPLY.has(tag)) {
         supplies[id] = { name: meta.name, tier: meta.tier, qty: qty, rarity: meta.rarity };
+      }
+      if (tag === 'Package') {
+        if (!packages[id]) {
+          packages[id] = { name: meta.name, tier: meta.tier, qty: 0, rarity: meta.rarity };
+        }
+        packages[id].qty += qty;
       }
 
       // Initialize nested structure
@@ -119,6 +126,7 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
     materialMatrix: materialMatrix,
     foodItems: foodItems,
     supplyCargo: supplies,
+    packages: packages,
   };
 }
 

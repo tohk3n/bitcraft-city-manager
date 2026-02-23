@@ -48,54 +48,63 @@ export const DashboardUI = {
       inventory,
       DASHBOARD_CONFIG.FARMING_TAGS,
       DASHBOARD_CONFIG.FARMING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.FARMING_PACKAGES,
       'farming-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.TAILOR_TAGS,
       DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.TAILOR_PACKAGES,
       'tailor-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.WOODWORKING_TAGS,
       DASHBOARD_CONFIG.WOODWORKING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.WOODWORKING_PACKAGES,
       'woodworking-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.LEATHERWORKING_TAGS,
       DASHBOARD_CONFIG.LEATHERWORKING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.LEATHERWORKING_PACKAGES,
       'leatherworking-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.MASONRY_TAGS,
       DASHBOARD_CONFIG.MASONRY_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.MASONRY_PACKAGES,
       'masonry-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.SMITHING_TAGS,
       DASHBOARD_CONFIG.SMITHING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.SMITHING_PACKAGES,
       'smithing-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.FISHING_TAGS,
       DASHBOARD_CONFIG.FISHING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.FISHING_PACKAGES,
       'fishing-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.SCHOLAR_TAGS,
       DASHBOARD_CONFIG.SCHOLAR_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.SCHOLAR_PACKAGES,
       'scholar-view'
     );
     this.renderSubView(
       inventory,
       DASHBOARD_CONFIG.COOKING_TAGS,
       DASHBOARD_CONFIG.COOKING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.COOKING_PACKAGES,
       'cooking-view'
     );
     this.wireButtons();

@@ -64,6 +64,7 @@ export interface InventoryProcessResult {
   materialMatrix: MaterialMatrix;
   foodItems: Items;
   supplyCargo: Items;
+  packages: Items;
 }
 
 // =============================================================================
