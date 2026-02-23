@@ -125,13 +125,12 @@ function renderContent(container: HTMLElement): void {
   if (currentView === 'dashboard') {
     PlannerDashboard.render(container, cachedPlanItems, cachedTargetTier);
   } else {
-    Flowchart.render(
-      container,
-      cachedResearches,
-      cachedPlanItems,
-      cachedTargetTier,
-      cachedStudyJournals
-    );
+    Flowchart.render(container, {
+      researches: cachedResearches,
+      planItems: cachedPlanItems,
+      targetTier: cachedTargetTier,
+      studyJournals: cachedStudyJournals,
+    });
   }
 }
 
