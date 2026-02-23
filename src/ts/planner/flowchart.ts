@@ -18,6 +18,14 @@ interface TabNode extends ProcessedNode {
   isStudyJournals?: boolean;
 }
 
+// Render configuration from planner-view
+export interface FlowchartRenderOptions {
+  researches: ProcessedNode[];
+  planItems: PlanItem[];
+  targetTier: number;
+  studyJournals: ProcessedNode | null;
+}
+
 // Module state
 let hideComplete = false;
 let zoomLevel = 1;
@@ -28,11 +36,9 @@ const collapsedNodes = new Set<string>(); // Track collapsed nodes by "name:tier
  */
 export function render(
   container: HTMLElement,
-  researches: ProcessedNode[],
-  planItems: PlanItem[],
-  targetTier: number,
-  studyJournals: ProcessedNode | null = null
+  options: FlowchartRenderOptions
 ): void {
+  const { researches, planItems, targetTier, studyJournals } = options;
   if (!researches || researches.length === 0) {
     container.innerHTML = '<div class="fc-empty">No data</div>';
     return;
