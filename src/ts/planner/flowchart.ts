@@ -24,10 +24,13 @@ export interface FlowchartRenderOptions {
   planItems: PlanItem[];
   targetTier: number;
   studyJournals: ProcessedNode | null;
+  activeResearchIndex: number;
+  hideComplete: boolean;
+  onResearchChange?: (index: number) => void;
+  onHideCompleteChange?: (hide: boolean) => void;
 }
 
 // Module state
-let hideComplete = false;
 let zoomLevel = 1;
 const collapsedNodes = new Set<string>(); // Track collapsed nodes by "name:tier" key
 
@@ -35,7 +38,16 @@ const collapsedNodes = new Set<string>(); // Track collapsed nodes by "name:tier
  * Render the flowchart view.
  */
 export function render(container: HTMLElement, options: FlowchartRenderOptions): void {
-  const { researches, planItems, targetTier, studyJournals } = options;
+  const {
+    researches,
+    planItems,
+    targetTier,
+    studyJournals,
+    activeResearchIndex,
+    hideComplete,
+    onResearchChange,
+    onHideCompleteChange,
+  } = options;
   if (!researches || researches.length === 0) {
     container.innerHTML = '<div class="fc-empty">No data</div>';
     return;
@@ -72,7 +84,7 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
     ${allTabs
       .map(
         (r, i) => `
-        <button class="fc-tab ${i === 0 ? 'active' : ''} ${r.isStudyJournals ? 'fc-tab-journals' : ''}" data-index="${i}">
+        <button class="fc-tab ${i === activeResearchIndex ? 'active' : ''} ${r.isStudyJournals ? 'fc-tab-journals' : ''}" data-index="${i}">
         <span class="fc-tab-status ${r.status}"></span>
         ${formatTabName(r.name)}
         </button>
@@ -82,7 +94,7 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
         </div>
         <div class="fc-options">
         <label class="fc-toggle">
-        <input type="checkbox" id="fc-hide-complete">
+        <input type="checkbox" id="fc-hide-complete" ${hideComplete ? 'checked' : ''}>
         <span>Hide completed branches</span>
         </label>
         </div>
@@ -121,7 +133,7 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
   const fcTabContainer = container.querySelector<HTMLElement>('.fc-tabs');
   if (fcTabContainer) applyTabA11y(fcTabContainer, '.fc-tab');
 
-  let activeIndex = 0;
+  let activeIndex = activeResearchIndex;
   const treeEl = container.querySelector('#fc-tree') as HTMLElement;
 
   const renderTree = (): void => {
@@ -157,17 +169,27 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
       const index = parseInt(tab.dataset.index || '0', 10);
       if (index === activeIndex) return;
 
-      activeIndex = index;
-      container.querySelectorAll('.fc-tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderTree();
+      if (onResearchChange) {
+        // Parent will re-render with new index
+        onResearchChange(index);
+      } else {
+        // Fallback: local-only (shouldn't happen after PR 115)
+        activeIndex = index;
+        container.querySelectorAll('.fc-tab').forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderTree();
+      }
     });
   });
 
   // Hide complete toggle
   container.querySelector('#fc-hide-complete')?.addEventListener('change', (e) => {
-    hideComplete = (e.target as HTMLInputElement).checked;
-    renderTree();
+    const checked = (e.target as HTMLInputElement).checked;
+    if (onHideCompleteChange) {
+      onHideCompleteChange(checked);
+    } else {
+      renderTree();
+    }
   });
 
   // Export button
