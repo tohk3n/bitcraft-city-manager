@@ -22,6 +22,8 @@ let cachedResearches: ProcessedNode[] = [];
 let cachedPlanItems: PlanItem[] = [];
 let cachedTargetTier = 0;
 let cachedStudyJournals: ProcessedNode | null = null;
+let activeResearchIndex = 0;
+let hideComplete = false;
 
 /**
  * Render the planner view with tab switching.
@@ -130,6 +132,16 @@ function renderContent(container: HTMLElement): void {
       planItems: cachedPlanItems,
       targetTier: cachedTargetTier,
       studyJournals: cachedStudyJournals,
+      activeResearchIndex,
+      hideComplete,
+      onResearchChange: (index) => {
+        activeResearchIndex = index;
+        renderContent(container);
+      },
+      onHideCompleteChange: (hide) => {
+        hideComplete = hide;
+        renderContent(container);
+      },
     });
   }
 }
