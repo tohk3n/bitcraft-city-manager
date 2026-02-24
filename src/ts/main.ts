@@ -96,8 +96,8 @@ async function loadClaim(claimId: string): Promise<void> {
     }
     UI.showTabs();
     // Process and render inventory view
-    log.info(data);
     const result: InventoryProcessResult = processInventory(data);
+
     UI.renderDashboard(result);
     // Load and render crafting stations
     try {

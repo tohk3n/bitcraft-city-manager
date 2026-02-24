@@ -12,6 +12,7 @@ import type {
   MaterialMatrix,
   MaterialCategory,
   Items,
+  Package,
   TierQuantities,
   CraftingStationsResult,
   StationsByName,
@@ -45,9 +46,12 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
   // Food items
   const foodItems: Items = {};
   // Packages
-  const packages: Items = {};
+  const packages: Package = {};
   // Supply items (cargo)
   const supplies: Items = {};
+  // RegEx for package building
+  const escaped = DASHBOARD_CONFIG.SPECIFIER.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regex = new RegExp(`\\b(${escaped.join('|')})\\b`, 'g');
 
   for (const building of buildings) {
     const buildingName: string = building.buildingNickname || building.buildingName;
@@ -83,10 +87,21 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
         supplies[id] = { name: meta.name, tier: meta.tier, qty: qty, rarity: meta.rarity };
       }
       if (tag === 'Package') {
-        if (!packages[id]) {
-          packages[id] = { name: meta.name, tier: meta.tier, qty: 0, rarity: meta.rarity };
+        const shortenedId: string = meta.name.replace(regex, '').trim();
+
+        if (!packages[shortenedId]) {
+          packages[shortenedId] = {};
+          if (!packages[shortenedId][id]) {
+            packages[shortenedId][id] = {
+              name: meta.name,
+              tier: meta.tier,
+              qty: 0,
+              rarity: meta.rarity,
+            };
+          } else {
+            packages[shortenedId][id].qty += qty;
+          }
         }
-        packages[id].qty += qty;
       }
 
       // Initialize nested structure
