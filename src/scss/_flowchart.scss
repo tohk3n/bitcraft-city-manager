@@ -2,109 +2,6 @@
  * Flowchart - Research tree visualization
  */
 
-/* Header with progress */
-.fc-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.fc-progress {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.fc-progress-bar {
-  flex: 1;
-  max-width: 300px;
-  height: 20px;
-  background: var(--bg-tertiary);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.fc-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--status-partial) 0%, var(--status-complete) 100%);
-  border-radius: 10px;
-  transition: width 0.3s ease;
-}
-
-.fc-progress-pct {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  min-width: 60px;
-}
-
-.fc-progress-detail {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-
-.fc-export {
-  padding: 10px 16px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.15s;
-
-  &:hover {
-    background: #7c5ac7;
-  }
-}
-
-/* Tabs */
-.fc-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 0;
-  border-bottom: 1px solid var(--border);
-  overflow-x: auto;
-  padding-bottom: 0;
-}
-
-.fc-tab {
-  padding: 10px 16px;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid transparent;
-  border-bottom: none;
-  border-radius: 6px 6px 0 0;
-  cursor: pointer;
-  transition: all 0.15s;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-
-  &:hover {
-    color: var(--text-primary);
-    background: var(--bg-tertiary);
-  }
-
-  &.active {
-    color: var(--text-primary);
-    background: var(--bg-secondary);
-    border-color: var(--border);
-  }
-}
-
 .fc-tab-status {
   width: 8px;
   height: 8px;
@@ -119,34 +16,6 @@
   }
   &.missing {
     background: var(--status-missing);
-  }
-}
-
-.fc-tab-journals {
-  padding-left: 20px;
-}
-
-/* Options */
-.fc-options {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 16px;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-top: none;
-}
-
-.fc-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  cursor: pointer;
-
-  input {
-    cursor: pointer;
   }
 }
 
@@ -378,20 +247,9 @@
 
 /* Viewport */
 .fc-viewport {
-  background: var(--bg-secondary);
+  border-radius: 8px;
   border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  padding: 24px;
-  min-height: 300px;
-  overflow: auto;
-  cursor: grab;
-  user-select: none;
-  position: relative;
-
-  &.dragging {
-    cursor: grabbing;
-  }
+  border-top: 1px solid var(--border);
 }
 
 /* Zoom controls */

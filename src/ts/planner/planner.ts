@@ -2,7 +2,7 @@
  * Planner - Codex Requirement Calculator
  *
  * Orchestrates data loading and calculation pipeline.
- * UI rendering is delegated to planner-view.js (unified dashboard/flowchart).
+ * UI rendering is delegated to planner-view.ts (unified dashboard/flowchart).
  */
 
 import { API } from '../api.js';
@@ -12,27 +12,15 @@ import { expandRecipes } from './lib/recipe-expander.js';
 import { applyCascade } from './lib/cascade-calc.js';
 import { flattenPlan, formatCompact } from './lib/progress-calc.js';
 import * as PlannerView from './planner-view.js';
+import { TIER_REQUIREMENTS } from '../configuration/index.js';
 import type {
   CodexFile,
-  ProcessedNode,
   PlanItem,
   PlannerResults,
   TierRequirements,
   CalculateOptions,
 } from '../types/index.js';
 import type { RecipesFile, PackagesFile } from '../data/types.js';
-
-// Tier upgrade requirements: target tier -> { codexTier, count }
-const TIER_REQUIREMENTS: TierRequirements = {
-  3: { codexTier: 2, count: 10 },
-  4: { codexTier: 3, count: 15 },
-  5: { codexTier: 4, count: 20 },
-  6: { codexTier: 5, count: 25 },
-  7: { codexTier: 6, count: 30 },
-  8: { codexTier: 7, count: 35 },
-  9: { codexTier: 8, count: 40 },
-  10: { codexTier: 9, count: 45 },
-};
 
 // Data caches
 let codexCache: CodexFile | null = null;
@@ -125,78 +113,36 @@ export function getLastPlanItems(): PlanItem[] | null {
 
 // --- UI Rendering ---
 
-type OnCalculateCallback = (tier: number, count: number | null) => void;
-
-export function renderControls(
-  container: HTMLElement,
-  currentTier: number,
-  onCalculate: OnCalculateCallback
-): void {
-  const tiers = Object.keys(TIER_REQUIREMENTS)
-    .map(Number)
-    .sort((a, b) => a - b);
-  const defaultCount = TIER_REQUIREMENTS[currentTier]?.count || 20;
-
-  container.innerHTML = `
-        <div class="planner-controls">
-            <div class="control-group">
-                <label for="target-tier">Target Tier:</label>
-                <select id="target-tier">
-                    ${tiers.map((t) => `<option value="${t}" ${t === currentTier ? 'selected' : ''}>T${t}</option>`).join('')}
-                </select>
-            </div>
-            <div class="control-group">
-                <label for="codex-count">Codex Count:</label>
-                <input type="number" id="codex-count" value="${defaultCount}" min="1" max="100">
-            </div>
-            <div class="planner-info" id="planner-info"></div>
-        </div>
-    `;
-
-  const tierSelect = container.querySelector('#target-tier') as HTMLSelectElement;
-  const countInput = container.querySelector('#codex-count') as HTMLInputElement;
-  const infoEl = container.querySelector('#planner-info') as HTMLElement;
-
-  const updateInfo = (tier: number, count: number): void => {
-    const req = TIER_REQUIREMENTS[tier];
-    if (!req) return;
-    const custom = count !== req.count ? ' (custom)' : '';
-    infoEl.innerHTML = `Requires: <strong>${count}&times; T${req.codexTier} Codex</strong>${custom}`;
-  };
-
-  tierSelect.addEventListener('change', () => {
-    const tier = parseInt(tierSelect.value, 10);
-    const count = TIER_REQUIREMENTS[tier]?.count || 20;
-    countInput.value = String(count);
-    updateInfo(tier, count);
-    onCalculate(tier, count);
-  });
-
-  countInput.addEventListener('change', () => {
-    const tier = parseInt(tierSelect.value, 10);
-    const count = parseInt(countInput.value, 10) || 1;
-    updateInfo(tier, count);
-    onCalculate(tier, count);
-  });
-
-  updateInfo(currentTier, defaultCount);
-}
-
 /**
- * Render the unified planner view (dashboard + flowchart tabs)
+ * Render the unified planner view (dashboard + flowchart tabs).
+ * Tier controls are now inside planner-view's toolbar.
  */
 export function renderPlannerView(
   container: HTMLElement,
-  researches: ProcessedNode[],
-  planItems: PlanItem[],
-  targetTier: number,
-  studyJournals: ProcessedNode | null = null
+  results: PlannerResults,
+  onTierChange: (tier: number, count: number) => void
 ): void {
-  if (!planItems || planItems.length === 0) {
+  if (!results.planItems || results.planItems.length === 0) {
     container.innerHTML = '<div class="pv-empty">No data</div>';
     return;
   }
-  PlannerView.render(container, researches, planItems, targetTier, studyJournals);
+
+  const tiers = Object.keys(TIER_REQUIREMENTS)
+    .map(Number)
+    .sort((a, b) => a - b);
+  const req = TIER_REQUIREMENTS[results.targetTier];
+
+  PlannerView.render(container, {
+    researches: results.researches,
+    planItems: results.planItems,
+    targetTier: results.targetTier,
+    studyJournals: results.studyJournals,
+    tierOptions: tiers,
+    currentTier: results.targetTier,
+    codexCount: results.codexCount,
+    codexInfo: `${results.codexCount}\u00d7 T${req.codexTier} Codex`,
+    onTierChange,
+  });
 }
 
 export function renderLoading(container: HTMLElement): void {

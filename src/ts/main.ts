@@ -130,20 +130,8 @@ async function loadClaim(claimId: string): Promise<void> {
 
 // Initialize planner UI
 function initPlanner(): void {
-  const controlsContainer = document.getElementById('planner-controls');
   const plannerContainer = document.getElementById('planner-content');
-
-  if (!controlsContainer || !plannerContainer) return;
-
-  Planner.renderControls(
-    controlsContainer,
-    plannerState.targetTier,
-    async (newTier: number, newCount: number | null) => {
-      plannerState.targetTier = newTier;
-      plannerState.codexCount = newCount;
-      await loadPlanner();
-    }
-  );
+  if (!plannerContainer) return;
 
   Planner.renderEmpty(plannerContainer);
 }
@@ -168,14 +156,11 @@ async function loadPlanner(): Promise<void> {
     );
     plannerState.results = results;
 
-    // Render unified planner view (dashboard + flowchart tabs)
-    Planner.renderPlannerView(
-      plannerContainer,
-      results.researches,
-      results.planItems,
-      results.targetTier,
-      results.studyJournals
-    );
+    Planner.renderPlannerView(plannerContainer, results, (tier: number, count: number) => {
+      plannerState.targetTier = tier;
+      plannerState.codexCount = count;
+      loadPlanner();
+    });
   } catch (err) {
     const error = err as Error;
     log.error('Planner error:', error.message);
