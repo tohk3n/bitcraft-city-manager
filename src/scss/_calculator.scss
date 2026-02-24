@@ -1,67 +1,64 @@
-/* Calculator view, craft time estimator */
+/* ═══ Calculator — craft time estimator ═══
+   max-width keeps the two-column layout from stretching
+   into emptiness on ultrawide / 1080p screens. */
 
 .calc-layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 8px;
   align-items: start;
+  max-width: 900px; /* keeps it comfortable on wide viewports */
 }
 
 .calc-panel {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 20px;
+  border-radius: var(--radius);
+  padding: 10px;
 }
 
 .calc-heading {
-  font-size: 0.85rem;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 14px;
+  margin-bottom: 8px;
 
-  /* Reset margin for non-first headings in a panel */
-  & + .calc-field,
-  & + .calc-field-row {
-    margin-top: 0;
+  &:not(:first-child) {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
   }
 }
 
-.calc-heading:not(:first-child) {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid var(--border);
-}
-
-/* --- Inputs --- */
+/* ─── Inputs ─── */
 
 .calc-field {
-  margin-bottom: 14px;
+  margin-bottom: 8px;
   position: relative;
 
   label {
     display: block;
-    font-size: 0.8rem;
+    font-size: 10px;
     color: var(--text-muted);
-    margin-bottom: 6px;
+    margin-bottom: 3px;
   }
 
   input,
   select {
     width: 100%;
-    padding: 8px 10px;
-    font-size: 0.9rem;
+    padding: 3px 8px;
+    font-family: var(--font-mono);
+    font-size: 11px;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: var(--radius);
     background: var(--bg-primary);
     color: var(--text-primary);
 
     &:focus {
       outline: none;
       border-color: var(--accent);
-      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
     }
   }
 
@@ -73,73 +70,73 @@
 .calc-field-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 8px;
+  margin-bottom: 8px;
 
   .calc-field {
     margin-bottom: 0;
   }
 }
 
-/* --- Recipe info (shown after selection) --- */
+/* ─── Recipe info ─── */
 
 .calc-recipe-info {
-  background: var(--bg-tertiary);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 14px;
+  background: var(--bg-quaternary);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  margin-bottom: 8px;
 }
 
 .calc-selected {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 
 .calc-selected-name {
   font-weight: 600;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 11px;
 }
 
 .calc-selected-detail {
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-muted);
 }
 
 .calc-recipe-stats {
   display: flex;
-  gap: 12px;
-  font-size: 0.8rem;
+  gap: 10px;
+  font-size: 10px;
   color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Autocomplete --- */
+/* ─── Autocomplete ─── */
 
 .calc-suggestions {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  margin-top: 4px;
+  margin-top: 2px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
-  max-height: 240px;
+  border-radius: var(--radius);
+  max-height: 200px;
   overflow-y: auto;
   z-index: 50;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .calc-suggestion {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 4px 8px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 11px;
 
   &:hover {
     background: var(--bg-tertiary);
@@ -150,13 +147,12 @@
   color: var(--text-primary);
 }
 
-/* --- Results --- */
+/* ─── Results ─── */
 
 .calc-empty-state {
   text-align: center;
-  padding: 40px;
+  padding: 24px;
   color: var(--text-muted);
-  font-style: italic;
 }
 
 .calc-result-grid {
@@ -167,8 +163,9 @@
 .calc-result-row {
   display: flex;
   justify-content: space-between;
-  padding: 10px 0;
+  padding: 4px 0;
   border-bottom: 1px solid var(--border);
+  font-size: 11px;
 
   &:last-child {
     border-bottom: none;
@@ -176,41 +173,35 @@
 }
 
 .calc-result-label {
-  font-size: 0.85rem;
   color: var(--text-secondary);
 }
 
 .calc-result-value {
-  font-size: 0.95rem;
   font-weight: 600;
   color: var(--text-primary);
   font-variant-numeric: tabular-nums;
 }
 
-.calc-result-highlight {
-  .calc-result-value {
-    color: var(--success);
-    font-size: 1.05rem;
-  }
+.calc-result-highlight .calc-result-value {
+  color: var(--success);
 }
 
 .calc-rest-note {
-  margin-top: 14px;
-  padding: 10px 14px;
-  background: var(--bg-tertiary);
-  border-left: 3px solid var(--accent);
-  border-radius: 0 4px 4px 0;
-  font-size: 0.8rem;
+  margin-top: 8px;
+  padding: 4px 8px;
+  background: var(--bg-quaternary);
+  border-left: 2px solid var(--accent);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
-/* --- Responsive --- */
+/* ─── Responsive ─── */
 
 @media (max-width: 768px) {
   .calc-layout {
     grid-template-columns: 1fr;
   }
-
   .calc-field-row {
     grid-template-columns: 1fr;
   }
