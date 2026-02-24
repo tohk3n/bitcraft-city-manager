@@ -131,6 +131,7 @@ export const DASHBOARD_CONFIG = {
   // Tier specifier
   SPECIFIER: [
     'Rough',
+    'Basic',
     'Simple',
     'Sturdy',
     'Fine',
@@ -182,9 +183,9 @@ export const DASHBOARD_CONFIG = {
     'Sapling',
     'Nail',
   ],
-  WOODWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Bucket'],
+  WOODWORKING_ITEMS_ADDITIONAL: ['Empty Bucket', 'Water Bucket'],
   WOODWORKING_PACKAGES: ['Wood Log Package', 'Plank Package', 'Bark Package'],
-  LEATHERWORKING_TAGS: ['Cleaned Pelt', 'Leather', 'Raw Meat', 'Tannin', 'Pelt'],
+  LEATHERWORKING_TAGS: ['Cleaned Pelt', 'Tanned Pelt', 'Leather', 'Raw Meat', 'Tannin', 'Pelt'],
   LEATHERWORKING_ITEMS_ADDITIONAL: ['Water Bucket', 'Hideworking Salt'],
   LEATHERWORKING_PACKAGES: [],
   MASONRY_TAGS: [

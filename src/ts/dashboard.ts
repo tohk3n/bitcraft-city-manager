@@ -541,7 +541,7 @@ export const DashboardUI = {
 
     this.show('inventory');
   },
-  // Filters so only allowedItems are kept
+  // Filters so only allowedItems are kept and convert to NamedMatrix
   filterInventory(
     inventory: ProcessedInventory,
     completeTags: string[],
@@ -578,6 +578,7 @@ export const DashboardUI = {
         }
       }
     }
+    // Fill up missing items to show all rows
     completeTagSet.forEach((value) => {
       if (!map[value]) {
         map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
