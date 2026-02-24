@@ -98,9 +98,8 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
               qty: 0,
               rarity: meta.rarity,
             };
-          } else {
-            packages[shortenedId][id].qty += qty;
           }
+          packages[shortenedId][id].qty += qty;
         }
       }
 
