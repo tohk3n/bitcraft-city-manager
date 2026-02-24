@@ -567,7 +567,7 @@ export const DashboardUI = {
             const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
             map[tag][tierIndex].push(item.qty);
           }
-          // Add single row for additional items -> can be used to show single lines of an item
+          // Add single row for additional items -> can be used to show single items as one line
           if (additionalSet.has(item.name)) {
             if (!map[item.name]) {
               map[item.name] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
@@ -578,26 +578,42 @@ export const DashboardUI = {
         }
       }
     }
+    completeTagSet.forEach((value) => {
+      if (!map[value]) {
+        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+    });
+    additionalSet.forEach((value) => {
+      if (!map[value]) {
+        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+    });
     return { map };
   },
   filterPackages(inventory: Package, allowedPackages: string[]): NamedMatrix {
     const allowedSet = new Set(allowedPackages);
-
     const map: ResourceMatrix = {};
+
     for (const [shortenedId, items] of Object.entries(inventory)) {
-      log.info('key: ', shortenedId);
-      log.info('cat: ', items);
-      if (!allowedSet.has(shortenedId)) {
-        continue;
+      if (!allowedSet.has(shortenedId)) continue;
+
+      if (!map[shortenedId]) {
+        map[shortenedId] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
       }
+
       for (const item of Object.values(items)) {
-        if (!map[shortenedId]) {
-          map[shortenedId] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-        }
-        const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
+        const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
         map[shortenedId][tierIndex].push(item.qty);
       }
     }
+
+    // add missing packages
+    allowedSet.forEach((value) => {
+      if (!map[value]) {
+        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+    });
+
     return { map };
   },
   // Used to render a sub view matrix containing the specified items by tag or name
