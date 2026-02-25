@@ -533,26 +533,4 @@ export function generateBranchExportText(
   return lines.join('\n');
 }
 
-/**
- * Generate CSV from PlanItems.
- */
-export function generatePlanCSV(items: PlanItem[]): string {
-  const lines = ['activity,name,tier,required,have,deficit'];
-
-  for (const activity of ACTIVITY_ORDER) {
-    const activityItems = items
-      .filter((i) => i.activity === activity && i.deficit > 0)
-      .sort((a, b) => b.deficit - a.deficit);
-
-    for (const item of activityItems) {
-      const escapedName = item.name.includes(',') ? `"${item.name}"` : item.name;
-      lines.push(
-        [activity, escapedName, item.tier, item.required, item.have, item.deficit].join(',')
-      );
-    }
-  }
-
-  return lines.join('\n');
-}
-
 export { ACTIVITIES };

@@ -9,7 +9,6 @@
 import {
   calculatePlanProgress,
   generatePlanExportText,
-  generatePlanCSV,
   generateBranchExportText,
 } from './lib/progress-calc.js';
 import * as PlannerDashboard from './planner-dashboard.js';
@@ -17,6 +16,7 @@ import * as Flowchart from './flowchart.js';
 import { TIER_REQUIREMENTS } from '../configuration/index.js';
 import type { ProcessedNode, PlanItem } from '../types/index.js';
 import { applyTabA11y } from '../aria.js';
+import { generateTreeCSV } from './lib/tree-csv.js';
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -40,6 +40,7 @@ export interface PlannerViewConfig {
 let currentView: ViewMode = 'dashboard';
 let activeResearchIndex = 0;
 let hideComplete = false;
+let wireAbort: AbortController | null = null;
 
 // Cached from last render() call
 let cachedResearches: ProcessedNode[] = [];
@@ -131,96 +132,131 @@ export function renderEmpty(container: HTMLElement): void {
 // ── Event wiring ──────────────────────────────────────────────────
 
 function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
+  // Tear down all listeners from previous render
+  wireAbort?.abort();
+  wireAbort = new AbortController();
+  const { signal } = wireAbort;
+
   // -- Tier select --
-  container.querySelector('#pv-tier')?.addEventListener('change', (e) => {
-    const tier = parseInt((e.target as HTMLSelectElement).value, 10);
-    const req = TIER_REQUIREMENTS[tier];
-    const count = req?.count || 20;
-    const countInput = container.querySelector('#pv-count') as HTMLInputElement;
-    if (countInput) countInput.value = String(count);
-    updateCodexInfo(container, tier, count);
-    cachedOnTierChange?.(tier, count);
-  });
+  container.querySelector('#pv-tier')?.addEventListener(
+    'change',
+    (e) => {
+      const tier = parseInt((e.target as HTMLSelectElement).value, 10);
+      const req = TIER_REQUIREMENTS[tier];
+      const count = req?.count || 20;
+      const countInput = container.querySelector('#pv-count') as HTMLInputElement;
+      if (countInput) countInput.value = String(count);
+      updateCodexInfo(container, tier, count);
+      cachedOnTierChange?.(tier, count);
+    },
+    { signal }
+  );
 
   // -- Codex count --
-  container.querySelector('#pv-count')?.addEventListener('change', (e) => {
-    const tier = parseInt(
-      (container.querySelector('#pv-tier') as HTMLSelectElement)?.value || '6',
-      10
-    );
-    const count = parseInt((e.target as HTMLInputElement).value, 10) || 1;
-    updateCodexInfo(container, tier, count);
-    cachedOnTierChange?.(tier, count);
-  });
+  container.querySelector('#pv-count')?.addEventListener(
+    'change',
+    (e) => {
+      const tier = parseInt(
+        (container.querySelector('#pv-tier') as HTMLSelectElement)?.value || '6',
+        10
+      );
+      const count = parseInt((e.target as HTMLInputElement).value, 10) || 1;
+      updateCodexInfo(container, tier, count);
+      cachedOnTierChange?.(tier, count);
+    },
+    { signal }
+  );
 
   // -- View tabs --
   container.querySelectorAll<HTMLElement>('.pv-tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      const view = tab.dataset.view as ViewMode;
-      if (view === currentView) return;
+    tab.addEventListener(
+      'click',
+      () => {
+        const view = tab.dataset.view as ViewMode;
+        if (view === currentView) return;
 
-      currentView = view;
-      container.querySelectorAll('.pv-tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      renderContent(contentEl);
-    });
+        currentView = view;
+        container.querySelectorAll('.pv-tab').forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderContent(contentEl);
+      },
+      { signal }
+    );
   });
 
   // -- Copy view (respects current view context) --
-  container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
-    let text: string;
+  container.querySelector('#pv-copy-view')?.addEventListener(
+    'click',
+    () => {
+      let text: string;
 
-    if (currentView === 'flowchart') {
-      // Tree tab: scope to active research branch
-      const allTabs = [...cachedResearches];
-      if (cachedStudyJournals) allTabs.push(cachedStudyJournals);
-      const branch = allTabs[activeResearchIndex];
-      text = branch
-        ? generateBranchExportText(cachedPlanItems, cachedTargetTier, branch)
-        : generatePlanExportText(cachedPlanItems, cachedTargetTier);
-    } else {
-      // Dashboard tab: use dashboard filtered text, or fall back to full plan
-      const dashText = PlannerDashboard.generateDashboardText();
-      text = dashText || generatePlanExportText(cachedPlanItems, cachedTargetTier);
-    }
+      if (currentView === 'flowchart') {
+        const allTabs = [...cachedResearches];
+        if (cachedStudyJournals) allTabs.push(cachedStudyJournals);
+        const branch = allTabs[activeResearchIndex];
+        text = branch
+          ? generateBranchExportText(cachedPlanItems, cachedTargetTier, branch)
+          : generatePlanExportText(cachedPlanItems, cachedTargetTier);
+      } else {
+        const dashText = PlannerDashboard.generateDashboardText();
+        text = dashText || generatePlanExportText(cachedPlanItems, cachedTargetTier);
+      }
 
-    copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
-  });
+      copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
+    },
+    { signal }
+  );
 
-  // -- Copy all (ignores filters) --
-  container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
-    const text =
-      currentView === 'dashboard'
-        ? PlannerDashboard.generateFullText() ||
-          generatePlanExportText(cachedPlanItems, cachedTargetTier)
-        : generatePlanExportText(cachedPlanItems, cachedTargetTier);
-    copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
-  });
+  // -- Copy all (full plan, ignores filters) --
+  container.querySelector('#pv-copy-all')?.addEventListener(
+    'click',
+    () => {
+      const text =
+        currentView === 'dashboard'
+          ? PlannerDashboard.generateFullText() ||
+            generatePlanExportText(cachedPlanItems, cachedTargetTier)
+          : generatePlanExportText(cachedPlanItems, cachedTargetTier);
+      copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
+    },
+    { signal }
+  );
 
-  // -- CSV export --
-  container.querySelector('#pv-export-csv')?.addEventListener('click', () => {
-    const csv = generatePlanCSV(cachedPlanItems);
-    downloadCSV(csv, `planner-t${cachedTargetTier}-requirements.csv`);
-  });
+  // -- CSV export (full plan, all items) --
+  container.querySelector('#pv-export-csv')?.addEventListener(
+    'click',
+    () => {
+      const csv = generateTreeCSV(cachedResearches, cachedStudyJournals);
+      downloadCSV(csv, `planner-t${cachedTargetTier}-requirements.csv`);
+    },
+    { signal }
+  );
 
-  // -- Research tabs (delegated -- tabs are rendered dynamically) --
-  container.addEventListener('click', (e) => {
-    const tab = (e.target as HTMLElement).closest('.pv-rtab') as HTMLElement;
-    if (!tab) return;
-    const index = parseInt(tab.dataset.index || '0', 10);
-    if (index === activeResearchIndex) return;
+  // -- Research tabs (delegated — tabs are rendered dynamically) --
+  container.addEventListener(
+    'click',
+    (e) => {
+      const tab = (e.target as HTMLElement).closest('.pv-rtab') as HTMLElement;
+      if (!tab) return;
+      const index = parseInt(tab.dataset.index || '0', 10);
+      if (index === activeResearchIndex) return;
 
-    activeResearchIndex = index;
-    container.querySelectorAll('.pv-rtab').forEach((t) => t.classList.remove('active'));
-    tab.classList.add('active');
-    renderContent(contentEl);
-  });
+      activeResearchIndex = index;
+      container.querySelectorAll('.pv-rtab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderContent(contentEl);
+    },
+    { signal }
+  );
 
   // -- Hide complete toggle --
-  container.querySelector('#pv-hide-complete')?.addEventListener('change', (e) => {
-    hideComplete = (e.target as HTMLInputElement).checked;
-    renderContent(contentEl);
-  });
+  container.querySelector('#pv-hide-complete')?.addEventListener(
+    'change',
+    (e) => {
+      hideComplete = (e.target as HTMLInputElement).checked;
+      renderContent(contentEl);
+    },
+    { signal }
+  );
 }
 
 // ── Content rendering ─────────────────────────────────────────────
