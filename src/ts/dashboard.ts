@@ -11,6 +11,7 @@ import type {
   Items,
   NamedMatrix,
   ProcessedInventory,
+  Package,
   ResourceMatrix,
   Rule,
   StationsByName,
@@ -35,8 +36,7 @@ const log = createLogger('Dashboard');
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
-    log.info(data);
-    const { inventory, foodItems, supplyCargo } = data;
+    const { inventory, foodItems, supplyCargo, packages } = data;
     const foods: Items = DashboardUI.filterFridge(
       foodItems,
       DASHBOARD_CONFIG.FRIDGE,
@@ -46,56 +46,74 @@ export const DashboardUI = {
     this.renderInventory(inventory, 'inventory-grid');
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.FARMING_TAGS,
       DASHBOARD_CONFIG.FARMING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.FARMING_PACKAGES,
       'farming-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.TAILOR_TAGS,
       DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.TAILOR_PACKAGES,
       'tailor-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.WOODWORKING_TAGS,
       DASHBOARD_CONFIG.WOODWORKING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.WOODWORKING_PACKAGES,
       'woodworking-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.LEATHERWORKING_TAGS,
       DASHBOARD_CONFIG.LEATHERWORKING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.LEATHERWORKING_PACKAGES,
       'leatherworking-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.MASONRY_TAGS,
       DASHBOARD_CONFIG.MASONRY_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.MASONRY_PACKAGES,
       'masonry-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.SMITHING_TAGS,
       DASHBOARD_CONFIG.SMITHING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.SMITHING_PACKAGES,
       'smithing-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.FISHING_TAGS,
       DASHBOARD_CONFIG.FISHING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.FISHING_PACKAGES,
       'fishing-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.SCHOLAR_TAGS,
       DASHBOARD_CONFIG.SCHOLAR_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.SCHOLAR_PACKAGES,
       'scholar-view'
     );
     this.renderSubView(
       inventory,
+      packages,
       DASHBOARD_CONFIG.COOKING_TAGS,
       DASHBOARD_CONFIG.COOKING_ITEMS_ADDITIONAL,
+      DASHBOARD_CONFIG.COOKING_PACKAGES,
       'cooking-view'
     );
     this.wireButtons();
@@ -522,7 +540,7 @@ export const DashboardUI = {
 
     this.show('inventory');
   },
-  // Filters so only allowedItems are kept
+  // Filters so only allowedItems are kept and convert to NamedMatrix
   filterInventory(
     inventory: ProcessedInventory,
     completeTags: string[],
@@ -548,7 +566,7 @@ export const DashboardUI = {
             const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
             map[tag][tierIndex].push(item.qty);
           }
-          // Add single row for additional items -> can be used to show single lines of an item
+          // Add single row for additional items -> can be used to show single items as one line
           if (additionalSet.has(item.name)) {
             if (!map[item.name]) {
               map[item.name] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
@@ -559,14 +577,52 @@ export const DashboardUI = {
         }
       }
     }
+    // Fill up missing items to show all rows
+    completeTagSet.forEach((value) => {
+      if (!map[value]) {
+        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+    });
+    additionalSet.forEach((value) => {
+      if (!map[value]) {
+        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+    });
+    return { map };
+  },
+  filterPackages(inventory: Package, allowedPackages: string[]): NamedMatrix {
+    const allowedSet = new Set(allowedPackages);
+    const map: ResourceMatrix = {};
+
+    for (const [shortenedId, items] of Object.entries(inventory)) {
+      if (!allowedSet.has(shortenedId)) continue;
+
+      if (!map[shortenedId]) {
+        map[shortenedId] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+
+      for (const item of Object.values(items)) {
+        const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+        map[shortenedId][tierIndex].push(item.qty);
+      }
+    }
+
+    // add missing packages
+    allowedSet.forEach((value) => {
+      if (!map[value]) {
+        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      }
+    });
 
     return { map };
   },
   // Used to render a sub view matrix containing the specified items by tag or name
   renderSubView(
     inventory: ProcessedInventory,
+    packages: Package,
     completeTags: string[],
     singleItems: string[],
+    allowedPackages: string[],
     view: string
   ): void {
     const filteredInventory: NamedMatrix = this.filterInventory(
@@ -574,17 +630,26 @@ export const DashboardUI = {
       completeTags,
       singleItems
     );
-    const sortedInventory: NamedMatrix = this.sortInventory(
+    const sortedInventory: NamedMatrix = this.sortMatrix(
       filteredInventory,
       completeTags,
       singleItems
     );
+    // build matrix for specified tags/items
     const config: MatrixConfig = this.createMatrixConfig(sortedInventory);
-    const el: HTMLElement | null = document.getElementById(view);
+    const el: HTMLElement | null = document.getElementById(view + '-inventory');
     if (!el) return;
     createDataMatrix(el, config);
+
+    // build matrix for specified packages
+    const filteredPackages: NamedMatrix = this.filterPackages(packages, allowedPackages);
+    const sortedPackages: NamedMatrix = this.sortMatrix(filteredPackages, allowedPackages, []);
+    const configP: MatrixConfig = this.createMatrixConfig(sortedPackages);
+    const elP: HTMLElement | null = document.getElementById(view + '-package');
+    if (!elP) return;
+    createDataMatrix(elP, configP);
   },
-  sortInventory(inventory: NamedMatrix, tags: string[], additionalItems: string[]): NamedMatrix {
+  sortMatrix(inventory: NamedMatrix, tags: string[], additionalItems: string[]): NamedMatrix {
     // Build a single priority list: tags first, then additional items
     // Each entry's array index would become its sort rank
     const priority = new Map([...tags, ...additionalItems].map((t, i) => [t, i])); // tag, index
@@ -603,7 +668,16 @@ export const DashboardUI = {
       return { key: String(tier), label: `T${tier}` };
     });
 
-    const rows: MatrixRow[] = Object.entries(named.map).map(([tag, tiers]) => {
+    const rows: MatrixRow[] = this.buildRows(named);
+
+    return {
+      columns,
+      rows,
+      showRowTotals: false,
+    };
+  },
+  buildRows(sourceMatrix: NamedMatrix): MatrixRow[] {
+    return Object.entries(sourceMatrix.map).map(([tag, tiers]) => {
       const cells = Object.fromEntries(
         tiers.map((qtyList, i) => [String(i + 1), qtyList.reduce((sum, q) => sum + q, 0)])
       ) as Record<string, number>;
@@ -614,11 +688,5 @@ export const DashboardUI = {
         cells,
       };
     });
-
-    return {
-      columns,
-      rows,
-      showRowTotals: false,
-    };
   },
 };

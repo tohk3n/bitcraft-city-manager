@@ -12,6 +12,7 @@ import type {
   MaterialMatrix,
   MaterialCategory,
   Items,
+  Package,
   TierQuantities,
   CraftingStationsResult,
   StationsByName,
@@ -27,100 +28,169 @@ function createTierQuantities(): TierQuantities {
 }
 
 // Process raw API response into structured inventory
-export function processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
-  const buildings: Building[] = data.buildings || [];
+export const InventoryProcessor = {
+  processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
+    const buildings: Building[] = data.buildings || [];
 
-  const itemMeta: Record<number, ApiItem | ApiCargo> = buildMetaLookup(data.items || []);
-  const cargoMeta: Record<number, ApiItem | ApiCargo> = buildMetaLookup(data.cargos || []);
+    const itemMeta: Record<number, ApiItem | ApiCargo> = buildMetaLookup(data.items || []);
+    const cargoMeta: Record<number, ApiItem | ApiCargo> = buildMetaLookup(data.cargos || []);
 
-  // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
-  const inventory: ProcessedInventory = {};
+    // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
+    const inventory: ProcessedInventory = {};
 
-  // Material matrix: category -> tier -> quantity
-  const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
-  for (const cat of DASHBOARD_CONFIG.MATRIX_CATEGORIES) {
-    materialMatrix[cat as MaterialCategory] = createTierQuantities();
-  }
+    // Material matrix: category -> tier -> quantity
+    const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
+    for (const cat of DASHBOARD_CONFIG.MATRIX_CATEGORIES) {
+      materialMatrix[cat as MaterialCategory] = createTierQuantities();
+    }
 
-  // Food totals by item
-  const foodItems: Items = {};
+    // Food items
+    const foodItems: Items = {};
+    // Packages
+    const packages: Package = {};
+    // Supply items (cargo)
+    const supplies: Items = {};
+    // RegEx for package building
+    const escaped = DASHBOARD_CONFIG.SPECIFIER.map((s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    const regex = new RegExp(`\\b(${escaped.join('|')})\\b`, 'g');
 
-  // Scholar totals by tier
-  const supplies: Items = {};
+    for (const building of buildings) {
+      const buildingName: string = building.buildingNickname || building.buildingName;
 
-  for (const building of buildings) {
-    const buildingName: string = building.buildingNickname || building.buildingName;
+      for (const slot of building.inventory || []) {
+        const contents: InventorySlotContents | null = slot.contents;
+        if (!contents) continue;
 
-    for (const slot of building.inventory || []) {
-      const contents: InventorySlotContents | null = slot.contents;
-      if (!contents) continue;
+        const id: number = contents.item_id;
+        const qty: number = contents.quantity;
+        const isItem: boolean = contents.item_type === 'item';
 
-      const id: number = contents.item_id;
-      const qty: number = contents.quantity;
-      const isItem: boolean = contents.item_type === 'item';
+        const meta: ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
+        if (!meta) continue;
 
-      const meta: ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
-      if (!meta) continue;
+        const tag: string = meta.tag || 'Other';
+        const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
+        const tier: number = meta.tier > 0 ? meta.tier : 1;
+        const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
 
-      const tag: string = meta.tag || 'Other';
-      const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
-      const tier: number = meta.tier > 0 ? meta.tier : 1;
-      const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
-
-      // Aggregate raw materials into matrix by category and tier
-      if (DASHBOARD_CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
-        materialMatrix[category as MaterialCategory][tierKey] += qty;
-      }
-      // Track food items
-      if (category === 'Food') {
-        if (!foodItems[id]) {
-          foodItems[id] = { name: meta.name, tier: meta.tier, qty: 0, rarity: meta.rarity };
+        // Aggregate raw materials into matrix by category and tier
+        if (DASHBOARD_CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
+          materialMatrix[category as MaterialCategory][tierKey] += qty;
         }
-        foodItems[id].qty += qty;
-      }
-      if (DASHBOARD_CONFIG.SUPPLY.has(tag)) {
-        supplies[id] = { name: meta.name, tier: meta.tier, qty: qty, rarity: meta.rarity };
-      }
+        // Track food items
+        InventoryProcessor.updateFood(category, foodItems, meta, id, qty);
+        // Track supply cargo
+        InventoryProcessor.updateSupplies(DASHBOARD_CONFIG.SUPPLY, tag, supplies, meta, id, qty);
+        // Look through packages to build a structure that combines everything without the tier specifier
+        // [Simple Wood Log Package -> Wood Log Package]
+        InventoryProcessor.updatePackage(meta, packages, regex, tag, id, qty);
 
-      // Initialize nested structure
-      if (!inventory[category]) inventory[category] = {};
-      if (!inventory[category][tag]) {
-        inventory[category][tag] = { items: {}, total: 0 };
-      }
-
-      const tagGroup: TagGroup = inventory[category][tag];
-
-      if (!tagGroup.items[id]) {
-        tagGroup.items[id] = {
-          id,
-          name: meta.name,
-          tier: meta.tier,
-          qty: 0,
-          buildings: [],
-        };
-      }
-
-      tagGroup.items[id].qty += qty;
-      tagGroup.total += qty;
-
-      // Track per-building breakdown
-      const existing = tagGroup.items[id].buildings.find((b) => b.name === buildingName) as
-        | BuildingBreakdown
-        | undefined;
-      if (existing) {
-        existing.qty += qty;
-      } else {
-        tagGroup.items[id].buildings.push({ name: buildingName, qty });
+        InventoryProcessor.updateInventory(inventory, id, meta, qty, tag, category, buildingName);
       }
     }
-  }
-  return {
-    inventory: inventory,
-    materialMatrix: materialMatrix,
-    foodItems: foodItems,
-    supplyCargo: supplies,
-  };
-}
+    return {
+      inventory: inventory,
+      materialMatrix: materialMatrix,
+      foodItems: foodItems,
+      supplyCargo: supplies,
+      packages: packages,
+    };
+  },
+  updateInventory(
+    inventory: ProcessedInventory,
+    id: number,
+    meta: ApiItem,
+    qty: number,
+    tag: string,
+    category: string,
+    buildingName: string
+  ) {
+    // Initialize nested structure
+    if (!inventory[category]) inventory[category] = {};
+    if (!inventory[category][tag]) {
+      inventory[category][tag] = { items: {}, total: 0 };
+    }
+
+    const tagGroup: TagGroup = inventory[category][tag];
+    // adds missing entries
+    if (!tagGroup.items[id]) {
+      tagGroup.items[id] = {
+        id,
+        name: meta.name,
+        tier: meta.tier,
+        qty: 0,
+        buildings: [],
+      };
+    }
+    tagGroup.items[id].qty += qty;
+    tagGroup.total += qty;
+
+    // Track per-building breakdown
+    const existing = tagGroup.items[id].buildings.find((b) => b.name === buildingName) as
+      | BuildingBreakdown
+      | undefined;
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      tagGroup.items[id].buildings.push({ name: buildingName, qty });
+    }
+  },
+  // Track specified food items
+  updateFood(category: string, foodItems: Items, meta: ApiItem, id: number, qty: number): void {
+    if (category === 'Food') {
+      if (!foodItems[id]) {
+        foodItems[id] = InventoryProcessor.buildEntry(meta);
+      }
+      foodItems[id].qty += qty;
+    }
+  },
+  // Track specified Supplies
+  updateSupplies(
+    checkArray: Set<string>,
+    tag: string,
+    supplies: Items,
+    meta: ApiItem,
+    id: number,
+    qty: number
+  ) {
+    if (checkArray.has(tag)) {
+      supplies[id] = InventoryProcessor.buildEntry(meta);
+      supplies[id].qty += qty;
+    }
+  },
+  // Updates an entry for the packages if the tag is package
+  updatePackage(
+    meta: ApiItem,
+    packages: Package,
+    regex: RegExp,
+    tag: string,
+    id: number,
+    qty: number
+  ): void {
+    if (tag === 'Package') {
+      const shortenedId: string = meta.name.replace(regex, '').trim();
+      packages[shortenedId] = {};
+      if (!packages[shortenedId][id]) {
+        packages[shortenedId][id] = InventoryProcessor.buildEntry(meta);
+      }
+      packages[shortenedId][id].qty += qty;
+    }
+  },
+  // Returns singular entry from meta information
+  buildEntry(meta: ApiItem): {
+    name: string;
+    tier: number;
+    qty: number;
+    rarity: number | undefined;
+  } {
+    return {
+      name: meta.name,
+      tier: meta.tier,
+      qty: 0,
+      rarity: meta.rarity,
+    };
+  },
+};
 
 // Build id -> metadata lookup
 function buildMetaLookup(arr: ApiItem[] | ApiCargo[]): Record<number, ApiItem | ApiCargo> {
