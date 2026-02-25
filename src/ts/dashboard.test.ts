@@ -2,15 +2,6 @@ import { describe, expect, it } from 'vitest';
 import { DashboardUI } from './dashboard.js';
 import { FILTER_TYPE } from './types';
 
-// TODO: Clear ignore after feature complete
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const DASHBOARD_CONFIG = {
-  FRIDGE: {
-    Apple: true,
-    Bread: true,
-  },
-};
-
 describe('filterFridge', () => {
   it('filters food items based on fridge list', () => {
     const food = {

@@ -2,8 +2,9 @@
 import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
-import { processInventory, processCraftingStations } from './inventory.js';
+import { processCraftingStations } from './inventory.js';
 import { CitizensUI } from './citizens.js';
+import { InventoryProcessor } from './inventory.js';
 import * as Planner from './planner/planner.js';
 import * as ClaimSearch from './claim-search.js';
 import type {
@@ -96,7 +97,7 @@ async function loadClaim(claimId: string): Promise<void> {
     }
     UI.showTabs();
     // Process and render inventory view
-    const result: InventoryProcessResult = processInventory(data);
+    const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
 
     UI.renderDashboard(result);
     // Load and render crafting stations
