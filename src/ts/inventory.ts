@@ -85,36 +85,7 @@ export const InventoryProcessor = {
         // [Simple Wood Log Package -> Wood Log Package]
         InventoryProcessor.updatePackage(meta, packages, regex, tag, id, qty);
 
-        // Initialize nested structure
-        if (!inventory[category]) inventory[category] = {};
-        if (!inventory[category][tag]) {
-          inventory[category][tag] = { items: {}, total: 0 };
-        }
-
-        const tagGroup: TagGroup = inventory[category][tag];
-
-        if (!tagGroup.items[id]) {
-          tagGroup.items[id] = {
-            id,
-            name: meta.name,
-            tier: meta.tier,
-            qty: 0,
-            buildings: [],
-          };
-        }
-
-        tagGroup.items[id].qty += qty;
-        tagGroup.total += qty;
-
-        // Track per-building breakdown
-        const existing = tagGroup.items[id].buildings.find((b) => b.name === buildingName) as
-          | BuildingBreakdown
-          | undefined;
-        if (existing) {
-          existing.qty += qty;
-        } else {
-          tagGroup.items[id].buildings.push({ name: buildingName, qty });
-        }
+        InventoryProcessor.updateInventory(inventory, id, meta, qty, tag, category, buildingName);
       }
     }
     return {
@@ -124,6 +95,45 @@ export const InventoryProcessor = {
       supplyCargo: supplies,
       packages: packages,
     };
+  },
+  updateInventory(
+    inventory: ProcessedInventory,
+    id: number,
+    meta: ApiItem,
+    qty: number,
+    tag: string,
+    category: string,
+    buildingName: string
+  ) {
+    // Initialize nested structure
+    if (!inventory[category]) inventory[category] = {};
+    if (!inventory[category][tag]) {
+      inventory[category][tag] = { items: {}, total: 0 };
+    }
+
+    const tagGroup: TagGroup = inventory[category][tag];
+    // adds missing entries
+    if (!tagGroup.items[id]) {
+      tagGroup.items[id] = {
+        id,
+        name: meta.name,
+        tier: meta.tier,
+        qty: 0,
+        buildings: [],
+      };
+    }
+    tagGroup.items[id].qty += qty;
+    tagGroup.total += qty;
+
+    // Track per-building breakdown
+    const existing = tagGroup.items[id].buildings.find((b) => b.name === buildingName) as
+      | BuildingBreakdown
+      | undefined;
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      tagGroup.items[id].buildings.push({ name: buildingName, qty });
+    }
   },
   // Track specified food items
   updateFood(category: string, foodItems: Items, meta: ApiItem, id: number, qty: number): void {
