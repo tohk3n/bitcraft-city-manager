@@ -638,7 +638,7 @@ export const DashboardUI = {
     );
     // build matrix for specified tags/items
     const config: MatrixConfig = this.createMatrixConfig(sortedInventory);
-    const el: HTMLElement | null = document.getElementById(view + '-I');
+    const el: HTMLElement | null = document.getElementById(view + '-inventory');
     if (!el) return;
     createDataMatrix(el, config);
 
@@ -646,7 +646,7 @@ export const DashboardUI = {
     const filteredPackages: NamedMatrix = this.filterPackages(packages, allowedPackages);
     const sortedPackages: NamedMatrix = this.sortMatrix(filteredPackages, allowedPackages, []);
     const configP: MatrixConfig = this.createMatrixConfig(sortedPackages);
-    const elP: HTMLElement | null = document.getElementById(view + '-P');
+    const elP: HTMLElement | null = document.getElementById(view + '-package');
     if (!elP) return;
     createDataMatrix(elP, configP);
   },
