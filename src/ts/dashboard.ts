@@ -36,7 +36,6 @@ const log = createLogger('Dashboard');
 export const DashboardUI = {
   // Main render entry point for inventory view
   renderDashboard(data: InventoryProcessResult): void {
-    log.info(data);
     const { inventory, foodItems, supplyCargo, packages } = data;
     const foods: Items = DashboardUI.filterFridge(
       foodItems,
