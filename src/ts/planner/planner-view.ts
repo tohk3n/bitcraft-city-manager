@@ -53,6 +53,8 @@ let cachedOnTierChange: ((tier: number, count: number) => void) | null = null;
  * Render the full planner view: toolbar, research bar, and content area.
  */
 export function render(container: HTMLElement, config: PlannerViewConfig): void {
+  // fix 25-02-26: set 0 to reset tier-specific view state
+  activeResearchIndex = 0;
   cachedResearches = config.researches;
   cachedPlanItems = config.planItems;
   cachedTargetTier = config.targetTier;
@@ -73,18 +75,16 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
           <select id="pv-tier" class="pv-select">
             ${config.tierOptions.map((t) => `<option value="${t}" ${t === config.currentTier ? 'selected' : ''}>T${t}</option>`).join('')}
           </select>
-          <span class="pv-multiply">\u00d7</span>
+          <span class="pv-multiply">×</span>
           <input type="number" id="pv-count" class="pv-count-input"
                  value="${config.codexCount}" min="1" max="100">
           <span class="pv-codex-info">${config.codexInfo}</span>
-
-          <span class="pv-sep"></span>
-
+        </div>
+        <div class="pv-toolbar-center">
           <div class="pv-tabs">
             <button class="pv-tab ${currentView === 'dashboard' ? 'active' : ''}" data-view="dashboard">Tasks</button>
             <button class="pv-tab ${currentView === 'flowchart' ? 'active' : ''}" data-view="flowchart">Tree</button>
           </div>
-
           <div class="pv-progress-inline">
             <span class="pv-pct">${progress.percent}%</span>
             <div class="pv-progress-bar-mini">
@@ -168,7 +168,8 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
     const text =
       currentView === 'dashboard'
-        ? PlannerDashboard.generateDashboardText()
+        ? PlannerDashboard.generateDashboardText() ||
+          generatePlanExportText(cachedPlanItems, cachedTargetTier)
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
   });
@@ -177,7 +178,8 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
     const text =
       currentView === 'dashboard'
-        ? PlannerDashboard.generateFullText()
+        ? PlannerDashboard.generateFullText() ||
+          generatePlanExportText(cachedPlanItems, cachedTargetTier)
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
   });

@@ -1,10 +1,10 @@
-/**
- * Flowchart - Research tree visualization
- */
+/* ═══ Flowchart — research tree visualization ═══
+   Inherits palette from tokens. Self-contained subsystem.
+   Connector lines, pan/zoom, collapse all live here. */
 
 .fc-tab-status {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 
@@ -28,291 +28,29 @@
 
 .fc-children {
   display: flex;
-  gap: 16px;
-  margin-top: 40px;
+  gap: 12px;
+  margin-top: 32px;
 }
 
-/* Nodes */
-.fc-node {
-  background: var(--bg-primary);
-  border: 2px solid var(--border);
-  border-radius: 6px;
-  padding: 10px 12px;
-  min-width: 130px;
-  max-width: 180px;
-  text-align: center;
-  position: relative;
+/* ═══ VIEWPORT — scrollable, pannable container ═══ */
 
-  /* Status borders */
-  &.complete {
-    border-color: var(--status-complete);
-  }
-  &.partial {
-    border-color: var(--status-partial);
-  }
-  &.missing {
-    border-color: var(--status-missing);
-  }
-
-  &.root {
-    background: var(--bg-tertiary);
-    min-width: 160px;
-
-    .fc-node-tier {
-      background: var(--bg-primary);
-    }
-
-    .fc-node-progress {
-      background: var(--bg-primary);
-    }
-  }
-
-  &.non-trackable {
-    border-style: dashed;
-    opacity: 0.85;
-  }
-
-  &.collapsed {
-    min-width: 100px;
-    padding: 6px 10px;
-    opacity: 0.7;
-
-    .fc-node-name {
-      font-size: 0.75rem;
-      margin-bottom: 2px;
-    }
-
-    .fc-node-meta {
-      margin-bottom: 0;
-    }
-  }
-
-  /* Collapsible interaction */
-  &.collapsible {
-    cursor: pointer;
-    transition:
-      transform 0.1s ease,
-      box-shadow 0.1s ease;
-
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-  }
-
-  /* Collapsed (user-toggled) state */
-  &.is-collapsed {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-
-    .fc-node-name,
-    .fc-node-tier,
-    .fc-node-qty,
-    .fc-have,
-    .fc-need {
-      color: #fff;
-    }
-
-    .fc-sep {
-      color: rgba(255, 255, 255, 0.6);
-    }
-
-    .fc-node-tier {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .fc-node-progress {
-      background: rgba(255, 255, 255, 0.2);
-    }
-
-    .fc-node-progress-fill {
-      background: #fff;
-    }
-
-    .fc-collapse-indicator {
-      opacity: 1;
-    }
-  }
-
-  /* Status-specific progress fills */
-  &.complete .fc-node-progress-fill {
-    background: var(--status-complete);
-  }
-  &.partial .fc-node-progress-fill {
-    background: var(--status-partial);
-  }
-  &.missing .fc-node-progress-fill {
-    background: var(--status-missing);
-    width: 0 !important;
-  }
-
-  /* Hide deficit badge when complete */
-  &.complete .fc-node-deficit {
-    display: none;
-  }
-}
-
-/* Node children — kept flat, they don't need nesting beyond .fc-node */
-.fc-node-name {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  margin-bottom: 4px;
-  line-height: 1.2;
-}
-
-.fc-node-meta {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin-bottom: 6px;
-}
-
-.fc-node-tier {
-  background: var(--bg-tertiary);
-  padding: 1px 5px;
-  border-radius: 3px;
-  font-weight: 500;
-}
-
-.fc-node-qty {
-  font-variant-numeric: tabular-nums;
-}
-
-.fc-have {
-  color: var(--text-primary);
-}
-
-.fc-sep {
-  color: var(--text-muted);
-  margin: 0 1px;
-}
-
-.fc-need {
-  color: var(--text-muted);
-}
-
-.fc-node-check {
-  color: var(--status-complete);
-  font-weight: 600;
-}
-
-.fc-node-progress {
-  height: 4px;
-  background: var(--bg-tertiary);
-  border-radius: 2px;
-  overflow: hidden;
-}
-
-.fc-node-progress-fill {
-  height: 100%;
-  border-radius: 2px;
-  transition: width 0.3s ease;
-}
-
-.fc-node-deficit {
-  position: absolute;
-  top: -8px;
-  right: -8px;
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 10px;
-  background: var(--status-missing);
-  color: white;
-}
-
-.fc-collapse-indicator {
-  font-size: 0.6rem;
-  margin-right: 4px;
-  opacity: 0.7;
-}
-
-/* Collapsed cluster node */
-.fc-cluster {
-  min-width: 120px;
-  background: var(--bg-tertiary);
-  border-style: dashed;
-}
-
-.fc-cluster-icon {
-  font-size: 1.2rem;
-  color: var(--text-muted);
-  margin-bottom: 2px;
-}
-
-/* Viewport */
 .fc-viewport {
-  border-radius: 8px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-}
+  overflow: auto;
+  cursor: grab;
+  position: relative;
+  flex: 1;
+  min-height: 0;
 
-/* Zoom controls */
-.fc-zoom-controls {
-  position: sticky;
-  top: 0;
-  left: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 8px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  width: fit-content;
-  margin-bottom: 16px;
-}
-
-.fc-zoom-btn {
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  cursor: pointer;
-  transition:
-    background 0.1s,
-    border-color 0.1s;
-
-  &:hover {
-    background: var(--bg-secondary);
-    border-color: var(--text-muted);
-  }
-
-  &:active {
-    background: var(--bg-tertiary);
-  }
-
-  &.fc-zoom-reset {
-    width: auto;
-    padding: 0 10px;
-    font-size: 0.75rem;
-    margin-left: 4px;
+  /* Panning active state — set by setupDragPan() */
+  &.dragging {
+    cursor: grabbing;
+    user-select: none;
   }
 }
 
-.fc-zoom-level {
-  min-width: 44px;
-  text-align: center;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Canvas */
+/* Canvas — scaled by zoom, positioned inside viewport */
 .fc-canvas {
   display: flex;
   flex-direction: column;
@@ -339,7 +77,270 @@
   z-index: 1;
 }
 
-/* Connectors */
+/* Zoom controls */
+.fc-zoom-controls {
+  position: sticky;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  width: fit-content;
+  margin-bottom: 8px;
+}
+
+.fc-zoom-btn {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+
+  &:hover {
+    background: var(--bg-secondary);
+    border-color: var(--text-muted);
+  }
+
+  &.fc-zoom-reset {
+    width: auto;
+    padding: 0 8px;
+    font-size: 10px;
+    margin-left: 3px;
+  }
+}
+
+.fc-zoom-level {
+  min-width: 44px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ═══ NODES ═══ */
+
+.fc-node {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  min-width: 110px;
+  max-width: 160px;
+  text-align: center;
+  position: relative;
+  font-size: 10px;
+
+  &.complete {
+    border-color: var(--status-complete);
+  }
+  &.partial {
+    border-color: var(--status-partial);
+  }
+  &.missing {
+    border-color: var(--status-missing);
+  }
+
+  &.root {
+    background: var(--bg-tertiary);
+    min-width: 140px;
+    .fc-node-tier {
+      background: var(--bg-primary);
+    }
+    .fc-node-progress {
+      background: var(--bg-primary);
+    }
+  }
+
+  &.non-trackable {
+    border-style: dashed;
+    opacity: 0.85;
+  }
+
+  &.collapsed {
+    min-width: 80px;
+    padding: 4px 6px;
+    opacity: 0.7;
+    .fc-node-name {
+      font-size: 9px;
+      margin-bottom: 1px;
+    }
+    .fc-node-meta {
+      margin-bottom: 0;
+    }
+  }
+
+  &.collapsible {
+    cursor: pointer;
+    transition:
+      transform 0.1s,
+      box-shadow 0.1s;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  /* Collapsed (user-toggled) */
+  &.is-collapsed {
+    background: var(--bg-tertiary);
+  }
+
+  /* Focused state — keyboard selection */
+  &.is-focused {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+
+    .fc-node-name,
+    .fc-node-tier,
+    .fc-node-qty,
+    .fc-have,
+    .fc-need {
+      color: #fff;
+    }
+
+    .fc-sep {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .fc-node-tier {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .fc-node-progress {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    .fc-node-progress-fill {
+      background: #fff;
+    }
+    .fc-collapse-indicator {
+      opacity: 1;
+    }
+  }
+
+  /* Status progress fills */
+  &.complete .fc-node-progress-fill {
+    background: var(--status-complete);
+  }
+  &.partial .fc-node-progress-fill {
+    background: var(--status-partial);
+  }
+  &.missing .fc-node-progress-fill {
+    background: var(--status-missing);
+    width: 0 !important;
+  }
+  &.complete .fc-node-deficit {
+    display: none;
+  }
+}
+
+.fc-node-name {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  line-height: 1.2;
+}
+
+.fc-node-meta {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.fc-node-tier {
+  background: var(--bg-tertiary);
+  padding: 1px 4px;
+  border-radius: var(--radius);
+  font-weight: 500;
+}
+
+.fc-node-qty {
+  font-variant-numeric: tabular-nums;
+}
+.fc-have {
+  color: var(--text-primary);
+}
+.fc-sep {
+  color: var(--text-muted);
+  margin: 0 1px;
+}
+.fc-need {
+  color: var(--text-muted);
+}
+.fc-node-check {
+  color: var(--status-complete);
+  font-weight: 600;
+}
+
+.fc-node-progress {
+  height: 3px;
+  background: var(--bg-tertiary);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.fc-node-progress-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s ease;
+}
+
+.fc-node-deficit {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 8px;
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 8px;
+  background: var(--status-missing);
+  color: white;
+}
+
+.fc-collapse-indicator {
+  font-size: 8px;
+  margin-right: 3px;
+  opacity: 0.7;
+}
+
+/* Collapsed cluster */
+.fc-cluster {
+  min-width: 100px;
+  background: var(--bg-tertiary);
+  border-style: dashed;
+}
+
+.fc-cluster-icon {
+  font-size: 1rem;
+  color: var(--text-muted);
+  margin-bottom: 1px;
+}
+
+/* ═══ CONNECTORS — the lines between nodes ═══
+   stroke-width: 2 is the original. Don't reduce or they vanish
+   on zoomed-out views. */
+
 .fc-connector {
   fill: none;
   stroke: var(--border);
@@ -352,6 +353,7 @@
     stroke: var(--status-partial);
   }
 
+  /* Collapsed parent → cluster child: thicker, dashed, accent color */
   &.collapsed-connector {
     stroke: var(--accent);
     stroke-width: 3;
@@ -359,29 +361,30 @@
   }
 }
 
-/* Legend */
+/* ═══ LEGEND ═══ */
+
 .fc-legend {
   display: flex;
-  gap: 24px;
-  margin-top: 16px;
-  padding: 10px 16px;
+  gap: 16px;
+  margin-top: 8px;
+  padding: 6px 10px;
   background: var(--bg-tertiary);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: var(--radius);
+  font-size: 10px;
   flex-wrap: wrap;
 }
 
 .fc-legend-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--text-secondary);
 }
 
 .fc-legend-color {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius);
   border: 2px solid;
 
   &.complete {
@@ -401,15 +404,16 @@
 
 .fc-legend-dashed {
   display: inline-block;
-  width: 24px;
-  height: 12px;
+  width: 20px;
+  height: 10px;
   border: 2px dashed var(--border);
-  border-radius: 3px;
+  border-radius: var(--radius);
 }
 
 /* Empty state */
 .fc-empty {
   text-align: center;
-  padding: 48px;
+  padding: 32px;
   color: var(--text-secondary);
+  font-size: 11px;
 }

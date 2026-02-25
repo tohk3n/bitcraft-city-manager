@@ -1,76 +1,66 @@
-/**
- * Dashboard Styles
- * Dense, scannable, activity-grouped layout
- *
- * Design principles:
- * - Tight spacing, not cramped
- * - Color carries meaning, not decoration
- * - Typography creates hierarchy
- * - Whitespace is intentional
- */
+/* ═══ Planner Dashboard — activity-grouped items ═══ */
 
 .dash {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .dash-empty,
 .dash-complete {
-  padding: 32px;
+  padding: 24px;
   text-align: center;
   color: var(--text-muted);
+  font-size: 11px;
 }
 
 .dash-complete {
   color: var(--status-complete);
 }
 
-/* ============================================
-   Toolbar - filters, options, sort
-   ============================================ */
+/* ─── Toolbar ─── */
 
 .dash-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 0;
-  margin-bottom: 8px;
+  gap: 8px;
+  padding: 4px 0;
+  margin-bottom: 4px;
   border-bottom: 1px solid var(--border);
 }
 
 .dash-filters {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dash-options {
   display: flex;
-  gap: 12px;
+  gap: 8px;
   margin-left: auto;
 }
 
 .dash-sort {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: 4px;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
 .dash-select {
-  padding: 6px 10px;
-  font-size: 0.8rem;
+  padding: 3px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   background: var(--bg-tertiary);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
 
   &:hover {
     border-color: var(--text-muted);
   }
-
   &:focus {
     outline: none;
     border-color: var(--accent);
@@ -80,8 +70,8 @@
 .dash-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
+  gap: 4px;
+  font-size: 10px;
   color: var(--text-secondary);
   cursor: pointer;
   user-select: none;
@@ -91,7 +81,6 @@
     cursor: pointer;
     accent-color: var(--accent);
   }
-
   &:hover {
     color: var(--text-primary);
   }
@@ -99,10 +88,11 @@
 
 .dash-select-mini {
   padding: 2px 6px;
-  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 10px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   color: var(--text-primary);
 }
 
@@ -110,29 +100,26 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.75rem;
+  font-size: 10px;
   color: var(--text-secondary);
   cursor: pointer;
-
   input {
     width: 12px;
     height: 12px;
   }
 }
 
-/* ============================================
-   Activity Groups
-   ============================================ */
+/* ─── Activity groups ─── */
 
 .dash-groups {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dash-group {
   background: var(--bg-secondary);
-  border-radius: 6px;
+  border-radius: var(--radius);
   border: 1px solid var(--border);
   overflow: hidden;
 
@@ -140,7 +127,6 @@
     .dash-group-toggle {
       transform: rotate(-90deg);
     }
-
     .dash-group-items {
       display: none;
     }
@@ -149,17 +135,16 @@
 
 .dash-group-header {
   display: grid;
-  grid-template-columns: 16px auto 1fr 80px 48px 32px;
+  grid-template-columns: 14px auto 1fr 70px 40px 28px;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 8px;
+  padding: 6px 10px;
   cursor: pointer;
   user-select: none;
   transition: background 0.1s;
 
   &:hover {
     background: var(--bg-tertiary);
-
     .dash-copy-group {
       opacity: 0.7;
     }
@@ -167,7 +152,7 @@
 }
 
 .dash-group-toggle {
-  font-size: 0.6rem;
+  font-size: 8px;
   color: var(--text-muted);
   text-align: center;
   transition: transform 0.15s;
@@ -175,22 +160,22 @@
 
 .dash-group-name {
   font-weight: 600;
-  font-size: 0.85rem;
+  font-size: 11px;
   letter-spacing: 0.03em;
   color: var(--text-primary);
 }
 
 .dash-group-stats {
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
 .dash-group-bar {
-  width: 80px;
-  height: 4px;
+  width: 70px;
+  height: 3px;
   background: var(--bg-primary);
-  border-radius: 2px;
+  border-radius: 1px;
   overflow: hidden;
 }
 
@@ -201,7 +186,7 @@
 }
 
 .dash-group-pct {
-  font-size: 0.8rem;
+  font-size: 10px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--text-secondary);
@@ -209,11 +194,11 @@
 }
 
 .dash-copy-group {
-  padding: 4px 8px;
-  font-size: 0.8rem;
+  padding: 2px 6px;
+  font-size: 10px;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
   opacity: 0;
   transition:
@@ -228,27 +213,25 @@
   }
 }
 
+/* ─── Item chips (inside groups) ─── */
+
 .dash-group-items {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 6px;
-  padding: 8px 12px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 3px;
+  padding: 4px 8px 8px;
   background: var(--bg-primary);
 }
-
-/* ============================================
-   Item Chips
-   ============================================ */
 
 .dash-item {
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
-  gap: 6px;
-  padding: 7px 10px;
+  gap: 4px;
+  padding: 4px 6px;
   background: var(--bg-secondary);
-  border-radius: 4px;
-  font-size: 0.8rem;
+  border-radius: var(--radius);
+  font-size: 10px;
   position: relative;
   overflow: hidden;
   transition: background 0.1s;
@@ -258,7 +241,6 @@
     background: var(--bg-tertiary);
   }
 
-  /* Status variants */
   &.missing .dash-item-deficit {
     color: var(--status-missing);
   }
@@ -273,12 +255,10 @@
     background: var(--status-missing);
     opacity: 0.4;
   }
-
   &.partial .dash-item-bar-fill {
     background: var(--status-partial);
     opacity: 0.4;
   }
-
   &.complete .dash-item-bar-fill {
     background: var(--status-complete);
     opacity: 0.3;
@@ -286,7 +266,6 @@
 
   &.complete {
     opacity: 0.5;
-
     &:hover {
       opacity: 0.7;
     }
@@ -307,12 +286,12 @@
 }
 
 .dash-item-tier {
-  font-size: 0.65rem;
+  font-size: 8px;
   font-weight: 600;
   color: var(--text-muted);
-  padding: 2px 4px;
+  padding: 1px 3px;
   background: var(--bg-primary);
-  border-radius: 3px;
+  border-radius: var(--radius);
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -320,7 +299,7 @@
 .dash-item-deficit {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
-  min-width: 44px;
+  min-width: 36px;
   text-align: right;
   flex-shrink: 0;
 }
@@ -339,20 +318,17 @@
   transition: width 0.2s;
 }
 
-/* ============================================
-   Responsive
-   ============================================ */
+/* ─── Responsive ─── */
 
 @media (max-width: 600px) {
   .dash-toolbar {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
+    gap: 8px;
   }
 
   .dash-filters {
     width: 100%;
-
     .dash-select {
       flex: 1;
     }
@@ -373,9 +349,8 @@
   }
 
   .dash-group-header {
-    grid-template-columns: 16px auto 1fr 32px;
+    grid-template-columns: 14px auto 1fr 28px;
   }
-
   .dash-group-bar,
   .dash-group-pct {
     display: none;

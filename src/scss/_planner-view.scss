@@ -1,116 +1,34 @@
-/**
- * Planner View - Header and tab chrome
- * Dashboard and flowchart have their own styles.
- */
+@use 'variables';
+
+/* ═══ Planner View — toolbar, tabs, research bar ═══ */
+
+/* ─── Layout ─── */
 
 .pv-container {
   display: flex;
   flex-direction: column;
   height: 100%;
-  gap: 16px;
-}
-
-.pv-empty,
-.pv-loading {
-  padding: 40px;
-  text-align: center;
-  color: var(--text-muted);
-}
-
-.pv-pct {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  font-variant-numeric: tabular-nums;
-}
-
-/* Tabs - prominent pill-style toggle */
-.pv-tabs {
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  background: var(--bg-tertiary);
-  border-radius: 8px;
-  border: 1px solid var(--border);
-}
-
-.pv-tab {
-  padding: 8px 18px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.pv-tab:hover {
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.pv-tab.active {
-  color: var(--text-primary);
-  background: var(--bg-secondary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-}
-
-#pv-export-csv {
-  font-family: monospace;
-  font-size: 0.8rem;
-}
-
-/* Copy button group */
-.pv-copy {
-  padding: 8px 12px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s;
-  white-space: nowrap;
-}
-
-.pv-copy:hover {
-  color: var(--text-primary);
-  border-color: var(--accent);
-  background: rgba(88, 166, 255, 0.1);
-}
-
-.pv-copy.copied {
-  color: var(--status-complete);
-  border-color: var(--status-complete);
-  background: rgba(63, 185, 80, 0.1);
-}
-
-/* Content area */
-.pv-content {
-  flex: 1;
   min-height: 0;
-  overflow: auto;
 }
+
+/* ─── Toolbar row 1 ─── */
 
 .pv-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px;
-  background: var(--bg-secondary);
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 6px 6px 0 0;
-  margin-bottom: 12px;
-  gap: 12px;
+  border-radius: var(--radius) var(--radius) 0 0;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .pv-toolbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .pv-toolbar-right {
@@ -119,51 +37,65 @@
   gap: 4px;
 }
 
+/* ─── Tabs + progress — centered together ───
+   The tabs and progress sit between the tier selector and the copy buttons.
+   flex:1 on center pushes the group to fill available space, then
+   justify-content:center pulls the content to the middle. */
+
+.pv-toolbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex: 1;
+}
+
 .pv-progress-inline {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .pv-pct {
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 11px;
 }
 
 .pv-progress-bar-mini {
-  width: 60px;
-  height: 6px;
-  background: var(--bg-tertiary);
-  border-radius: 3px;
+  width: 50px;
+  height: 4px;
+  background: var(--bg-primary);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .pv-progress-fill-mini {
   height: 100%;
   background: var(--status-partial);
-  border-radius: 3px;
+  border-radius: 2px;
 }
 
 .pv-stats-mini {
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
 /* Compact copy buttons */
 .pv-toolbar-right .pv-copy {
-  padding: 4px 8px;
-  font-size: 0.8rem;
+  padding: 2px 6px;
+  font-size: 10px;
 }
 
-// --- Tier controls (inline in toolbar) ---
+/* ─── Controls ─── */
 
 .pv-select {
-  padding: 4px 8px;
-  font-size: 0.85rem;
-  background: var(--bg-tertiary);
+  padding: 3px 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
 
   &:focus {
@@ -173,13 +105,14 @@
 }
 
 .pv-count-input {
-  width: 48px;
-  padding: 4px 6px;
-  font-size: 0.85rem;
-  background: var(--bg-tertiary);
+  width: 42px;
+  padding: 3px 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-primary);
   color: var(--text-primary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   text-align: center;
   -moz-appearance: textfield;
   appearance: textfield;
@@ -197,11 +130,11 @@
 
 .pv-multiply {
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 11px;
 }
 
 .pv-codex-info {
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--accent);
   font-weight: 500;
   white-space: nowrap;
@@ -209,23 +142,23 @@
 
 .pv-sep {
   width: 1px;
-  height: 20px;
+  height: 16px;
   background: var(--border);
-  margin: 0 4px;
+  margin: 0 2px;
 }
 
-// --- Row 2: Research bar ---
+/* ─── Research bar (row 2) ─── */
 
 .pv-research-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 12px;
-  background: var(--bg-secondary);
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-top: none;
-  border-radius: 0 0 6px 6px;
-  gap: 12px;
+  border-radius: 0 0 var(--radius) var(--radius);
+  gap: 8px;
   flex-shrink: 0;
 
   &.hidden {
@@ -241,43 +174,42 @@
 }
 
 .pv-rtab {
-  padding: 6px 12px;
-  font-size: 0.8rem;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
   font-weight: 500;
-  color: var(--text-secondary);
+  color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
   white-space: nowrap;
   display: flex;
   align-items: center;
-  gap: 6px;
-  transition:
-    color 0.1s,
-    background 0.1s;
+  gap: 4px;
+  transition: color 0.1s;
 
   &:hover {
-    color: var(--text-primary);
-    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    background: var(--bg-quaternary);
   }
 
   &.active {
     color: var(--text-primary);
-    background: var(--bg-tertiary);
+    background: var(--bg-quaternary);
     border-color: var(--border);
   }
 }
 
 .pv-rtab-journals {
-  margin-left: 12px;
+  margin-left: 8px;
 }
 
 .pv-toggle {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-secondary);
   cursor: pointer;
   white-space: nowrap;
@@ -289,62 +221,101 @@
   }
 }
 
-/* Responsive - stack on narrow screens */
-@media (max-width: 600px) {
-  .pv-toolbar {
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 8px 10px;
+/* ─── Sub-tabs (flowchart / dashboard / task-list) ─── */
+
+.pv-tabs {
+  display: flex;
+  gap: 2px;
+}
+
+.pv-tab {
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
   }
 
-  .pv-toolbar-left {
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .pv-codex-info {
-    display: none; // saves space, don't need it
-  }
-
-  .pv-sep {
-    display: none;
-  }
-
-  .pv-research-bar {
-    flex-wrap: wrap;
-  }
-
-  .pv-research-tabs {
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      display: none;
+  &.active {
+    color: var(--accent2);
+    font-weight: 600;
+    &::before {
+      content: '[ ';
+      color: var(--text-muted);
+    }
+    &::after {
+      content: ' ]';
+      color: var(--text-muted);
     }
   }
 }
 
-@media (max-width: 500px) {
-  .pv-actions {
+/* ─── Content area ─── */
+
+.pv-content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* ─── Copy group ─── */
+
+.pv-copy-group {
+  display: flex;
+  gap: 4px;
+}
+
+.pv-copy {
+  padding: 2px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hi);
+  }
+
+  &.copied {
+    background: var(--success);
+    color: var(--bg-primary);
+    border-color: var(--success);
+  }
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 600px) {
+  .pv-toolbar {
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+    padding: 6px 8px;
   }
-
-  .pv-tabs {
-    flex: 1;
-  }
-
-  .pv-tab {
-    flex: 1;
-    text-align: center;
-    padding: 8px 12px;
-  }
-
-  .pv-copy-group {
+  .pv-toolbar-center {
+    order: 3;
     width: 100%;
+    justify-content: flex-start;
   }
-
-  .pv-copy {
-    flex: 1;
+  .pv-codex-info {
+    display: none;
+  }
+  .pv-sep {
+    display: none;
+  }
+  .pv-research-tabs {
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 }

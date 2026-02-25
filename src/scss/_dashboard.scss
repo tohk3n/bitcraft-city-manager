@@ -1,115 +1,51 @@
-/* Dashboard styles - material matrix, quick stats, crafting stations, inventory */
+@use 'variables';
 
-/* Dashboard container */
-#dashboard {
-  margin-bottom: 24px;
-}
+/* ═══ Inventory Dashboard — dense, scannable ═══ */
 
-/* Stats summary (legacy, may not be used) */
-#stats-summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 12px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  text-align: center;
-
-  .value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--accent);
-  }
-
-  .label {
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    margin-top: 4px;
-  }
-}
-/* Profession views */
-#dashboard {
-  .dm-table {
-    width: auto;
-  }
-}
-
-#sub-views {
-  .sub-btn {
-    padding: 6px 16px;
-    font-size: 0.85rem;
-    background: var(--bg-secondary);
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      color: var(--text-primary);
-      background: var(--bg-secondary);
-    }
-
-    &.active {
-      color: var(--accent);
-      background: var(--bg-secondary);
-      border-color: var(--border);
-      border-bottom-color: var(--bg-secondary);
-      margin-bottom: -1px;
-    }
-  }
-}
-/* Quick stats (Food & Scholar) */
+/* Quick stats — horizontal row */
 #quick-stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 16px;
+  display: flex;
+  gap: var(--gap);
+  margin-bottom: 8px;
 }
 
 .quick-card {
-  background: var(--bg-secondary);
+  flex: 1;
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   overflow: hidden;
 }
 
 .quick-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-  background: var(--bg-tertiary);
+  justify-content: space-between;
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
 
-  .icon {
-    font-size: 1.25rem;
-  }
-
-  h4 {
-    margin: 0;
-    font-size: 0.95rem;
+  .label {
+    color: var(--text-muted);
     font-weight: 600;
-    flex: 1;
+    letter-spacing: 0.04em;
   }
 
   .total {
-    font-size: 1rem;
     font-weight: 600;
     color: var(--accent);
   }
 }
 
 .quick-body {
-  padding: 12px 16px;
+  padding: 4px 8px;
+  max-height: 200px;
+  overflow-y: auto;
 
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 11px;
   }
 
   tr {
@@ -122,12 +58,11 @@
     &.more td {
       color: var(--text-muted);
       text-align: center;
-      font-style: italic;
     }
   }
 
   td {
-    padding: 8px 0;
+    padding: 2px 0;
 
     &.qty {
       text-align: right;
@@ -137,40 +72,46 @@
   }
 
   .tier-badge {
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--bg-tertiary);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: var(--radius);
+    background: var(--bg-quaternary);
     color: var(--text-secondary);
-    margin-right: 6px;
+    margin-right: 4px;
   }
 }
 
-/* Crafting stations */
+/* ─── Crafting stations ─── */
+
 #crafting-stations {
-  margin-top: 16px;
+  margin-top: 8px;
   display: flex;
   flex-direction: column;
 }
 
 #toggleStationsBtn {
   width: 100%;
-  padding: 8px 16px;
-  font-size: 0.85rem;
-  background: var(--bg-secondary);
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-tertiary);
   color: var(--text-secondary);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: var(--radius);
   cursor: pointer;
   transition:
-    background 0.15s ease,
-    color 0.15s ease,
-    border-color 0.15s ease;
+    background 0.1s,
+    color 0.1s;
+
+  &:hover {
+    background: var(--bg-quaternary);
+    color: var(--text-primary);
+  }
 }
 
 #station-box {
   display: flex;
-  gap: 1rem;
+  gap: 8px;
 
   &.hidden {
     display: none;
@@ -178,138 +119,164 @@
 }
 
 .stations-section {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 16px;
+  border-radius: var(--radius);
+  padding: 8px;
+  margin-bottom: 8px;
 }
 
-/* Inventory grid */
+/* station matrix */
+.matrix-cell {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  padding: 2px 4px;
+}
+
+.row-total {
+  text-align: right;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+/* ═══ INVENTORY GRID — the category cards ═══ */
+
 #inventory-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--gap);
 }
 
 .inventory-card {
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 8px;
+  border-radius: var(--radius);
   overflow: hidden;
 
   .card-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: var(--bg-tertiary);
+    justify-content: space-between;
+    padding: 4px 8px;
+    background: var(--bg-quaternary);
     cursor: pointer;
     user-select: none;
 
     &:hover {
-      background: #282e36;
+      background: var(--bg-tertiary);
     }
 
     h4 {
       margin: 0;
-      font-size: 0.95rem;
+      font-size: 11px;
       font-weight: 600;
       color: var(--text-primary);
+      flex: 1;
     }
 
     .total {
-      font-size: 0.9rem;
-      color: var(--accent);
+      font-size: 11px;
       font-weight: 500;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      margin: 0 8px;
     }
 
     .chevron {
       color: var(--text-muted);
-      transition: transform 0.2s;
+      font-size: 10px;
+      transition: transform 0.15s;
     }
+  }
+
+  .card-body {
+    display: none;
+    padding: 4px 8px;
+    max-height: 240px;
+    overflow-y: auto;
   }
 
   &.expanded {
     .card-header .chevron {
       transform: rotate(180deg);
     }
-
     .card-body {
       display: block;
     }
   }
 
-  .card-body {
-    display: none;
-    padding: 12px 16px;
-  }
-
   table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.85rem;
+    font-size: 11px;
   }
 
   tr {
     border-bottom: 1px solid var(--border);
-
     &:last-child {
       border-bottom: none;
     }
   }
 
-  th {
-    text-align: left;
-    font-weight: 500;
-    padding: 8px 0;
-    color: var(--text-secondary);
-  }
-
   td {
-    padding: 8px 0;
+    padding: 2px 0;
     color: var(--text-primary);
 
     &.qty {
       text-align: right;
       font-variant-numeric: tabular-nums;
+      color: var(--text-secondary);
     }
   }
 
   .item-name {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
   }
 
   .tier-badge {
-    font-size: 0.7rem;
-    padding: 2px 6px;
-    border-radius: 4px;
-    background: var(--bg-tertiary);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: var(--radius);
+    background: var(--bg-quaternary);
     color: var(--text-secondary);
   }
 }
 
-/* Building breakdown (nested details) */
+/* ─── Building breakdown ─── */
 .building-breakdown {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 4px;
+  padding-top: 4px;
   border-top: 1px dashed var(--border);
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-muted);
 
   summary {
     cursor: pointer;
     color: var(--text-secondary);
+    font-size: 10px;
+
+    &:hover {
+      color: var(--text-primary);
+    }
   }
 
   ul {
-    margin: 8px 0 0 0;
-    padding-left: 16px;
+    margin: 4px 0 0 0;
+    padding-left: 14px;
+    list-style: none;
   }
 
   li {
-    padding: 2px 0;
+    padding: 1px 0;
+    &::before {
+      content: '├ ';
+      color: var(--text-muted);
+    }
+    &:last-child::before {
+      content: '└ ';
+    }
   }
 }

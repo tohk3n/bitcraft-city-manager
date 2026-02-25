@@ -1,4 +1,9 @@
 <!DOCTYPE html>
+<!--
+  Bitcraft City Manager
+  Terminal rice UI — tiling WM aesthetic (Ocean Night)
+  All element IDs preserved — JS modules wire up unchanged
+-->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -7,58 +12,78 @@
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
-  <header>
-    <h1>Bitcraft City Manager</h1>
-    <section id="claim-input" role="search" aria-label="Load a settlement">
-      <div class="claim-input-wrapper">
-        <input type="text" id="claim-input-field"
-               placeholder="City name or Claim ID"
-               autocomplete="off"
-               aria-label="Search by city name or enter claim ID"
-               aria-expanded="false"
-               aria-controls="claim-suggestions"
-               aria-autocomplete="list"
-               role="combobox">
-        <ul id="claim-suggestions" class="suggestions hidden" role="listbox" aria-label="City suggestions"></ul>
+
+<div class="wm-root">
+  <!-- ═══ TOP BAR ═══ -->
+  <header class="bar-top" role="toolbar" aria-label="App bar">
+    <div class="bar-top-inner">
+      <div class="bar-left">
+        <span class="app-title">bcm</span>
+        <span class="sep">│</span>
+        <section id="claim-input" role="search" aria-label="Load a settlement">
+          <div class="claim-input-wrapper">
+            <input type="text" id="claim-input-field"
+                   placeholder="city name or claim id"
+                   autocomplete="off"
+                   spellcheck="false"
+                   aria-label="Search by city name or enter claim ID"
+                   aria-expanded="false"
+                   aria-controls="claim-suggestions"
+                   aria-autocomplete="list"
+                   role="combobox">
+            <ul id="claim-suggestions" class="suggestions hidden"
+                role="listbox" aria-label="City suggestions"></ul>
+          </div>
+          <button id="load-btn">Load</button>
+        </section>
       </div>
-      <button id="load-btn">Load</button>
-    </section>
+      <div class="bar-right">
+        <span id="claim-stats-bar"></span>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <section id="error" class="hidden" role="alert">
-      <p id="error-message"></p>
-    </section>
+  <!-- ═══ ERROR ═══ -->
+  <section id="error" class="hidden" role="alert">
+    <p id="error-message"></p>
+  </section>
 
-    <section id="claim-header" class="hidden"></section>
+  <!-- ═══ CLAIM HEADER ═══ -->
+  <section id="claim-header" class="hidden"></section>
 
-    <section id="claim-info" class="hidden">
-      <h2 id="claim-name">-</h2>
-    </section>
+  <!-- Legacy element — some JS paths reference this -->
+  <section id="claim-info" class="hidden">
+    <h2 id="claim-name">-</h2>
+  </section>
 
-    <nav id="view-tabs" class="hidden">
-      <button class="tab-btn active" data-view="inventory">Inventory</button>
-      <button class="tab-btn" data-view="planner">Planner</button>
-      <button class="tab-btn" data-view="citizens">Citizens</button>
-      <button class="tab-btn" data-view="ids">ID Lookup</button>
-      <button class="tab-btn" data-view="mapLinkComposer">Map Link Composer</button>
-      <button class="tab-btn" data-view="calculator">Calculator</button>
-    </nav>
+  <!-- ═══ [ TAB BAR ] ═══
+       .hk wraps the hotkey letter for underline hint -->
+  <nav id="view-tabs" class="hidden" role="tablist" aria-label="View tabs">
+    <button class="tab-btn active" data-view="inventory" role="tab" aria-selected="true"><span class="hk">I</span>nventory</button>
+    <button class="tab-btn" data-view="planner" role="tab"><span class="hk">P</span>lanner</button>
+    <button class="tab-btn" data-view="citizens" role="tab"><span class="hk">C</span>itizens</button>
+    <button class="tab-btn" data-view="ids" role="tab">I<span class="hk">D</span>s</button>
+    <button class="tab-btn" data-view="mapLinkComposer" role="tab"><span class="hk">M</span>ap</button>
+    <button class="tab-btn" data-view="calculator" role="tab">C<span class="hk">a</span>lc</button>
+  </nav>
 
-    <!-- Inventory View -->
-    <section id="view-inventory" class="view-section">
+  <!-- ═══ MAIN CONTENT ═══ -->
+  <main class="wm-main">
+
+    <!-- ── Inventory View ── -->
+    <section id="view-inventory" class="view-section" role="tabpanel">
       <div id="dashboard" class="hidden">
         <div id="sub-views">
-          <button class="sub-btn active" data-view="overview">Overview</button>
-          <button class="sub-btn" data-view="farming-view">Farming</button>
-          <button class="sub-btn" data-view="tailor-view">Tailoring</button>
-          <button class="sub-btn" data-view="woodworking-view">Woodworking</button>
-          <button class="sub-btn" data-view="leatherworking-view">Leatherworking</button>
-          <button class="sub-btn" data-view="masonry-view">Masonry</button>
-          <button class="sub-btn" data-view="smithing-view">Smithing</button>
-          <button class="sub-btn" data-view="fishing-view">Fishing</button>
-          <button class="sub-btn" data-view="scholar-view">Scholar</button>
-          <button class="sub-btn" data-view="cooking-view">Cooking</button>
+          <button class="sub-btn active" data-view="overview">overview</button>
+          <button class="sub-btn" data-view="farming-view">farming</button>
+          <button class="sub-btn" data-view="tailor-view">tailoring</button>
+          <button class="sub-btn" data-view="woodworking-view">woodworking</button>
+          <button class="sub-btn" data-view="leatherworking-view">leatherworking</button>
+          <button class="sub-btn" data-view="masonry-view">masonry</button>
+          <button class="sub-btn" data-view="smithing-view">smithing</button>
+          <button class="sub-btn" data-view="fishing-view">fishing</button>
+          <button class="sub-btn" data-view="scholar-view">scholar</button>
+          <button class="sub-btn" data-view="cooking-view">cooking</button>
         </div>
         <div id="overview" class="dash-view">
           <div id="quick-stats">
@@ -113,20 +138,21 @@
       </div>
     </section>
 
-    <!-- Planner View -->
-    <section id="view-planner" class="view-section hidden">
+    <!-- ── Planner View ── -->
+    <section id="view-planner" class="view-section hidden" role="tabpanel">
       <div id="planner-content" aria-live="polite"></div>
     </section>
 
-    <!-- Citizens View -->
-    <section id="view-citizens" class="view-section hidden">
+    <!-- ── Citizens View ── -->
+    <section id="view-citizens" class="view-section hidden" role="tabpanel">
       <div id="citizens-grid" aria-live="polite"></div>
     </section>
 
-    <!-- ID Lookup View -->
-    <section id="view-ids" class="view-section hidden">
+    <!-- ── ID Lookup View ── -->
+    <section id="view-ids" class="view-section hidden" role="tabpanel">
       <div id="ids-search">
-        <input type="text" id="ids-filter" placeholder="Filter by name...">
+        <input type="text" id="ids-filter" class="term-input"
+               placeholder="Filter by name..." aria-label="Filter IDs">
       </div>
       <div id="ids-tabs">
         <button class="ids-tab-btn active" data-type="citizens">Citizens</button>
@@ -135,8 +161,8 @@
       <div id="ids-list"></div>
     </section>
 
-    <!-- Map Link Composer View -->
-    <section id="view-mapLinkComposer" class="view-section hidden">
+    <!-- ── Map Link Composer View ── -->
+    <section id="view-mapLinkComposer" class="view-section hidden" role="tabpanel">
       <div id="mlc-container">
         <div id="checkbox-row"></div>
         <div id="mlc-res-input">
@@ -156,7 +182,7 @@
           <label>Map-Link:</label>
           <a id="map-link" href="#" target="_blank" rel="noopener noreferrer">-</a>
         </div>
-        <button id = "id-matrix-btn">Show ID Selection Matrix</button>
+        <button id="id-matrix-btn">Show ID Selection Matrix</button>
         <div id="id-matrix" class="hidden">
           <div id="res-id-matrix"></div>
           <div id="enemy-id-matrix"></div>
@@ -164,13 +190,30 @@
       </div>
     </section>
 
-    <!-- Calculator View -->
-    <section id="view-calculator" class="view-section hidden">
+    <!-- ── Calculator View ── -->
+    <section id="view-calculator" class="view-section hidden" role="tabpanel">
       <div id="calculator-content" aria-live="polite"></div>
     </section>
   </main>
 
-  <!-- Single module entry point - imports all dependencies -->
-  <script type="module" src="/js/main.js"></script>
+  <!-- ═══ BOTTOM BAR ═══ -->
+  <footer class="bar-bottom" role="status" aria-label="Status bar" aria-live="polite">
+    <div class="bar-bottom-inner">
+      <span id="status-view" class="status-mode">INVENTORY</span>
+      <div class="status-seg">
+        <span id="status-claim">no claim loaded</span>
+      </div>
+      <span class="status-spacer"></span>
+      <div class="status-seg status-keyhint">
+        <kbd>?</kbd> keys
+      </div>
+      <div class="status-seg">
+        <span id="version-text">v3.0.0</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script type="module" src="/js/main.js"></script>
 </body>
 </html>
