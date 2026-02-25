@@ -53,6 +53,8 @@ let cachedOnTierChange: ((tier: number, count: number) => void) | null = null;
  * Render the full planner view: toolbar, research bar, and content area.
  */
 export function render(container: HTMLElement, config: PlannerViewConfig): void {
+  // fix 25-02-26: set 0 to reset tier-specific view state
+  activeResearchIndex = 0;
   cachedResearches = config.researches;
   cachedPlanItems = config.planItems;
   cachedTargetTier = config.targetTier;
@@ -166,7 +168,7 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
     const text =
       currentView === 'dashboard'
-        ? PlannerDashboard.generateDashboardText()
+        ? (PlannerDashboard.generateDashboardText() || generatePlanExportText(cachedPlanItems, cachedTargetTier))
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
   });
@@ -175,7 +177,7 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
     const text =
       currentView === 'dashboard'
-        ? PlannerDashboard.generateFullText()
+        ? (PlannerDashboard.generateFullText() || generatePlanExportText(cachedPlanItems, cachedTargetTier))
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
   });

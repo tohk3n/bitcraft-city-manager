@@ -71,6 +71,7 @@ async function loadClaim(claimId: string): Promise<void> {
     const data: ClaimInventoriesResponse = await API.getClaimInventories(claimId);
     claimData.claimId = claimId;
     CitizensUI.reset();
+    plannerState.results = null;
     claimData.inventories = data;
 
     // Try to get claim name and details
