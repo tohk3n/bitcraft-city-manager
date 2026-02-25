@@ -1,6 +1,7 @@
 import type { TierRequirements } from '../types/index.js';
 
 export const TIER_REQUIREMENTS: TierRequirements = {
+  2: { codexTier: 1, count: 5 },
   3: { codexTier: 2, count: 10 },
   4: { codexTier: 3, count: 15 },
   5: { codexTier: 4, count: 20 },

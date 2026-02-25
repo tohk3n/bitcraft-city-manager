@@ -1,51 +1,71 @@
-/* Design tokens — The Truth, Brother */
+/* ═══════════════════════════════════════════════════════
+   Design Tokens — Ocean Night
+   Tiling WM aesthetic: i3-gaps + polybar
+   Deeper, more saturated than Tokyo Night "night"
+   All layout and color truth lives here. Nowhere else.
+   ═══════════════════════════════════════════════════════ */
 
 :root {
-  /* Core palette */
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-tertiary: #21262d;
-  --bg-quaternary: #0e0e68;
-  --border: #30363d;
-  --text-primary: #e6edf3;
-  --text-secondary: #8b949e;
-  --text-muted: #6e7681;
-  --accent: #58a6ff;
-  --accent-hover: #79b8ff;
-  --success: #3fb950;
-  --warning: #d29922;
+  /* ─── Base — Ocean Night: deeper blacks, blue undertone ─── */
+  --bg-primary: #0f111a;
+  --bg-secondary: #171a27;
+  --bg-tertiary: #1c2033;
+  --bg-quaternary: #141825;
+  --border: #2a3050;
+  --border-hi: #3d4a6e;
 
-  /* Status (planner, flowchart, task-list) */
-  --status-complete: #3fb950;
-  --status-partial: #d29922;
-  --status-missing: #f05050;
+  /* ─── Foreground ─── */
+  --text-primary: #c0caf5;
+  --text-secondary: #a9b1d6;
+  --text-muted: #4e5579;
+
+  /* ─── Accents — same hue family, nudged for deeper bg ─── */
+  --accent: #7aa2f7;
+  --accent-hover: #89b4fa;
+  --accent2: #bb9af7;
+  --accent3: #7dcfff;
+  --accent4: #ff9e64;
+
+  /* ─── Semantic ─── */
+  --success: #9ece6a;
+  --warning: #e0af68;
+  --status-complete: #9ece6a;
+  --status-partial: #e0af68;
+  --status-missing: #f7768e;
+
+  /* ─── Structure — tiling WM geometry ─── */
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'IBM Plex Mono', monospace;
+  --font-size: 12px;
+  --radius: 2px;
+  --gap: 3px;
+  --bar-h: 28px;
+
+  /* ─── Layout ceiling — keeps 4K from scattering info to the corners ─── */
+  --max-content: 1400px;
 }
 
-/* ============================================
-   Color maps — SCSS-only, consumed via @each
-   ============================================ */
+/* ═══ SCSS-only maps — consumed via @each ═══ */
 
-/// Game tier colors (T1–T10). Used by .tier-N and .suggestion-tier.tier-N.
+/// Game tier colors (T1–T10)
 $tier-colors: (
-  1: #555,
-  2: #5a7a00,
-  3: #1a5cb8,
-  4: #9a7800,
-  5: #a02820,
-  6: #6a00a0,
-  7: #00a0a0,
-  8: #a06000,
-  9: #600040,
-  10: #004060,
+  1: #4e5579,
+  2: #9ece6a,
+  3: #7aa2f7,
+  4: #e0af68,
+  5: #f7768e,
+  6: #bb9af7,
+  7: #2ac3de,
+  8: #ff9e64,
+  9: #ff007c,
+  10: #7dcfff,
 );
 
-/// Item rarity colors. Independent from tiers — same palette today,
-/// but decoupled so either can change without breaking the other.
+/// Item rarity colors — decoupled from tiers
 $rarity-colors: (
-  common: #555,
-  uncommon: #5a7a00,
-  rare: #1a5cb8,
-  epic: #9a7800,
-  legendary: #a02820,
-  mythic: #6a00a0,
+  common: #4e5579,
+  uncommon: #9ece6a,
+  rare: #7aa2f7,
+  epic: #e0af68,
+  legendary: #f7768e,
+  mythic: #bb9af7,
 );

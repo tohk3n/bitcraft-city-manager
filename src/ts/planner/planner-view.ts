@@ -73,18 +73,16 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
           <select id="pv-tier" class="pv-select">
             ${config.tierOptions.map((t) => `<option value="${t}" ${t === config.currentTier ? 'selected' : ''}>T${t}</option>`).join('')}
           </select>
-          <span class="pv-multiply">\u00d7</span>
+          <span class="pv-multiply">×</span>
           <input type="number" id="pv-count" class="pv-count-input"
                  value="${config.codexCount}" min="1" max="100">
           <span class="pv-codex-info">${config.codexInfo}</span>
-
-          <span class="pv-sep"></span>
-
+        </div>
+        <div class="pv-toolbar-center">
           <div class="pv-tabs">
             <button class="pv-tab ${currentView === 'dashboard' ? 'active' : ''}" data-view="dashboard">Tasks</button>
             <button class="pv-tab ${currentView === 'flowchart' ? 'active' : ''}" data-view="flowchart">Tree</button>
           </div>
-
           <div class="pv-progress-inline">
             <span class="pv-pct">${progress.percent}%</span>
             <div class="pv-progress-bar-mini">

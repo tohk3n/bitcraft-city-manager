@@ -1,7 +1,11 @@
-// Import manifest — one MAIN to rule them all
+// ═══ Import manifest — one MAIN to rule them all ═══
+// Order: tokens → reset → chrome → views → components
+
 @use 'variables';
 @use 'reset';
 @use 'common';
+
+// Views
 @use 'dashboard';
 @use 'citizens';
 @use 'ids';
@@ -12,4 +16,6 @@
 @use 'flowchart';
 @use 'task-list';
 @use 'calculator';
+
+// Components
 @use '../ts/components/data-matrix/data-matrix';

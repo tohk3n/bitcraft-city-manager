@@ -1,47 +1,50 @@
 @use 'variables';
 @use 'sass:color';
 
+/* ═══ Citizens — master-detail roster ═══
+   Already the most terminal-like view.
+   Changes: radius 8→2, padding tightened, font token unified. */
+
 // Bright rarity colors for text-on-dark
 $rarity-fg: (
-  common: #8b949e,
-  uncommon: #a3be5c,
-  rare: #58a6ff,
-  epic: #d4a02a,
-  legendary: #f47067,
-  mythic: #bc8cff,
+  common: #4e5579,
+  uncommon: #9ece6a,
+  rare: #7aa2f7,
+  epic: #e0af68,
+  legendary: #f7768e,
+  mythic: #bb9af7,
 );
 
-@each $name, $color in $rarity-fg {
+@each $name, $clr in $rarity-fg {
   .cz-r-#{$name} {
-    color: $color;
+    color: $clr;
   }
 }
 .cz-r-none {
   color: var(--text-muted);
 }
 
-// --- LOADING ---
+/* ─── Loading ─── */
 
 .cz-loading {
   text-align: center;
-  padding: 40px;
+  padding: 24px;
   color: var(--text-muted);
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
 }
 
-// --- TOOLBAR ---
+/* ─── Toolbar ─── */
 
 .cz-toolbar {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
 .cz-toolbar-row {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
   flex: 1;
   min-width: 0;
@@ -49,12 +52,13 @@ $rarity-fg: (
 
 .cz-search {
   flex: 1;
-  min-width: 180px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
+  min-width: 160px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
   color: var(--text-primary);
 
   &:focus {
@@ -67,11 +71,12 @@ $rarity-fg: (
 }
 
 .cz-select {
-  padding: 8px 12px;
-  font-size: 0.85rem;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--bg-secondary);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
   color: var(--text-primary);
   cursor: pointer;
 
@@ -82,12 +87,12 @@ $rarity-fg: (
 }
 
 .cz-toolbar-count {
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-// --- ROSTER ---
+/* ─── Roster ─── */
 
 .cz-roster {
   display: flex;
@@ -98,27 +103,27 @@ $rarity-fg: (
 .cz-member-row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
-  padding: 10px 14px;
-  background: var(--bg-secondary);
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--radius);
   cursor: pointer;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 11px;
   color: var(--text-primary);
   transition:
     background 0.1s,
     border-color 0.1s;
 
   &:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-quaternary);
     border-color: var(--border);
   }
   &:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
   }
 }
 
@@ -129,9 +134,9 @@ $rarity-fg: (
 
 .cz-meta {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: center;
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-secondary);
 }
 
@@ -140,17 +145,17 @@ $rarity-fg: (
 }
 
 .cz-level {
-  padding: 2px 8px;
-  background: var(--bg-tertiary);
-  border-radius: 4px;
+  padding: 1px 6px;
+  background: var(--bg-primary);
+  border-radius: var(--radius);
   font-variant-numeric: tabular-nums;
 }
 
-// --- ACTIVITY DOT ---
+/* ─── Activity dot ─── */
 
 .cz-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
 
@@ -165,33 +170,33 @@ $rarity-fg: (
   }
 }
 
-// --- DETAIL TOP ---
+/* ─── Detail view ─── */
 
 .cz-detail {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cz-detail-top {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .cz-back {
-  padding: 6px 12px;
-  font-size: 0.85rem;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   font-weight: 500;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   color: var(--text-secondary);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--radius);
   cursor: pointer;
-  flex-shrink: 0;
 
   &:hover {
-    background: var(--bg-tertiary);
+    background: var(--bg-quaternary);
     color: var(--text-primary);
   }
 }
@@ -199,27 +204,27 @@ $rarity-fg: (
 .cz-detail-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
 
 .cz-detail-name {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--text-primary);
   white-space: nowrap;
 }
 
 .cz-detail-meta {
-  font-size: 0.8rem;
+  font-size: 10px;
   color: var(--text-muted);
   white-space: nowrap;
 }
 
-// --- PROFILE GRID ---
-// Seven columns. No decorative lines. Whitespace is the structure.
+/* ─── Profile grid ─── */
+/* Seven columns. No decorative lines. Whitespace is the structure. */
 
 .cz-grid {
   display: grid;
@@ -227,21 +232,20 @@ $rarity-fg: (
     [skill] auto
     [bar] auto
     [tool] auto
-    [gap] 20px
+    [gap] 16px
     [slot] auto
     [cloth] auto
     [lthr] auto
     [metal] auto;
-  column-gap: 8px;
+  column-gap: 6px;
   align-items: baseline;
   width: fit-content;
   max-width: 100%;
-  background: var(--bg-secondary);
+  background: var(--bg-tertiary);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-  font-size: 0.8rem;
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-size: 11px;
   line-height: 1.6;
 }
 
@@ -249,15 +253,13 @@ $rarity-fg: (
   display: contents;
 }
 
-// Header row — just the gear type labels, left zone is empty
 .cz-row-hdr > span {
-  padding-bottom: 4px;
-  font-size: 0.7rem;
+  padding-bottom: 2px;
+  font-size: 9px;
   color: var(--text-muted);
 }
 
-// --- LEFT ZONE ---
-
+/* Left zone */
 .cz-c-skill {
   grid-column: skill;
   color: var(--text-primary);
@@ -271,7 +273,7 @@ $rarity-fg: (
 
 .cz-stashed {
   color: var(--text-muted);
-  font-size: 0.7rem;
+  font-size: 9px;
 }
 
 .cz-c-bar {
@@ -279,15 +281,13 @@ $rarity-fg: (
   white-space: nowrap;
 }
 
-// The track is the full bar width. The fill sits inside it.
 .cz-bar-track {
   display: inline-block;
   width: 20ch;
-  height: 1.4em;
-  background: var(--bg-tertiary);
+  height: 1.2em;
+  background: var(--bg-primary);
   overflow: hidden;
   vertical-align: middle;
-  position: relative;
 }
 
 .cz-bar-fill {
@@ -296,36 +296,33 @@ $rarity-fg: (
   text-align: center;
   min-width: 2ch;
   font-weight: 700;
-  font-size: 0.75rem;
+  font-size: 10px;
   font-variant-numeric: tabular-nums;
 
-  @each $name, $color in $rarity-fg {
+  @each $name, $clr in $rarity-fg {
     &.cz-r-#{$name} {
-      background: $color;
-      color: color.adjust($color, $lightness: -30%);
+      background: $clr;
+      color: color.adjust($clr, $lightness: -30%);
     }
   }
   &.cz-r-none {
-    background: #6e7681;
-    color: #3a3f47;
+    background: #4e5579;
+    color: #2f3349;
   }
 }
 
-// --- RIGHT ZONE ---
-
+/* Right zone */
 .cz-g-gap {
   grid-column: gap;
 }
-
 .cz-g-slot {
   grid-column: slot;
   color: var(--text-secondary);
   white-space: nowrap;
-  font-size: 0.75rem;
+  font-size: 10px;
 }
-
 .cz-g-hdr {
-  font-size: 0.7rem;
+  font-size: 9px;
   color: var(--text-secondary);
 }
 
@@ -343,47 +340,28 @@ $rarity-fg: (
   }
 }
 
-// --- SPACER ---
-// Not a line. Just air.
-
 .cz-spacer {
   grid-column: 1 / -1;
-  height: 8px;
+  height: 6px;
 }
 
-// --- LEGEND ---
-// Bottom right. Reference material, no preamble.
-
-// Legend sits inline with the last skill row, in the gear zone columns.
-
+/* Legend */
 .cz-legend-content {
   grid-column: slot / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  font-size: 0.65rem;
+  gap: 6px;
+  font-size: 9px;
   color: var(--text-muted);
 }
 
 .cz-legend-item {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
 }
 
 .cz-vault-sample {
   font-style: italic;
   border-bottom: 1px dashed var(--text-muted);
-}
-
-.cz-skill-name {
-  font-size: 0.85rem;
-  color: var(--text-primary);
-}
-
-.cz-skill-level {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--accent);
-  font-variant-numeric: tabular-nums;
 }
