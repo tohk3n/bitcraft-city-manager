@@ -86,6 +86,8 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
       if (DASHBOARD_CONFIG.SUPPLY.has(tag)) {
         supplies[id] = { name: meta.name, tier: meta.tier, qty: qty, rarity: meta.rarity };
       }
+      // Look through packages to build a structure that combines everything without the tier specifier
+      // [Simple Wood Log Package -> Wood Log Package]
       if (tag === 'Package') {
         const shortenedId: string = meta.name.replace(regex, '').trim();
 
@@ -99,8 +101,8 @@ export function processInventory(data: ClaimInventoriesResponse): InventoryProce
               rarity: meta.rarity,
             };
           }
-          packages[shortenedId][id].qty += qty;
         }
+        packages[shortenedId][id].qty += qty;
       }
 
       // Initialize nested structure
