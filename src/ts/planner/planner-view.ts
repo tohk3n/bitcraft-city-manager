@@ -10,6 +10,7 @@ import {
   calculatePlanProgress,
   generatePlanExportText,
   generatePlanCSV,
+  generateBranchExportText,
 } from './lib/progress-calc.js';
 import * as PlannerDashboard from './planner-dashboard.js';
 import * as Flowchart from './flowchart.js';
@@ -55,6 +56,7 @@ let cachedOnTierChange: ((tier: number, count: number) => void) | null = null;
 export function render(container: HTMLElement, config: PlannerViewConfig): void {
   // fix 25-02-26: set 0 to reset tier-specific view state
   activeResearchIndex = 0;
+  currentView = 'dashboard';
   cachedResearches = config.researches;
   cachedPlanItems = config.planItems;
   cachedTargetTier = config.targetTier;
@@ -82,8 +84,8 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
         </div>
         <div class="pv-toolbar-center">
           <div class="pv-tabs">
-            <button class="pv-tab ${currentView === 'dashboard' ? 'active' : ''}" data-view="dashboard">Tasks</button>
-            <button class="pv-tab ${currentView === 'flowchart' ? 'active' : ''}" data-view="flowchart">Tree</button>
+            <button class="pv-tab active" data-view="dashboard">Tasks</button>
+            <button class="pv-tab" data-view="flowchart">Tree</button>
           </div>
           <div class="pv-progress-inline">
             <span class="pv-pct">${progress.percent}%</span>
@@ -164,13 +166,24 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
     });
   });
 
-  // -- Copy view (respects current filters) --
+  // -- Copy view (respects current view context) --
   container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
-    const text =
-      currentView === 'dashboard'
-        ? PlannerDashboard.generateDashboardText() ||
-          generatePlanExportText(cachedPlanItems, cachedTargetTier)
+    let text: string;
+
+    if (currentView === 'flowchart') {
+      // Tree tab: scope to active research branch
+      const allTabs = [...cachedResearches];
+      if (cachedStudyJournals) allTabs.push(cachedStudyJournals);
+      const branch = allTabs[activeResearchIndex];
+      text = branch
+        ? generateBranchExportText(cachedPlanItems, cachedTargetTier, branch)
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
+    } else {
+      // Dashboard tab: use dashboard filtered text, or fall back to full plan
+      const dashText = PlannerDashboard.generateDashboardText();
+      text = dashText || generatePlanExportText(cachedPlanItems, cachedTargetTier);
+    }
+
     copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
   });
 

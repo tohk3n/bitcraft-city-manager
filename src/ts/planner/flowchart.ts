@@ -34,6 +34,7 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
   }
 
   zoomLevel = 1;
+  collapsedNodes.clear();
 
   // Build combined tab list: researches + study journals (if present)
   const allTabs: TabNode[] = [...researches];

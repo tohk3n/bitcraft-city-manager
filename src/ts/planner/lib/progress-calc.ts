@@ -481,6 +481,59 @@ export function generatePlanExportText(items: PlanItem[], targetTier: number): s
 }
 
 /**
+ * Collect "name:tier" keys of all trackable items in a ProcessedNode tree.
+ * Used by copy-view on the flowchart tab to scope export to one branch.
+ */
+export function collectBranchKeys(node: ProcessedNode): Set<string> {
+  const keys = new Set<string>();
+
+  function walk(n: ProcessedNode): void {
+    if (n.trackable && n.required > 0) {
+      keys.add(`${n.name}:${n.tier}`);
+    }
+    for (const child of n.children) walk(child);
+  }
+
+  walk(node);
+  return keys;
+}
+
+/**
+ * Generate export text scoped to a single research branch.
+ * Filters planItems to only items present in the branch tree.
+ */
+export function generateBranchExportText(
+  items: PlanItem[],
+  targetTier: number,
+  branch: ProcessedNode
+): string {
+  const branchKeys = collectBranchKeys(branch);
+  const branchItems = items.filter((i) => branchKeys.has(`${i.name}:${i.tier}`));
+
+  const progress = calculatePlanProgress(branchItems);
+  const lines: string[] = [];
+  lines.push(`**T${targetTier} - ${branch.name}**`);
+  lines.push(`Progress: ${progress.percent}% complete`);
+  lines.push('');
+
+  for (const activity of ACTIVITY_ORDER) {
+    const activityItems = branchItems
+      .filter((i) => i.activity === activity && i.deficit > 0)
+      .sort((a, b) => b.deficit - a.deficit);
+    if (activityItems.length === 0) continue;
+
+    lines.push(`**${activity.toUpperCase()}**`);
+    for (const item of activityItems) {
+      const tierStr = item.tier > 0 ? ` (T${item.tier})` : '';
+      lines.push(`- ${formatCompact(item.deficit)}x ${item.name}${tierStr}`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n');
+}
+
+/**
  * Generate CSV from PlanItems.
  */
 export function generatePlanCSV(items: PlanItem[]): string {
