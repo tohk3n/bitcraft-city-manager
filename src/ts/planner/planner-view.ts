@@ -168,7 +168,8 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   container.querySelector('#pv-copy-view')?.addEventListener('click', () => {
     const text =
       currentView === 'dashboard'
-        ? (PlannerDashboard.generateDashboardText() || generatePlanExportText(cachedPlanItems, cachedTargetTier))
+        ? PlannerDashboard.generateDashboardText() ||
+          generatePlanExportText(cachedPlanItems, cachedTargetTier)
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
   });
@@ -177,7 +178,8 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
   container.querySelector('#pv-copy-all')?.addEventListener('click', () => {
     const text =
       currentView === 'dashboard'
-        ? (PlannerDashboard.generateFullText() || generatePlanExportText(cachedPlanItems, cachedTargetTier))
+        ? PlannerDashboard.generateFullText() ||
+          generatePlanExportText(cachedPlanItems, cachedTargetTier)
         : generatePlanExportText(cachedPlanItems, cachedTargetTier);
     copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
   });
