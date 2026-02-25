@@ -49,11 +49,25 @@
   }
 }
 
-#lnk-gen-btn {
+#lnk-gen-btn,
+#id-matrix-btn {
+  padding: 3px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.1s;
   align-self: flex-start;
-}
 
-.map-link-output {
+  &:hover {
+    background: var(--accent);
+    color: var(--bg-primary);
+    border-color: var(--accent);
+  }
   display: flex;
   align-items: center;
   gap: 8px;
@@ -82,10 +96,6 @@
   &:hover {
     text-decoration: underline;
   }
-}
-
-#id-matrix-btn {
-  align-self: flex-start;
 }
 
 /* ─── ID selection matrices ───
