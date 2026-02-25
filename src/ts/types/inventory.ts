@@ -59,11 +59,14 @@ export type CategoryInventory = Record<string, TagGroup>; // tag -> TagGroup
 
 export type ProcessedInventory = Record<string, CategoryInventory>; // category -> tags
 
+export type Package = Record<string, Record<string, Item>>;
+
 export interface InventoryProcessResult {
   inventory: ProcessedInventory;
   materialMatrix: MaterialMatrix;
   foodItems: Items;
   supplyCargo: Items;
+  packages: Package;
 }
 
 // =============================================================================
