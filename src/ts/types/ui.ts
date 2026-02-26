@@ -16,7 +16,14 @@ import type { CitizensData } from '../citizens.js';
 // VIEW STATE
 // =============================================================================
 
-export type ViewId = 'inventory' | 'planner' | 'citizens' | 'ids' | 'mapLinkComposer';
+export type ViewId =
+  | 'inventory'
+  | 'planner'
+  | 'citizens'
+  | 'ids'
+  | 'mapLinkComposer'
+  | 'calculator'
+  | 'resourceCalculator';
 
 export type IdsTabType = 'citizens' | 'items';
 
