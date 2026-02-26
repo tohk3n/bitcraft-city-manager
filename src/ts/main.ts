@@ -24,6 +24,7 @@ import * as Calculator from './calculator-view.js';
 import { applyTabA11y } from './aria.js';
 import * as MaterialsView from './material-breakdown-view.js';
 import { initHotkeys } from './hotkeys.js';
+import { initWalkthrough } from './walkthrough.js';
 
 const log = createLogger('Main');
 
@@ -291,6 +292,7 @@ loadBtn?.addEventListener('click', () => {
 
 setupTabs();
 initHotkeys();
+initWalkthrough();
 
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);
