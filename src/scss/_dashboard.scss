@@ -84,8 +84,8 @@
 /* ─── Crafting stations ─── */
 
 #crafting-stations {
+  width: 100%;
   margin-top: 8px;
-  display: flex;
   flex-direction: column;
 }
 
@@ -110,8 +110,10 @@
 }
 
 #station-box {
+  width: 100%;
   display: flex;
   gap: 8px;
+  flex: 1;
 
   &.hidden {
     display: none;
@@ -124,6 +126,7 @@
   border-radius: var(--radius);
   padding: 8px;
   margin-bottom: 8px;
+  flex: 1;
 }
 
 /* station matrix */
