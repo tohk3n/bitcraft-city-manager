@@ -161,5 +161,5 @@ export const MAP_CONFIG = {
   } satisfies NamedMatrix,
 
   // External URLs
-  BASE_URL: 'https://bitcraftmap.com/',
+  BASE_URL: 'https://map.bitjita.com/',
 };
