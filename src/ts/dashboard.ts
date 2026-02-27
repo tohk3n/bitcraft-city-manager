@@ -676,7 +676,7 @@ export const DashboardUI = {
 
       return {
         key: tag,
-        label: tag,
+        label: tag.toLowerCase(),
         cells,
       };
     });
