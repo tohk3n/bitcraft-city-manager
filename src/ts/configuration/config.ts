@@ -1,7 +1,7 @@
 // Configuration constants - centralized magic values
 export const CONFIG = {
   // Number of regions
-  REGION_COUNT: 9,
+  REGION_COUNT: 25,
 
   // Highest tier available
   MAX_TIER: 10,
