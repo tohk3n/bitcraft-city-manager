@@ -340,20 +340,12 @@ export const DashboardUI = {
       return;
     }
     log.debug(active, activeNames);
-    let html = `<div><button id = "toggleStationsBtn">Show Stations</button></div>`;
-    html += `<div id="station-box" class="hidden">`;
+    let html = `<div id="station-box">`;
     html += this.generateMatrixHtml(active, activeNames, 'Active Crafting Stations');
     html += this.generateMatrixHtml(passive, passiveNames, 'Passive Crafting Stations');
 
     html += `</div>`;
     container.innerHTML = html;
-    const btn = document.getElementById('toggleStationsBtn');
-    const box = document.getElementById('station-box');
-    if (!btn || !box) return;
-    btn.addEventListener('click', () => {
-      box.classList.toggle('hidden');
-      btn.textContent = box.classList.contains('hidden') ? 'Show Stations' : 'Hide Stations';
-    });
     this.show('crafting-stations');
   },
   removeSpecifier(data: CraftingStationsResult, specifier: string[]): CraftingStationsResult {
@@ -684,7 +676,7 @@ export const DashboardUI = {
 
       return {
         key: tag,
-        label: tag,
+        label: tag.toLowerCase(),
         cells,
       };
     });

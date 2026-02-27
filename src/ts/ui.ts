@@ -199,8 +199,6 @@ const BaseUI = {
 
     const btn: HTMLElement | null = document.getElementById('lnk-gen-btn');
     if (!btn) return;
-    const matrixBtn: HTMLElement | null = document.getElementById('id-matrix-btn');
-    if (!matrixBtn) return;
     const matrixWrapper: HTMLElement | null = document.getElementById('id-matrix');
     if (!matrixWrapper) return;
 
@@ -208,10 +206,6 @@ const BaseUI = {
     MAP_LINK.renderEnemyMatrix();
 
     btn?.addEventListener('click', (): void => MAP_LINK.generateLinkEvent());
-
-    matrixBtn?.addEventListener('click', (): void => {
-      matrixWrapper?.classList.toggle('hidden');
-    });
   },
 };
 
