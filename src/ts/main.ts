@@ -22,6 +22,9 @@ import type {
 import type { CitizensData } from './citizens.js';
 import * as Calculator from './calculator-view.js';
 import { applyTabA11y } from './aria.js';
+import * as MaterialsView from './material-breakdown-view.js';
+import { initHotkeys } from './hotkeys.js';
+import { initWalkthrough } from './walkthrough.js';
 
 const log = createLogger('Main');
 
@@ -240,6 +243,9 @@ function setupTabs(): void {
       } else if (view === 'calculator') {
         const container = document.getElementById('calculator-content');
         if (container) Calculator.render(container);
+      } else if (view === 'resourceCalculator') {
+        const container = document.getElementById('resource-calculator-content');
+        if (container) MaterialsView.render(container);
       }
     });
   });
@@ -285,6 +291,8 @@ loadBtn?.addEventListener('click', () => {
 });
 
 setupTabs();
+initHotkeys();
+initWalkthrough();
 
 // Load from URL param if present
 const params = new URLSearchParams(window.location.search);

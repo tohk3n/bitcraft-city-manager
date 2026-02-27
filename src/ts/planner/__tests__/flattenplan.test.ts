@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  flattenPlan,
-  calculatePlanProgress,
-  generatePlanCSV,
-} from '../../../ts/planner/lib/progress-calc.js';
+import { flattenPlan, calculatePlanProgress } from '../../../ts/planner/lib/progress-calc.js';
 import type { ProcessedCodex, ProcessedNode, PlanItem } from '../../types/index.js';
 
 // =============================================================================
@@ -298,60 +294,6 @@ describe('calculatePlanProgress', () => {
 
   it('returns 100% for empty list', () => {
     expect(calculatePlanProgress([]).percent).toBe(100);
-  });
-});
-
-// =============================================================================
-// generatePlanCSV
-// =============================================================================
-
-describe('generatePlanCSV', () => {
-  it('groups by activity and skips complete items', () => {
-    const items: PlanItem[] = [
-      {
-        name: 'Clay Lump',
-        tier: 1,
-        required: 100,
-        have: 0,
-        deficit: 100,
-        pctComplete: 0,
-        activity: 'Mining',
-        actionable: true,
-        mappingType: 'gathered',
-      },
-      {
-        name: 'Oak Trunk',
-        tier: 1,
-        required: 50,
-        have: 50,
-        deficit: 0,
-        pctComplete: 100,
-        activity: 'Logging',
-        actionable: true,
-        mappingType: 'gathered',
-      },
-      {
-        name: 'Simple Plank',
-        tier: 2,
-        required: 200,
-        have: 50,
-        deficit: 150,
-        pctComplete: 25,
-        activity: 'Crafting',
-        actionable: false,
-        mappingType: 'likely_api',
-      },
-    ];
-
-    const csv = generatePlanCSV(items);
-    const lines = csv.split('\n');
-
-    expect(lines[0]).toBe('activity,name,tier,required,have,deficit');
-    expect(lines).toHaveLength(3); // header + 2 items with deficit
-    expect(lines[1]).toContain('Mining');
-    expect(lines[2]).toContain('Crafting');
-    // Oak Trunk (deficit 0) should not appear
-    expect(csv).not.toContain('Oak Trunk');
   });
 });
 

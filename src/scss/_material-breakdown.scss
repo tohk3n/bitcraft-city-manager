@@ -1,0 +1,216 @@
+/* ═══ Material Breakdown — recipe decomposition ═══
+   Same rhythm as _calculator.scss: two-column layout,
+   terminal density, doesn't fight the ocean night. */
+
+.mb-layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 8px;
+  align-items: start;
+  max-width: 900px;
+}
+
+.mb-panel {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
+.mb-heading {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+
+  &:not(:first-child) {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+}
+
+/* ─── Inputs ─── */
+
+.mb-field {
+  margin-bottom: 8px;
+  position: relative;
+
+  label {
+    display: block;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+
+  input {
+    width: 100%;
+  }
+}
+
+/* ─── Recipe info bar ─── */
+
+.mb-recipe-info {
+  background: var(--bg-quaternary);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  margin-top: 8px;
+}
+
+.mb-selected {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mb-selected-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 11px;
+}
+
+.mb-selected-detail {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ─── Autocomplete ─── */
+
+.mb-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 2px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 50;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.mb-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 11px;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+}
+
+.mb-suggestion-name {
+  color: var(--text-primary);
+}
+
+.mb-raw-badge {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* ─── Results ─── */
+
+.mb-empty-state {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+
+.mb-error {
+  padding: 6px 10px;
+  background: rgba(247, 118, 142, 0.08);
+  border: 1px solid var(--status-missing);
+  color: var(--status-missing);
+  border-radius: var(--radius);
+  font-size: 11px;
+}
+
+.mb-section {
+  margin-bottom: 8px;
+}
+
+/* ─── Tables ─── */
+
+.mb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+
+  th {
+    padding: 3px 6px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+  }
+
+  td {
+    padding: 2px 6px;
+    color: var(--text-primary);
+    border-bottom: 1px solid var(--border);
+  }
+
+  tr:last-child td {
+    border-bottom: none;
+  }
+}
+
+.mb-qty {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+/* ─── Tree indentation ─── */
+
+.mb-indent {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.mb-row-raw td {
+  color: var(--text-secondary);
+}
+
+.mb-row-crafted td:nth-child(2) {
+  color: var(--accent3);
+}
+
+/* ─── Collapsible tree ─── */
+
+.mb-tree-section {
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+}
+
+.mb-heading-toggle {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    color: var(--text-secondary);
+  }
+}
+
+/* ─── Responsive ─── */
+
+@media (max-width: 768px) {
+  .mb-layout {
+    grid-template-columns: 1fr;
+  }
+}

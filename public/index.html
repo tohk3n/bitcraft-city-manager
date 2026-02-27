@@ -65,6 +65,7 @@
     <button class="tab-btn" data-view="ids" role="tab">I<span class="hk">D</span>s</button>
     <button class="tab-btn" data-view="mapLinkComposer" role="tab"><span class="hk">M</span>ap</button>
     <button class="tab-btn" data-view="calculator" role="tab">C<span class="hk">a</span>lc</button>
+    <button class="tab-btn" data-view="resourceCalculator" role="tab"><span class="hk">R</span>esources</button>
   </nav>
 
   <!-- ═══ MAIN CONTENT ═══ -->
@@ -193,6 +194,10 @@
     <section id="view-calculator" class="view-section hidden" role="tabpanel">
       <div id="calculator-content" aria-live="polite"></div>
     </section>
+
+    <section id="view-resourceCalculator" class="view-section hidden" role="tabpanel">
+      <div id="resource-calculator-content" aria-live="polite"></div>
+    </section>
   </main>
 
   <!-- ═══ BOTTOM BAR ═══ -->
@@ -204,7 +209,9 @@
       </div>
       <span class="status-spacer"></span>
       <div class="status-seg status-keyhint">
-        <kbd>?</kbd> keys
+        <button id="guide-btn" class="term-btn" style="padding:1px 6px;font-size:10px;">
+          <kbd>?</kbd> keys
+        </button>
       </div>
       <div class="status-seg">
         <span id="version-text">v3.0.0</span>
@@ -214,5 +221,118 @@
 </div>
 
 <script type="module" src="/js/main.js"></script>
+
+<div id="wt-overlay" class="wt-overlay" style="display:none;">
+  <div class="wt-modal" role="dialog" aria-label="Getting started guide">
+    <div class="wt-header">
+      <span class="wt-title">getting started</span>
+      <button class="wt-close" id="wt-close" aria-label="Close guide">&times;</button>
+    </div>
+    <div class="wt-progress" id="wt-progress"></div>
+    <div class="wt-body" id="wt-body">
+
+      <!-- PAGE 0: Welcome -->
+      <div class="wt-page" data-page="0">
+        <div class="wt-page-title">welcome to bcm</div>
+        <p class="wt-text">
+          The <strong>Bitcraft City Manager</strong> helps settlement leaders track
+          inventory, plan tier upgrades, manage citizens, and look up game data —
+          all from one place.
+        </p>
+        <p class="wt-text">
+          To get started, enter a <strong>Claim ID</strong> or search by
+          <strong>city name</strong> in the header bar and press Enter. Once loaded,
+          the tabs across the top unlock your settlement data.
+        </p>
+        <p class="wt-text">
+          BCM is keyboard-first. Every tab has a hotkey — the
+          <strong>underlined letter</strong> in each tab label. Press it from
+          anywhere to jump there instantly.
+        </p>
+        <div class="wt-tip">
+          Press <kbd>/</kbd> to jump to the search bar at any time.
+          Press <kbd>Esc</kbd> to leave a search box and return to navigation.
+        </div>
+      </div>
+
+      <!-- PAGE 1: The Tabs -->
+      <div class="wt-page" data-page="1">
+        <div class="wt-page-title">the tabs</div>
+        <dl class="wt-kv">
+          <dt><kbd>i</kbd></dt><dd><strong>Inventory</strong> — dashboard with food, supplies, crafting stations, and per-profession breakdowns</dd>
+          <dt><kbd>p</kbd></dt><dd><strong>Planner</strong> — calculate what you need for your next tier upgrade</dd>
+          <dt><kbd>c</kbd></dt><dd><strong>Citizens</strong> — member roster with skills, gear, activity, and search</dd>
+          <dt><kbd>d</kbd></dt><dd><strong>IDs</strong> — look up citizen and item entity IDs for game commands</dd>
+          <dt><kbd>m</kbd></dt><dd><strong>Map</strong> — compose bitcraftmap.com links with resource/enemy/player filters</dd>
+          <dt><kbd>a</kbd></dt><dd><strong>Calc</strong> — craft time estimator with stamina and food modelling</dd>
+          <dt><kbd>r</kbd></dt><dd><strong>Resources</strong> — resource calculator for gathering planning</dd>
+        </dl>
+        <p class="wt-text">
+          Some tabs have their own search — <strong>Citizens</strong>,
+          <strong>IDs</strong>, and <strong>Calc</strong> all have filter inputs.
+          Press <kbd>/</kbd> to focus the search for the current tab.
+        </p>
+      </div>
+
+      <!-- PAGE 2: The Planner -->
+      <div class="wt-page" data-page="2">
+        <div class="wt-page-title">the planner</div>
+        <p class="wt-text">
+          The planner calculates everything you need to complete a tier upgrade.
+          Select a <strong>target tier</strong> from the dropdown — it shows what
+          your settlement has and what's still missing across all five research branches.
+        </p>
+        <p class="wt-text">
+          Two views show the same data differently:
+        </p>
+        <dl class="wt-kv">
+          <dt><kbd>t</kbd></dt><dd><strong>Tasks</strong> — grouped by profession, filterable, copyable to Discord</dd>
+          <dt><kbd>f</kbd></dt><dd><strong>Tree</strong> — visual dependency flowchart per research branch</dd>
+        </dl>
+        <p class="wt-text">
+          In Tree view, the <strong>research tabs</strong> along the bottom switch between
+          branches (Stone, Wood, Metal, Leather, Cloth) plus Study Journals.
+          Use <kbd>Hide done</kbd> to collapse completed branches.
+        </p>
+        <div class="wt-tip">
+          The copy buttons export formatted text for Discord. CSV export
+          gives you everything in a spreadsheet-friendly format.
+        </div>
+      </div>
+
+      <!-- PAGE 3: Quick Reference -->
+      <div class="wt-page" data-page="3">
+        <div class="wt-page-title">quick reference</div>
+        <p class="wt-text" style="margin-bottom:4px;">All keyboard shortcuts:</p>
+        <dl class="wt-kv" style="margin-bottom:6px;">
+          <dt><kbd>i</kbd></dt><dd>Inventory</dd>
+          <dt><kbd>p</kbd></dt><dd>Planner</dd>
+          <dt><kbd>c</kbd></dt><dd>Citizens</dd>
+          <dt><kbd>d</kbd></dt><dd>IDs</dd>
+          <dt><kbd>m</kbd></dt><dd>Map Link</dd>
+          <dt><kbd>a</kbd></dt><dd>Calculator</dd>
+          <dt><kbd>r</kbd></dt><dd>Resources</dd>
+        </dl>
+        <dl class="wt-kv" style="margin-bottom:6px;">
+          <dt><kbd>t</kbd></dt><dd>Planner → Tasks</dd>
+          <dt><kbd>f</kbd></dt><dd>Planner → Tree</dd>
+        </dl>
+        <dl class="wt-kv">
+          <dt><kbd>/</kbd></dt><dd>focus search</dd>
+          <dt><kbd>Esc</kbd></dt><dd>blur search / close guide</dd>
+          <dt><kbd>?</kbd></dt><dd>this guide</dd>
+        </dl>
+      </div>
+
+    </div>
+    <div class="wt-footer">
+      <span class="wt-page-indicator" id="wt-page-indicator">1 / 4</span>
+      <div class="wt-nav">
+        <button class="wt-btn" id="wt-prev" disabled>&larr; prev</button>
+        <button class="wt-btn primary" id="wt-next">next &rarr;</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
