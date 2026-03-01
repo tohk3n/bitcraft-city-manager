@@ -1,4 +1,8 @@
-/* ═══ Planner Dashboard — activity-grouped items ═══ */
+/* ═══ Planner Dashboard — full-width stacked panels ═══
+   Each activity group is a full-width panel (like a tmux pane).
+   Items flow into CSS columns within each panel to use horizontal space.
+   Panels stack vertically, sorted by deficit — biggest bottleneck first.
+   Deficit magnitude bars show relative priority at a glance. */
 
 .dash {
   display: flex;
@@ -86,54 +90,33 @@
   }
 }
 
-.dash-select-mini {
-  padding: 2px 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text-primary);
-}
+/* ─── Panel stack ─── */
 
-.dash-toggle-mini {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  color: var(--text-secondary);
-  cursor: pointer;
-  input {
-    width: 12px;
-    height: 12px;
-  }
-}
-
-/* ─── Activity groups ─── */
-
-.dash-groups {
+.dash-panels {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--gap);
 }
 
-.dash-group {
+/* ─── Individual panel (full-width, one per activity group) ─── */
+
+.dash-panel {
   background: var(--bg-secondary);
-  border-radius: var(--radius);
   border: 1px solid var(--border);
+  border-radius: var(--radius);
   overflow: hidden;
 
   &.collapsed {
-    .dash-group-toggle {
+    .dash-panel-toggle {
       transform: rotate(-90deg);
     }
-    .dash-group-items {
+    .dash-panel-items {
       display: none;
     }
   }
 }
 
-.dash-group-header {
+.dash-panel-header {
   display: grid;
   grid-template-columns: 14px auto 1fr 70px 40px 28px;
   align-items: center;
@@ -151,27 +134,27 @@
   }
 }
 
-.dash-group-toggle {
+.dash-panel-toggle {
   font-size: 8px;
   color: var(--text-muted);
   text-align: center;
   transition: transform 0.15s;
 }
 
-.dash-group-name {
+.dash-panel-name {
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.03em;
   color: var(--text-primary);
 }
 
-.dash-group-stats {
+.dash-panel-stats {
   font-size: 10px;
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
 
-.dash-group-bar {
+.dash-panel-bar {
   width: 70px;
   height: 3px;
   background: var(--bg-primary);
@@ -179,13 +162,13 @@
   overflow: hidden;
 }
 
-.dash-group-bar-fill {
+.dash-panel-bar-fill {
   height: 100%;
   background: var(--status-complete);
   transition: width 0.25s ease-out;
 }
 
-.dash-group-pct {
+.dash-panel-pct {
   font-size: 10px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
@@ -213,83 +196,96 @@
   }
 }
 
-/* ─── Item chips (inside groups) ─── */
+/* ─── Item area — CSS columns for horizontal fill ───
+   Items flow top-to-bottom then into next column.
+   Column width is fixed so rows align predictably.
+   More items = more columns used = more horizontal space filled.
+   Fewer items = fewer columns = panel naturally shrinks vertically. */
 
-.dash-group-items {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 3px;
-  padding: 4px 8px 8px;
+.dash-panel-items {
+  columns: 240px;
+  column-gap: 0;
+  padding: 2px 0;
   background: var(--bg-primary);
 }
 
-.dash-item {
+/* ─── Item rows ─── */
+
+.dash-row {
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: center;
-  gap: 4px;
-  padding: 4px 6px;
-  background: var(--bg-secondary);
-  border-radius: var(--radius);
-  font-size: 10px;
+  gap: 6px;
+  padding: 2px 8px;
+  font-size: var(--user-font-size);
   position: relative;
   overflow: hidden;
-  transition: background 0.1s;
-  min-width: 0;
+  min-height: 20px;
+
+  /* Prevent CSS columns from breaking a row across columns */
+  break-inside: avoid;
 
   &:hover {
     background: var(--bg-tertiary);
   }
 
-  &.missing .dash-item-deficit {
-    color: var(--status-missing);
-  }
-  &.partial .dash-item-deficit {
-    color: var(--status-partial);
-  }
-  &.complete .dash-item-deficit {
-    color: var(--status-complete);
+  /* Deficit magnitude bar — sits behind the text */
+  .dash-row-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    z-index: 0;
+    transition: width 0.2s;
   }
 
-  &.missing .dash-item-bar-fill {
-    background: var(--status-missing);
-    opacity: 0.4;
+  /* Status-dependent bar colors */
+  &.missing .dash-row-bar {
+    background: rgba(247, 118, 142, 0.1);
   }
-  &.partial .dash-item-bar-fill {
-    background: var(--status-partial);
-    opacity: 0.4;
+  &.partial .dash-row-bar {
+    background: rgba(224, 175, 104, 0.1);
   }
-  &.complete .dash-item-bar-fill {
-    background: var(--status-complete);
-    opacity: 0.3;
+  &.complete .dash-row-bar {
+    background: rgba(158, 206, 106, 0.08);
+  }
+
+  /* Status-dependent deficit text colors */
+  &.missing .dash-row-deficit {
+    color: var(--status-missing);
+  }
+  &.partial .dash-row-deficit {
+    color: var(--status-partial);
+  }
+  &.complete .dash-row-deficit {
+    color: var(--status-complete);
   }
 
   &.complete {
     opacity: 0.5;
-    &:hover {
-      opacity: 0.7;
-    }
   }
 
-  &[title] {
-    cursor: help;
+  /* All text content sits above the bar */
+  > span {
+    position: relative;
+    z-index: 1;
   }
 }
 
-.dash-item {
-  font-size: var(--user-font-size);
-}
-
-.dash-item-name {
+.dash-row-name {
   color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
   min-width: 0;
+
+  .dash-row[title] & {
+    cursor: help;
+  }
 }
 
-.dash-item-tier {
+.dash-row-tier {
   font-size: calc(var(--user-font-size) - 2px);
   font-weight: 600;
   color: var(--text-muted);
@@ -300,27 +296,13 @@
   flex-shrink: 0;
 }
 
-.dash-item-deficit {
+.dash-row-deficit {
   font-size: calc(var(--user-font-size) - 1px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   min-width: 36px;
   text-align: right;
   flex-shrink: 0;
-}
-
-.dash-item-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: transparent;
-}
-
-.dash-item-bar-fill {
-  height: 100%;
-  transition: width 0.2s;
 }
 
 /* ─── Responsive ─── */
@@ -349,21 +331,22 @@
     justify-content: flex-end;
   }
 
-  .dash-group-items {
-    grid-template-columns: 1fr;
+  /* Single column on mobile */
+  .dash-panel-items {
+    columns: 1;
   }
 
-  .dash-group-header {
+  .dash-panel-header {
     grid-template-columns: 14px auto 1fr 28px;
   }
-  .dash-group-bar,
-  .dash-group-pct {
+  .dash-panel-bar,
+  .dash-panel-pct {
     display: none;
   }
 }
 
 @media (max-width: 400px) {
-  .dash-group-stats {
+  .dash-panel-stats {
     display: none;
   }
 }
