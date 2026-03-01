@@ -10,6 +10,9 @@
  *   Partial:   deficit number, green→yellow→red gradient bar
  *   Missing:   deficit number, full red bar
  *   Empty:     material not needed for this tier
+ *
+ * Patches cells in-place on poll to preserve scroll/hover state.
+ * Full rebuild only when row/column structure changes.
  */
 
 import { fetchInventoryLookup, calculateFromInventory } from './planner.js';
@@ -48,6 +51,8 @@ interface ConcernGroup {
   concern: Concern;
   rows: MaterialRow[];
 }
+
+type TierScope = 'push' | 'near' | 'all';
 
 // ── Constants ─────────────────────────────────────────────────────
 
@@ -108,6 +113,12 @@ let currentPush = 3;
 let container: HTMLElement | null = null;
 let snapshots: TierSnapshot[] = [];
 
+// Diff-update: track rendered structure to avoid full rebuilds
+let renderedStructureKey = '';
+
+// Tier scope filter — controls which columns are visible
+let tierScope: TierScope = 'near';
+
 // ── Public API ────────────────────────────────────────────────────
 
 export function start(
@@ -123,6 +134,9 @@ export function start(
   startTier = Math.max(2, currentCityTier + 1);
   const maxConfigured = Math.max(...Object.keys(TIER_REQUIREMENTS).map(Number));
   endTier = Math.min(MAX_HORIZON, maxConfigured);
+
+  // Reset render state for fresh start
+  renderedStructureKey = '';
 
   if (isPolling) return;
   isPolling = true;
@@ -297,6 +311,18 @@ function groupByConcern(rows: MaterialRow[]): ConcernGroup[] {
   });
 }
 
+/** Filter tiers based on the user's selected scope */
+function filterTiersByScope(tiers: number[]): number[] {
+  switch (tierScope) {
+    case 'push':
+      return tiers.filter((t) => t === currentPush);
+    case 'near':
+      return tiers.filter((t) => t <= currentPush + 1);
+    case 'all':
+      return tiers;
+  }
+}
+
 // ── Rendering ─────────────────────────────────────────────────────
 
 function renderLoading(): void {
@@ -309,11 +335,36 @@ function renderError(msg: string): void {
   container.innerHTML = `<div class="pm-status pm-error">Poll failed: ${msg}</div>`;
 }
 
+/**
+ * Smart render: patches cells in-place when structure hasn't changed,
+ * full rebuild when rows/columns shift. Preserves scroll and hover.
+ */
 function renderMatrix(): void {
   if (!container || snapshots.length === 0) return;
 
   const { rows, tiers } = buildMatrix();
-  const grouped = groupByConcern(rows);
+  const visibleTiers = filterTiersByScope(tiers);
+
+  // Drop rows with no data in any visible column
+  const visibleRows = rows.filter((r) => visibleTiers.some((t) => r.byTargetTier.has(t)));
+  const grouped = groupByConcern(visibleRows);
+
+  // Detect structural changes — row set or visible tier set changed
+  const structureKey = visibleRows.map((r) => r.baseName).join(',') + '|' + visibleTiers.join(',');
+
+  if (structureKey !== renderedStructureKey) {
+    fullRender(grouped, visibleTiers);
+    renderedStructureKey = structureKey;
+  } else {
+    patchBar();
+    patchCells(visibleRows, visibleTiers);
+  }
+}
+
+/** Full DOM rebuild — first render or when structure changes */
+function fullRender(grouped: ConcernGroup[], tiers: number[]): void {
+  if (!container) return;
+
   const now = new Date();
   const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
@@ -322,6 +373,11 @@ function renderMatrix(): void {
       <div class="pm-bar">
         <div class="pm-pills">
           ${snapshots.map((s) => renderPill(s)).join('')}
+        </div>
+        <div class="pm-scope">
+          ${renderScopeBtn('push', 'Push')}
+          ${renderScopeBtn('near', 'Near')}
+          ${renderScopeBtn('all', 'All')}
         </div>
         <span class="pm-meta">Updated ${timeStr} · #${pollCount}</span>
       </div>
@@ -346,6 +402,58 @@ function renderMatrix(): void {
       </div>
     </div>
   `;
+
+  wireScopeButtons();
+}
+
+function renderScopeBtn(scope: TierScope, label: string): string {
+  return `<button class="pm-scope-btn ${tierScope === scope ? 'active' : ''}" data-scope="${scope}">${label}</button>`;
+}
+
+function wireScopeButtons(): void {
+  if (!container) return;
+  container.querySelectorAll<HTMLElement>('.pm-scope-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      tierScope = btn.dataset.scope as TierScope;
+      renderedStructureKey = ''; // Column set changed — force rebuild
+      renderMatrix();
+    });
+  });
+}
+
+/** Update pills and meta text without touching the table */
+function patchBar(): void {
+  if (!container) return;
+
+  const pillsEl = container.querySelector('.pm-pills');
+  if (pillsEl) {
+    pillsEl.innerHTML = snapshots.map((s) => renderPill(s)).join('');
+  }
+
+  const metaEl = container.querySelector('.pm-meta');
+  if (metaEl) {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    metaEl.textContent = `Updated ${timeStr} · #${pollCount}`;
+  }
+}
+
+/** Update individual cell contents without rebuilding the table */
+function patchCells(rows: MaterialRow[], tiers: number[]): void {
+  if (!container) return;
+
+  for (const row of rows) {
+    for (const tier of tiers) {
+      const td = container.querySelector(
+        `td[data-row="${CSS.escape(row.baseName)}"][data-col="${tier}"]`
+      ) as HTMLElement;
+      if (!td) continue;
+
+      const cell = row.byTargetTier.get(tier) ?? null;
+      td.className = cellClass(cell, tier);
+      td.innerHTML = renderCellInner(cell);
+    }
+  }
 }
 
 function tierColumnClass(targetTier: number): string {
@@ -406,64 +514,45 @@ function renderConcernGroup(group: ConcernGroup, tiers: number[]): string {
 function renderRowCells(row: MaterialRow, tiers: number[]): string {
   return `
     <td class="pm-name">${row.baseName}</td>
-    ${tiers.map((t) => renderCell(row.byTargetTier.get(t) ?? null, t)).join('')}
+    ${tiers.map((t) => renderCell(row.byTargetTier.get(t) ?? null, t, row.baseName)).join('')}
   `;
 }
 
 // ── Cell Rendering ────────────────────────────────────────────────
 
-/**
- * Mini-card cell with bottom progress bar.
- *
- * Three visual states:
- *   Complete (have >= required):
- *     ✓ with full green bar
- *   Partial (have > 0 but < required):
- *     "have/required" text, green+red gradient bar
- *   Missing (have === 0):
- *     deficit text, full red bar
- *
- * The bar is a CSS linear-gradient on a 3px strip:
- *   green portion = (have / required) * 100%
- *   red portion = remainder
- */
-function renderCell(cell: CellData | null, targetTier: number): string {
-  const distant = targetTier > currentPush + 1 ? ' pm-distant' : '';
+/** Full <td> — used during structural rebuild. data-* attrs enable patching. */
+function renderCell(cell: CellData | null, targetTier: number, rowName: string): string {
+  const cls = cellClass(cell, targetTier);
+  return `<td class="${cls}" data-row="${rowName}" data-col="${targetTier}">${renderCellInner(cell)}</td>`;
+}
 
-  if (!cell) {
-    return `<td class="pm-cell pm-empty${distant}"></td>`;
-  }
+function cellClass(cell: CellData | null, targetTier: number): string {
+  const distant = targetTier > currentPush + 1 ? ' pm-distant' : '';
+  if (!cell) return `pm-cell pm-empty${distant}`;
+  if (cell.deficit === 0) return `pm-cell pm-complete${distant}`;
+  return `pm-cell${distant}`;
+}
+
+/** Cell content without the <td> wrapper — used by both full render and patch */
+function renderCellInner(cell: CellData | null): string {
+  if (!cell) return '';
+
+  // Item tier badge — shows which tier of material this actually is
+  const tierTag = `<span class="pm-item-tier">T${cell.itemTier}</span>`;
 
   if (cell.deficit === 0) {
-    return `
-      <td class="pm-cell pm-complete${distant}">
-        <div class="pm-cell-body">✓</div>
-        <div class="pm-bar-full pm-bar-green"></div>
-      </td>
-    `;
+    return `<div class="pm-cell-body">✓</div><div class="pm-bar-full pm-bar-green"></div>`;
   }
 
   const pct = cell.required > 0 ? Math.round((cell.have / cell.required) * 100) : 0;
 
   if (cell.have === 0) {
-    // Nothing gathered — full red bar
     return `
-      <td class="pm-cell${distant}">
-        <div class="pm-cell-body">
-          <span class="pm-deficit">${formatCompact(cell.deficit)}</span>
-        </div>
-        <div class="pm-bar-full pm-bar-red"></div>
-      </td>
-    `;
+      <div class="pm-cell-body">${tierTag} <span class="pm-deficit">${formatCompact(cell.deficit)}</span></div>
+      <div class="pm-bar-full pm-bar-red"></div>`;
   }
 
-  // Partial — show have/required with gradient bar
   return `
-    <td class="pm-cell${distant}">
-      <div class="pm-cell-body">
-        <span class="pm-frac">${formatCompact(cell.have)}/${formatCompact(cell.required)}</span>
-      </div>
-      <div class="pm-bar-grad" style="--pm-pct: ${pct}%"></div>
-    </td>
-  `;
+    <div class="pm-cell-body">${tierTag} <span class="pm-frac">${formatCompact(cell.have)}/${formatCompact(cell.required)}</span></div>
+    <div class="pm-bar-grad" style="--pm-pct: ${pct}%"></div>`;
 }

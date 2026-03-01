@@ -2,7 +2,7 @@
  * Planner View - All planner chrome in one place
  *
  * Owns: tier controls, view tabs, progress, copy buttons,
- *       research tabs, hide-complete toggle.
+ *       research tabs, hide-complete toggle, citizen picker.
  * Delegates: dashboard rendering, flowchart viewport rendering.
  */
 
@@ -39,6 +39,9 @@ export interface PlannerViewConfig {
   codexInfo: string;
   playerFilter: FilterContext | null;
   onTierChange: (tier: number, count: number) => void;
+  citizens: { entityId: string; userName: string }[] | null;
+  activePlayerId: string | null;
+  onPlayerChange: (playerId: string | null) => void;
 }
 
 // ── Module state ──────────────────────────────────────────────────
@@ -56,6 +59,7 @@ let cachedPlanItems: PlanItem[] = [];
 let cachedTargetTier = 0;
 let cachedStudyJournals: ProcessedNode | null = null;
 let cachedOnTierChange: ((tier: number, count: number) => void) | null = null;
+let cachedOnPlayerChange: ((playerId: string | null) => void) | null = null;
 
 // ── Public API ────────────────────────────────────────────────────
 
@@ -73,6 +77,7 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
   cachedTargetTier = config.targetTier;
   cachedStudyJournals = config.studyJournals;
   cachedOnTierChange = config.onTierChange;
+  cachedOnPlayerChange = config.onPlayerChange;
 
   if (!config.researches || config.researches.length === 0) {
     ProgressMonitor.stop();
@@ -93,6 +98,7 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
           <input type="number" id="pv-count" class="pv-count-input"
                  value="${config.codexCount}" min="1" max="100">
           <span class="pv-codex-info">${config.codexInfo}</span>
+          ${renderCitizenPicker(config)}
         </div>
         <div class="pv-toolbar-center">
           <div class="pv-tabs">
@@ -143,6 +149,29 @@ export function renderEmpty(container: HTMLElement): void {
   container.innerHTML = '<div class="pv-empty">Select a target tier</div>';
 }
 
+// ── Citizen Picker ────────────────────────────────────────────────
+
+function renderCitizenPicker(config: PlannerViewConfig): string {
+  if (!config.citizens || config.citizens.length === 0) return '';
+
+  const sorted = [...config.citizens].sort((a, b) => a.userName.localeCompare(b.userName));
+  const options = sorted
+    .map(
+      (c) =>
+        `<option value="${c.entityId}" ${c.entityId === config.activePlayerId ? 'selected' : ''}>${c.userName}</option>`
+    )
+    .join('');
+
+  return `
+    <div class="pv-sep"></div>
+    <select id="pv-citizen" class="pv-select pv-citizen-select"
+            title="Filter by citizen capabilities">
+      <option value="">All citizens</option>
+      ${options}
+    </select>
+  `;
+}
+
 // ── Event wiring ──────────────────────────────────────────────────
 
 function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
@@ -177,6 +206,16 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
       const count = parseInt((e.target as HTMLInputElement).value, 10) || 1;
       updateCodexInfo(container, tier, count);
       cachedOnTierChange?.(tier, count);
+    },
+    { signal }
+  );
+
+  // -- Citizen picker --
+  container.querySelector('#pv-citizen')?.addEventListener(
+    'change',
+    (e) => {
+      const id = (e.target as HTMLSelectElement).value || null;
+      cachedOnPlayerChange?.(id);
     },
     { signal }
   );

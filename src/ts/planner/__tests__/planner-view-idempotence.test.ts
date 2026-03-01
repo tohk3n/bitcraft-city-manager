@@ -103,6 +103,11 @@ function makeTier5Config(onTierChange: PlannerViewConfig['onTierChange']): Plann
     codexInfo: '25\u00d7 T5 Codex',
     playerFilter: null,
     onTierChange,
+    citizens: null,
+    activePlayerId: null,
+    onPlayerChange: () => {
+      return null;
+    },
   };
 }
 
@@ -137,6 +142,11 @@ function makeTier3Config(onTierChange: PlannerViewConfig['onTierChange']): Plann
     codexInfo: '25\u00d7 T5 Codex',
     playerFilter: null,
     onTierChange,
+    citizens: null,
+    activePlayerId: null,
+    onPlayerChange: () => {
+      return null;
+    },
   };
 }
 

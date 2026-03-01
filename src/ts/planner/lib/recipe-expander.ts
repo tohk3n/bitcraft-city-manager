@@ -16,6 +16,11 @@ import {
   categorizeForPlanner,
 } from './recipe-graph.js';
 
+// Tracks which cycles have already been logged this expansion run.
+// Prevents the same "Rough Leather ↔ Refined Rough Leather" message
+// from spamming the console once per research branch.
+let reportedCycles = new Set<string>();
+
 export function expandRecipes(
   codexFile: CodexFile,
   recipesFile: RecipesFile,
@@ -27,6 +32,8 @@ export function expandRecipes(
   if (!codexTier) {
     throw new Error(`Codex tier ${tier} not found`);
   }
+
+  reportedCycles = new Set();
 
   return {
     name: codexTier.name,
@@ -117,7 +124,10 @@ function expandEntry(
   gatheredSet: Set<string>
 ): ExpandedNode {
   if (visited.has(recipe.id)) {
-    console.warn(`[Planner] Cycle in recipe data: ${recipe.name}:${recipe.tier} (${recipe.id})`);
+    if (!reportedCycles.has(recipe.id)) {
+      reportedCycles.add(recipe.id);
+      console.debug(`[Planner] Cycle in recipe data: ${recipe.name}:${recipe.tier} (${recipe.id})`);
+    }
     return {
       name: recipe.name,
       tier: recipe.tier,

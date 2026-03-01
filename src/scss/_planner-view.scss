@@ -304,6 +304,13 @@ m .pv-copy-group {
   }
 }
 
+/* ── Citizen picker ── */
+
+.pv-citizen-select {
+  max-width: 140px;
+  text-overflow: ellipsis;
+}
+
 /* ─── Responsive ─── */
 
 @media (max-width: 600px) {

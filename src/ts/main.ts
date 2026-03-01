@@ -37,7 +37,7 @@ const loadBtn = document.getElementById('load-btn');
 
 const params = new URLSearchParams(window.location.search);
 const claimParam: string | null = params.get('claim');
-const playerParam: string | null = params.get('playerId');
+let activePlayerId: string | null = params.get('playerId');
 
 // ── App State ─────────────────────────────────────────────────────
 
@@ -133,7 +133,7 @@ async function loadClaim(claimId: string): Promise<void> {
 
     // Preserve playerId in URL if present
     const urlParams = new URLSearchParams({ claim: claimId });
-    if (playerParam) urlParams.set('playerId', playerParam);
+    if (activePlayerId) urlParams.set('playerId', activePlayerId);
     history.replaceState(null, '', `?${urlParams.toString()}`);
   } catch (err) {
     const error = err as Error;
@@ -151,7 +151,7 @@ async function loadClaim(claimId: string): Promise<void> {
  * and buildings (for station tiers). Loads citizens if not cached.
  */
 async function loadPlayerFilter(): Promise<void> {
-  if (!claimData.claimId || !playerParam) return;
+  if (!claimData.claimId || !activePlayerId) return;
 
   if (!claimData.citizensData) {
     const result = await CitizensUI.loadAndRender(
@@ -164,11 +164,11 @@ async function loadPlayerFilter(): Promise<void> {
   if (!claimData.citizensData) return;
 
   const buildings = claimData.buildings?.buildings ?? [];
-  const ctx = await buildFilterContext(playerParam, claimData.citizensData, buildings);
+  const ctx = await buildFilterContext(activePlayerId, claimData.citizensData, buildings);
 
   if (ctx) {
     claimData.playerFilter = ctx;
-    log.info(`Player filter active for ${playerParam}`);
+    log.info(`Player filter active for ${activePlayerId}`);
   }
 }
 
@@ -190,7 +190,7 @@ async function loadPlanner(): Promise<void> {
   Planner.renderLoading(plannerContainer);
 
   // Build player filter on first planner load if playerId present
-  if (playerParam && !claimData.playerFilter) {
+  if (activePlayerId && !claimData.playerFilter) {
     await loadPlayerFilter();
   }
 
@@ -205,16 +205,41 @@ async function loadPlanner(): Promise<void> {
     );
     plannerState.results = results;
 
+    // Build citizens list for the picker dropdown
+    const citizensList =
+      claimData.citizensData?.records.map((r) => ({
+        entityId: r.entityId,
+        userName: r.userName,
+      })) ?? null;
+
     Planner.renderPlannerView(
       plannerContainer,
       results,
       claimData.claimId,
       claimData.claimInfo?.claim?.tier ?? 0,
       claimData.playerFilter,
+      citizensList,
+      activePlayerId,
       (tier: number, count: number) => {
         plannerState.targetTier = tier;
         plannerState.codexCount = count;
         loadPlanner();
+      },
+      async (playerId: string | null) => {
+        // Update URL to reflect citizen selection
+        const urlParams = new URLSearchParams(window.location.search);
+        if (playerId) {
+          urlParams.set('playerId', playerId);
+        } else {
+          urlParams.delete('playerId');
+        }
+        history.replaceState(null, '', `?${urlParams.toString()}`);
+
+        // Rebuild filter context and re-run planner
+        activePlayerId = playerId;
+        claimData.playerFilter = null;
+        if (playerId) await loadPlayerFilter();
+        await loadPlanner();
       }
     );
   } catch (err) {
