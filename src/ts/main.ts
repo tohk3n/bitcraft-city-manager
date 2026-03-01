@@ -3,7 +3,7 @@ import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
 import { processCraftingStations } from './inventory.js';
-import { CitizensUI } from './citizens.js';
+import { CitizensUI } from './citizens/index.js';
 import { InventoryProcessor } from './inventory.js';
 import * as Planner from './planner/planner.js';
 import * as ClaimSearch from './claim-search.js';
@@ -21,7 +21,7 @@ import type {
   Building,
   ApiItem,
 } from './types/index.js';
-import type { CitizensData } from './citizens.js';
+import type { CitizensData } from './citizens/index.js';
 import * as Calculator from './calculator-view.js';
 import { applyTabA11y } from './aria.js';
 import * as MaterialsView from './material-breakdown-view.js';

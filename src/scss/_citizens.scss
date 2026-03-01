@@ -2,7 +2,6 @@
 @use 'sass:color';
 
 /* ═══ Citizens — master-detail roster ═══
-   Already the most terminal-like view.
    Changes: radius 8→2, padding tightened, font token unified. */
 
 // Bright rarity colors for text-on-dark
@@ -364,4 +363,190 @@ $rarity-fg: (
 .cz-vault-sample {
   font-style: italic;
   border-bottom: 1px dashed var(--text-muted);
+}
+
+/* ═══ Matrix View — dense skill grid ═══ */
+
+.mx-wrap {
+  overflow-x: auto;
+  margin-top: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.mx-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-secondary);
+}
+
+.mx-table th {
+  padding: 3px 4px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 9px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.mx-th-name {
+  text-align: left !important;
+  padding-left: 8px !important;
+  min-width: 100px;
+  position: sticky;
+  left: 0;
+  background: var(--bg-secondary);
+  z-index: 2;
+}
+
+.mx-th-skill {
+  cursor: pointer;
+  min-width: 32px;
+  transition: color 0.1s;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.mx-th-active {
+  color: var(--accent) !important;
+}
+
+.mx-th-meta {
+  min-width: 28px;
+  color: var(--text-muted);
+}
+
+.mx-th-login {
+  text-align: right !important;
+  padding-right: 8px !important;
+  min-width: 48px;
+}
+
+.mx-row {
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--bg-quaternary);
+  }
+
+  &:nth-child(even) {
+    background: var(--bg-tertiary);
+
+    &:hover {
+      background: var(--bg-quaternary);
+    }
+  }
+}
+
+.mx-name {
+  padding: 3px 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+  position: sticky;
+  left: 0;
+  background: inherit;
+  z-index: 1;
+
+  .cz-dot {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+
+  .mx-row:hover & {
+    background: var(--bg-quaternary);
+  }
+
+  .mx-row:nth-child(even) & {
+    background: var(--bg-tertiary);
+  }
+
+  .mx-row:nth-child(even):hover & {
+    background: var(--bg-quaternary);
+  }
+}
+
+.mx-cell {
+  padding: 2px 3px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid var(--border);
+}
+
+// Level thresholds use hardcoded rgba, CSS custom properties don't work inside rgba().
+.mx-lvl-high {
+  color: #9ece6a;
+  background: rgba(158, 206, 106, 0.12);
+}
+
+.mx-lvl-mid {
+  color: #7aa2f7;
+  background: rgba(122, 162, 247, 0.1);
+}
+
+.mx-lvl-low {
+  color: var(--text-secondary);
+}
+
+.mx-lvl-min {
+  color: var(--text-muted);
+}
+
+.mx-lvl-none {
+  color: var(--bg-quaternary);
+}
+
+.mx-meta {
+  padding: 2px 4px;
+  text-align: center;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// Highest skill in each row gets a subtle underline accent.
+// Visible enough to scan for, subtle enough to not overwhelm the grid.
+.mx-best {
+  border-bottom: 1px solid currentColor;
+  font-weight: 700;
+}
+
+.mx-login {
+  text-align: right;
+  padding-right: 8px;
+  font-size: 9px;
+}
+
+.cz-view-toggle {
+  padding: 2px 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .mx-table {
+    font-size: 9px;
+  }
+
+  .mx-th-skill {
+    min-width: 26px;
+  }
+
+  .mx-th-login,
+  .mx-login {
+    display: none;
+  }
 }
