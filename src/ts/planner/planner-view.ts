@@ -13,17 +13,22 @@ import {
 } from './lib/progress-calc.js';
 import * as PlannerDashboard from './planner-dashboard.js';
 import * as Flowchart from './flowchart.js';
+import * as ProgressMonitor from './progress-monitor.js';
 import { TIER_REQUIREMENTS } from '../configuration/index.js';
 import type { ProcessedNode, PlanItem } from '../types/index.js';
 import { applyTabA11y } from '../aria.js';
 import { generateTreeCSV } from './lib/tree-csv.js';
+import { renderFontSizeControl, wireFontSizeControl } from '../font-size-control.js';
+import type { FilterContext } from './player-filter.js';
 
 // ── Types ─────────────────────────────────────────────────────────
 
-type ViewMode = 'dashboard' | 'flowchart';
+type ViewMode = 'dashboard' | 'flowchart' | 'monitor';
 
 /** Everything planner-view needs from planner.ts to render. */
 export interface PlannerViewConfig {
+  claimId: string;
+  cityTier: number;
   researches: ProcessedNode[];
   planItems: PlanItem[];
   targetTier: number;
@@ -32,6 +37,7 @@ export interface PlannerViewConfig {
   currentTier: number;
   codexCount: number;
   codexInfo: string;
+  playerFilter: FilterContext | null;
   onTierChange: (tier: number, count: number) => void;
 }
 
@@ -43,6 +49,8 @@ let hideComplete = false;
 let wireAbort: AbortController | null = null;
 
 // Cached from last render() call
+let cachedClaimId = '';
+let cachedCityTier = 0;
 let cachedResearches: ProcessedNode[] = [];
 let cachedPlanItems: PlanItem[] = [];
 let cachedTargetTier = 0;
@@ -58,6 +66,8 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
   // fix 25-02-26: set 0 to reset tier-specific view state
   activeResearchIndex = 0;
   currentView = 'dashboard';
+  cachedClaimId = config.claimId;
+  cachedCityTier = config.cityTier;
   cachedResearches = config.researches;
   cachedPlanItems = config.planItems;
   cachedTargetTier = config.targetTier;
@@ -65,6 +75,7 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
   cachedOnTierChange = config.onTierChange;
 
   if (!config.researches || config.researches.length === 0) {
+    ProgressMonitor.stop();
     container.innerHTML = '<div class="pv-empty">No data</div>';
     return;
   }
@@ -87,6 +98,7 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
           <div class="pv-tabs">
             <button class="pv-tab active" data-view="dashboard">Tasks</button>
             <button class="pv-tab" data-view="flowchart">Tree</button>
+            <button class="pv-tab" data-view="monitor">Monitor</button>
           </div>
           <div class="pv-progress-inline">
             <span class="pv-pct">${progress.percent}%</span>
@@ -97,6 +109,8 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
           </div>
         </div>
         <div class="pv-toolbar-right">
+          ${renderFontSizeControl()}
+          <div class="pv-sep"></div>
           <button class="pv-copy" id="pv-copy-view" title="Copy current view">&#128203;</button>
           <button class="pv-copy" id="pv-copy-all" title="Copy all">All</button>
           <button class="pv-copy" id="pv-export-csv" title="Export CSV">CSV</button>
@@ -174,6 +188,9 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
       () => {
         const view = tab.dataset.view as ViewMode;
         if (view === currentView) return;
+
+        // Stop monitor when leaving monitor tab
+        if (currentView === 'monitor') ProgressMonitor.stop();
 
         currentView = view;
         container.querySelectorAll('.pv-tab').forEach((t) => t.classList.remove('active'));
@@ -257,6 +274,7 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
     },
     { signal }
   );
+  wireFontSizeControl(container);
 }
 
 // ── Content rendering ─────────────────────────────────────────────
@@ -269,6 +287,9 @@ function renderContent(container: HTMLElement): void {
 
   if (currentView === 'dashboard') {
     PlannerDashboard.render(container, cachedPlanItems, cachedTargetTier);
+  } else if (currentView === 'monitor') {
+    // Monitor manages its own rendering via polling
+    ProgressMonitor.start(container, cachedClaimId, cachedCityTier, cachedTargetTier);
   } else {
     Flowchart.render(container, {
       researches: cachedResearches,

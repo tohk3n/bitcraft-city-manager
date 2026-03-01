@@ -66,6 +66,7 @@ export interface InventorySlot {
 
 export interface BuildingFunction {
   level: number;
+  function_type?: number;
   crafting_slots?: number;
   refining_slots?: number;
 }

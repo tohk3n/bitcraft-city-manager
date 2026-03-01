@@ -31,6 +31,8 @@ function makeNode(overrides: Partial<ProcessedNode> = {}): ProcessedNode {
     satisfiedByParent: false,
     trackable: overrides.trackable ?? true,
     mappingType: overrides.mappingType ?? 'gathered',
+    station: null,
+    skill: null,
     children: overrides.children ?? [],
   };
 }
@@ -56,12 +58,17 @@ function makePlanItem(overrides: Partial<PlanItem>): PlanItem {
     activity: overrides.activity ?? 'Crafting',
     actionable: overrides.actionable ?? true,
     mappingType: overrides.mappingType ?? 'gathered',
+    stationType: overrides.stationType ?? null,
+    skillName: overrides.skillName ?? null,
+    skillLevel: overrides.skillLevel ?? null,
   };
 }
 
 /** Two distinct tier configs to simulate tier switching */
 function makeTier5Config(onTierChange: PlannerViewConfig['onTierChange']): PlannerViewConfig {
   return {
+    claimId: 'test-claim-123',
+    cityTier: 5,
     researches: [
       makeResearch('Advanced Stone Research', [makeNode({ name: 'Refined Brick', tier: 5 })]),
       makeResearch('Advanced Wood Research', [makeNode({ name: 'Refined Plank', tier: 5 })]),
@@ -94,12 +101,15 @@ function makeTier5Config(onTierChange: PlannerViewConfig['onTierChange']): Plann
     currentTier: 6,
     codexCount: 25,
     codexInfo: '25\u00d7 T5 Codex',
+    playerFilter: null,
     onTierChange,
   };
 }
 
 function makeTier3Config(onTierChange: PlannerViewConfig['onTierChange']): PlannerViewConfig {
   return {
+    claimId: 'test-claim-123',
+    cityTier: 3,
     researches: [
       makeResearch('Essential Stone Research', [makeNode({ name: 'Sturdy Brick', tier: 3 })]),
       makeResearch('Essential Wood Research', [makeNode({ name: 'Sturdy Plank', tier: 3 })]),
@@ -124,7 +134,8 @@ function makeTier3Config(onTierChange: PlannerViewConfig['onTierChange']): Plann
     tierOptions: [3, 4, 5, 6, 7, 8, 9, 10],
     currentTier: 4,
     codexCount: 15,
-    codexInfo: '15\u00d7 T3 Codex',
+    codexInfo: '25\u00d7 T5 Codex',
+    playerFilter: null,
     onTierChange,
   };
 }

@@ -7,6 +7,8 @@ import { CitizensUI } from './citizens.js';
 import { InventoryProcessor } from './inventory.js';
 import * as Planner from './planner/planner.js';
 import * as ClaimSearch from './claim-search.js';
+import { buildFilterContext } from './planner/player-context.js';
+import type { FilterContext } from './planner/player-filter.js';
 import type {
   PlannerState,
   CalculateOptions,
@@ -25,15 +27,20 @@ import { applyTabA11y } from './aria.js';
 import * as MaterialsView from './material-breakdown-view.js';
 import { initHotkeys } from './hotkeys.js';
 import { initWalkthrough } from './walkthrough.js';
+import { applyAll as applyPreferences } from './user-prefs.js';
 
 const log = createLogger('Main');
 
 const loadBtn = document.getElementById('load-btn');
 
-// Loaded data cache — one field per lazy-loaded tab
-// citizens: raw API response for the IDs tab (name/ID lookup)
-// citizensData: enriched roster data for the citizens tab (skills, gear, etc.)
-// TODO: IDs tab should consume citizensData.records instead of a separate API type
+// ── URL Params ────────────────────────────────────────────────────
+
+const params = new URLSearchParams(window.location.search);
+const claimParam: string | null = params.get('claim');
+const playerParam: string | null = params.get('playerId');
+
+// ── App State ─────────────────────────────────────────────────────
+
 interface AppData {
   claimId: string | null;
   claimInfo: ClaimResponse | null;
@@ -42,6 +49,7 @@ interface AppData {
   citizensData: CitizensData | null;
   buildings: ClaimBuildingsResponse | null;
   items: ApiItem[] | null;
+  playerFilter: FilterContext | null;
 }
 
 const claimData: AppData = {
@@ -52,14 +60,16 @@ const claimData: AppData = {
   citizensData: null,
   buildings: null,
   items: null,
+  playerFilter: null,
 };
 
-// Planner state
 const plannerState: PlannerState = {
-  targetTier: 6, // Default target
-  codexCount: null, // null means use default for tier
+  targetTier: 6,
+  codexCount: null,
   results: null,
 };
+
+// ── Claim Loading ─────────────────────────────────────────────────
 
 async function loadClaim(claimId: string): Promise<void> {
   if (!claimId || !/^\d+$/.test(claimId)) {
@@ -71,14 +81,14 @@ async function loadClaim(claimId: string): Promise<void> {
   UI.setLoading(true);
 
   try {
-    // Load inventories (includes item metadata)
     const data: ClaimInventoriesResponse = await API.getClaimInventories(claimId);
     claimData.claimId = claimId;
     CitizensUI.reset();
     plannerState.results = null;
     claimData.inventories = data;
+    claimData.playerFilter = null;
 
-    // Try to get claim name and details
+    // Claim header
     let claimName = `Claim ${claimId}`;
     let hasClaimHeader = false;
     try {
@@ -90,40 +100,41 @@ async function loadClaim(claimId: string): Promise<void> {
         hasClaimHeader = true;
       }
     } catch (e) {
-      // Claim endpoint might not exist, continue with default name
       const error = e as Error;
       log.debug('Could not fetch claim details:', error.message);
     }
 
-    // Only show simple name if header failed
     if (!hasClaimHeader) {
       UI.setClaimName(claimName);
     }
     UI.showTabs();
-    // Process and render inventory view
-    const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
 
+    const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
     UI.renderDashboard(result);
-    // Load and render crafting stations
+
+    // Buildings (needed for crafting stations display AND player filter)
     try {
       const buildings: Building[] = await API.getClaimBuildings(claimId);
-      const buildingsData: ClaimBuildingsResponse = {
-        buildings,
-      };
-      claimData.buildings = buildingsData;
-      log.debug('claimdata.buildings:', buildingsData);
-      const stations: CraftingStationsResult = processCraftingStations(buildingsData.buildings);
+      claimData.buildings = { buildings };
+      const stations: CraftingStationsResult = processCraftingStations(buildings);
       UI.renderCraftingStations(stations);
     } catch (e) {
       const error = e as Error;
       log.debug('Could not fetch buildings:', error.message);
     }
 
-    // Initialize planner controls (don't load data yet - lazy load on tab click)
     initPlanner();
 
-    // Save to URL for sharing
-    history.replaceState(null, '', `?claim=${claimId}`);
+    // Default planner target to next tier upgrade
+    const cityTier = claimData.claimInfo?.claim?.tier ?? 0;
+    if (cityTier >= 1 && cityTier < 10) {
+      plannerState.targetTier = cityTier + 1;
+    }
+
+    // Preserve playerId in URL if present
+    const urlParams = new URLSearchParams({ claim: claimId });
+    if (playerParam) urlParams.set('playerId', playerParam);
+    history.replaceState(null, '', `?${urlParams.toString()}`);
   } catch (err) {
     const error = err as Error;
     log.error('Failed to load claim:', error.message);
@@ -133,7 +144,36 @@ async function loadClaim(claimId: string): Promise<void> {
   }
 }
 
-// Initialize planner UI
+// ── Player Filter ─────────────────────────────────────────────────
+
+/**
+ * Build the player filter context. Requires citizens data (for skills)
+ * and buildings (for station tiers). Loads citizens if not cached.
+ */
+async function loadPlayerFilter(): Promise<void> {
+  if (!claimData.claimId || !playerParam) return;
+
+  if (!claimData.citizensData) {
+    const result = await CitizensUI.loadAndRender(
+      claimData.claimId,
+      claimData.citizensData ?? undefined
+    );
+    if (result) claimData.citizensData = result;
+  }
+
+  if (!claimData.citizensData) return;
+
+  const buildings = claimData.buildings?.buildings ?? [];
+  const ctx = await buildFilterContext(playerParam, claimData.citizensData, buildings);
+
+  if (ctx) {
+    claimData.playerFilter = ctx;
+    log.info(`Player filter active for ${playerParam}`);
+  }
+}
+
+// ── Planner ───────────────────────────────────────────────────────
+
 function initPlanner(): void {
   const plannerContainer = document.getElementById('planner-content');
   if (!plannerContainer) return;
@@ -141,7 +181,6 @@ function initPlanner(): void {
   Planner.renderEmpty(plannerContainer);
 }
 
-// Load planner data
 async function loadPlanner(): Promise<void> {
   if (!claimData.claimId) return;
 
@@ -149,6 +188,11 @@ async function loadPlanner(): Promise<void> {
   if (!plannerContainer) return;
 
   Planner.renderLoading(plannerContainer);
+
+  // Build player filter on first planner load if playerId present
+  if (playerParam && !claimData.playerFilter) {
+    await loadPlayerFilter();
+  }
 
   try {
     const options: CalculateOptions = plannerState.codexCount
@@ -161,11 +205,18 @@ async function loadPlanner(): Promise<void> {
     );
     plannerState.results = results;
 
-    Planner.renderPlannerView(plannerContainer, results, (tier: number, count: number) => {
-      plannerState.targetTier = tier;
-      plannerState.codexCount = count;
-      loadPlanner();
-    });
+    Planner.renderPlannerView(
+      plannerContainer,
+      results,
+      claimData.claimId,
+      claimData.claimInfo?.claim?.tier ?? 0,
+      claimData.playerFilter,
+      (tier: number, count: number) => {
+        plannerState.targetTier = tier;
+        plannerState.codexCount = count;
+        loadPlanner();
+      }
+    );
   } catch (err) {
     const error = err as Error;
     log.error('Planner error:', error.message);
@@ -177,7 +228,8 @@ async function loadPlanner(): Promise<void> {
   }
 }
 
-// Load citizens data (lazy loaded when tab clicked)
+// ── Citizens ──────────────────────────────────────────────────────
+
 async function loadCitizens(): Promise<void> {
   if (!claimData.claimId) return;
 
@@ -189,7 +241,8 @@ async function loadCitizens(): Promise<void> {
   if (result) claimData.citizensData = result;
 }
 
-// Load items data (lazy loaded when tab clicked)
+// ── Items ─────────────────────────────────────────────────────────
+
 async function loadItems(): Promise<void> {
   if (claimData.items) {
     UI.renderIdList('items', claimData.items, claimData.citizens);
@@ -206,7 +259,8 @@ async function loadItems(): Promise<void> {
   }
 }
 
-// Tab switching
+// ── Tab Switching ─────────────────────────────────────────────────
+
 function setupTabs(): void {
   const tabContainer = document.getElementById('view-tabs');
   if (tabContainer) applyTabA11y(tabContainer, '.tab-btn');
@@ -219,16 +273,13 @@ function setupTabs(): void {
     tab.addEventListener('click', () => {
       const view = tab.dataset.view;
 
-      // Update active tab
       tabs.forEach((t) => t.classList.remove('active'));
       tab.classList.add('active');
 
-      // Show correct view
       document.querySelectorAll('.view-section').forEach((s) => s.classList.add('hidden'));
       const viewEl = document.getElementById(`view-${view}`);
       viewEl?.classList.remove('hidden');
 
-      // Load data if needed
       if (view === 'citizens' && claimData.claimId) {
         loadCitizens();
       } else if (view === 'ids') {
@@ -236,7 +287,6 @@ function setupTabs(): void {
       } else if (view === 'mapLinkComposer') {
         UI.renderMapLinkComposer();
       } else if (view === 'planner' && claimData.claimId) {
-        // Only load if we haven't yet or if claim changed
         if (!plannerState.results) {
           loadPlanner();
         }
@@ -250,7 +300,6 @@ function setupTabs(): void {
     });
   });
 
-  // ID type tabs (citizens vs items)
   const idTabs = document.querySelectorAll<HTMLElement>('.ids-tab-btn');
   idTabs.forEach((tab) => {
     tab.addEventListener('click', () => {
@@ -267,22 +316,19 @@ function setupTabs(): void {
     });
   });
 
-  // ID filter
   const filterInput = document.getElementById('ids-filter') as HTMLInputElement | null;
   filterInput?.addEventListener('input', () => {
     UI.filterIdList(filterInput.value);
   });
 }
 
-// --- Initialization ---
+// ── Init ──────────────────────────────────────────────────────────
 
-// Unified claim input (handles both city search and direct ID)
 ClaimSearch.init({
   onSelect: (claimId) => loadClaim(claimId),
   onDirectLoad: (claimId) => loadClaim(claimId),
 });
 
-// Load button (reads from input field)
 loadBtn?.addEventListener('click', () => {
   const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
   if (input) {
@@ -290,15 +336,12 @@ loadBtn?.addEventListener('click', () => {
   }
 });
 
+applyPreferences();
 setupTabs();
 initHotkeys();
 initWalkthrough();
 
-// Load from URL param if present
-const params = new URLSearchParams(window.location.search);
-const claimParam: string | null = params.get('claim');
 if (claimParam) {
-  // Pre-fill input and load
   const input = document.getElementById('claim-input-field') as HTMLInputElement | null;
   if (input) input.value = claimParam;
   loadClaim(claimParam);

@@ -51,6 +51,8 @@ function expandResearch(
     idealQty: targetCount,
     trackable: false,
     mappingType: 'research',
+    station: null,
+    skill: null,
     children: research.inputs.map((input) =>
       expandByKey(
         input.ref,
@@ -64,9 +66,6 @@ function expandResearch(
   };
 }
 
-/**
- * Expand a recipe by "Name:tier" key (entry point from codex refs).
- */
 function expandByKey(
   recipeKey: string,
   recipes: RecipesFile,
@@ -83,11 +82,6 @@ function expandByKey(
   return expandEntry(recipe, recipes, totalNeeded, recipeQty, visited, gatheredSet);
 }
 
-/**
- * Expand a recipe by ID (entry point from recipe inputs).
- * Missing IDs are treated as gathered leaf nodes — the item exists
- * in the game but wasn't included in the recipe transform.
- */
 function expandById(
   id: string,
   recipes: RecipesFile,
@@ -105,6 +99,8 @@ function expandById(
       idealQty: totalNeeded,
       trackable: true,
       mappingType: 'gathered',
+      station: null,
+      skill: null,
       children: [],
     };
   }
@@ -112,9 +108,6 @@ function expandById(
   return expandEntry(recipe, recipes, totalNeeded, recipeQty, visited, gatheredSet);
 }
 
-/**
- * Core expansion logic. Works on a resolved RecipeEntry.
- */
 function expandEntry(
   recipe: RecipeEntry,
   recipes: RecipesFile,
@@ -124,7 +117,6 @@ function expandEntry(
   gatheredSet: Set<string>
 ): ExpandedNode {
   if (visited.has(recipe.id)) {
-    // Data cycle — log but don't crash. Return leaf node.
     console.warn(`[Planner] Cycle in recipe data: ${recipe.name}:${recipe.tier} (${recipe.id})`);
     return {
       name: recipe.name,
@@ -135,6 +127,8 @@ function expandEntry(
       mappingType: toMappingType(
         categorizeForPlanner(recipe, recipe.tag, gatheredSet.has(recipe.id))
       ),
+      station: recipe.station ?? null,
+      skill: recipe.skill ?? null,
       children: [],
     };
   }
@@ -142,8 +136,6 @@ function expandEntry(
   visited.add(recipe.id);
 
   const category = categorizeForPlanner(recipe, recipe.tag, gatheredSet.has(recipe.id));
-
-  // yields determines how many items one craft produces
   const craftsNeeded = Math.ceil(totalNeeded / recipe.yields);
   const idealQty = craftsNeeded * recipe.yields;
 
@@ -154,6 +146,8 @@ function expandEntry(
     idealQty,
     trackable: isTrackable(category),
     mappingType: toMappingType(category),
+    station: recipe.station ?? null,
+    skill: recipe.skill ?? null,
     children: recipe.inputs.map((input) => {
       const branchVisited = new Set(visited);
       return expandById(

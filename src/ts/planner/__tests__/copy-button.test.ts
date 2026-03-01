@@ -38,6 +38,8 @@ function makeNode(overrides: Partial<ProcessedNode> = {}): ProcessedNode {
     satisfiedByParent: false,
     trackable: overrides.trackable ?? true,
     mappingType: overrides.mappingType ?? 'gathered',
+    station: null,
+    skill: null,
     children: overrides.children ?? [],
   };
 }
@@ -63,6 +65,9 @@ function makePlanItem(overrides: Partial<PlanItem>): PlanItem {
     activity: overrides.activity ?? 'Crafting',
     actionable: overrides.actionable ?? true,
     mappingType: overrides.mappingType ?? 'gathered',
+    stationType: overrides.stationType ?? null,
+    skillName: overrides.skillName ?? null,
+    skillLevel: overrides.skillLevel ?? null,
   };
 }
 
@@ -73,6 +78,8 @@ function makePlanItem(overrides: Partial<PlanItem>): PlanItem {
  */
 function makeTwoResearchConfig(onTierChange: PlannerViewConfig['onTierChange']): PlannerViewConfig {
   return {
+    claimId: 'test-claim-123',
+    cityTier: 5,
     researches: [
       makeResearch('Advanced Stone Research', [
         makeNode({ name: 'Refined Brick', tier: 5, required: 100, have: 20, deficit: 80 }),
@@ -99,6 +106,7 @@ function makeTwoResearchConfig(onTierChange: PlannerViewConfig['onTierChange']):
     currentTier: 6,
     codexCount: 25,
     codexInfo: '25\u00d7 T5 Codex',
+    playerFilter: null,
     onTierChange,
   };
 }

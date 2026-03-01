@@ -1,8 +1,12 @@
 /**
  * Planner - Codex Requirement Calculator
  *
- * Orchestrates data loading and calculation pipeline.
- * UI rendering is delegated to planner-view.ts (unified dashboard/flowchart).
+ * Orchestrates data loading and the expand → cascade → flatten pipeline.
+ * UI rendering delegated to planner-view.ts.
+ *
+ * Two calculation entry points:
+ *   calculateRequirements()   — fetches inventory then calculates
+ *   calculateFromInventory()  — skips the fetch, for polling/multi-tier
  */
 
 import { API } from '../api.js';
@@ -19,10 +23,12 @@ import type {
   PlannerResults,
   TierRequirements,
   CalculateOptions,
+  InventoryLookup,
+  ClaimInventoriesResponse,
 } from '../types/index.js';
 import type { RecipesFile, PackagesFile } from '../data/types.js';
+import type { FilterContext } from './player-filter.js';
 
-// Data caches
 let codexCache: CodexFile | null = null;
 let recipesCache: RecipesFile | null = null;
 let gatheredCache: Set<string> | null = null;
@@ -60,8 +66,29 @@ async function loadData(): Promise<{
   return { codex, recipes, gathered, packages };
 }
 
-export async function calculateRequirements(
-  claimId: string,
+// ── Inventory Building ────────────────────────────────────────────
+
+/** Fetch claim inventories and build the lookup. One API call. */
+export async function fetchInventoryLookup(claimId: string): Promise<InventoryLookup> {
+  const { packages } = await loadData();
+  const inventoryData = await API.getClaimInventories(claimId);
+  return buildLookupFromResponse(inventoryData, packages);
+}
+
+/** Build lookup from an already-fetched response. Pure, no network. */
+export function buildLookupFromResponse(
+  inventoryData: ClaimInventoriesResponse,
+  packages: PackagesFile
+): InventoryLookup {
+  const { itemMeta, cargoMeta } = buildMetaLookups(inventoryData.items, inventoryData.cargos);
+  return buildInventoryLookup(inventoryData.buildings || [], itemMeta, cargoMeta, packages);
+}
+
+// ── Calculation ───────────────────────────────────────────────────
+
+/** The pipeline: expand recipes → apply inventory cascade → flatten. */
+async function runCalculation(
+  inventoryLookup: InventoryLookup,
   targetTier: number,
   options: CalculateOptions = {}
 ): Promise<PlannerResults> {
@@ -69,19 +96,7 @@ export async function calculateRequirements(
   if (!req) throw new Error(`Invalid target tier: ${targetTier}`);
 
   const codexCount = options.customCount ?? req.count;
-
-  const [{ codex, recipes, gathered, packages }, inventoryData] = await Promise.all([
-    loadData(),
-    API.getClaimInventories(claimId),
-  ]);
-
-  const { itemMeta, cargoMeta } = buildMetaLookups(inventoryData.items, inventoryData.cargos);
-  const inventoryLookup = buildInventoryLookup(
-    inventoryData.buildings || [],
-    itemMeta,
-    cargoMeta,
-    packages
-  );
+  const { codex, recipes, gathered } = await loadData();
 
   const expanded = expandRecipes(codex, recipes, req.codexTier, codexCount, gathered);
   const processed = applyCascade(expanded, inventoryLookup);
@@ -103,6 +118,27 @@ export async function calculateRequirements(
   };
 }
 
+/** Fetches inventory, then calculates. Original API — callers unchanged. */
+export async function calculateRequirements(
+  claimId: string,
+  targetTier: number,
+  options: CalculateOptions = {}
+): Promise<PlannerResults> {
+  const inventoryLookup = await fetchInventoryLookup(claimId);
+  return runCalculation(inventoryLookup, targetTier, options);
+}
+
+/** Calculate against pre-fetched inventory. For monitor/multi-tier polling. */
+export async function calculateFromInventory(
+  inventoryLookup: InventoryLookup,
+  targetTier: number,
+  options: CalculateOptions = {}
+): Promise<PlannerResults> {
+  return runCalculation(inventoryLookup, targetTier, options);
+}
+
+// ── Accessors ─────────────────────────────────────────────────────
+
 export function getTierRequirements(): TierRequirements {
   return TIER_REQUIREMENTS;
 }
@@ -111,15 +147,14 @@ export function getLastPlanItems(): PlanItem[] | null {
   return lastPlanItems;
 }
 
-// --- UI Rendering ---
+// ── UI Rendering ──────────────────────────────────────────────────
 
-/**
- * Render the unified planner view (dashboard + flowchart tabs).
- * Tier controls are now inside planner-view's toolbar.
- */
 export function renderPlannerView(
   container: HTMLElement,
   results: PlannerResults,
+  claimId: string,
+  cityTier: number,
+  playerFilter: FilterContext | null,
   onTierChange: (tier: number, count: number) => void
 ): void {
   if (!results.planItems || results.planItems.length === 0) {
@@ -133,6 +168,8 @@ export function renderPlannerView(
   const req = TIER_REQUIREMENTS[results.targetTier];
 
   PlannerView.render(container, {
+    claimId,
+    cityTier,
     researches: results.researches,
     planItems: results.planItems,
     targetTier: results.targetTier,
@@ -141,6 +178,7 @@ export function renderPlannerView(
     currentTier: results.targetTier,
     codexCount: results.codexCount,
     codexInfo: `${results.codexCount}\u00d7 T${req.codexTier} Codex`,
+    playerFilter,
     onTierChange,
   });
 }

@@ -1,0 +1,323 @@
+@use 'variables';
+
+/* ═══ Progress Monitor — material × tier matrix with progress bars ═══ */
+
+.pm-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* ─── Top bar ─── */
+
+.pm-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.pm-pills {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.pm-pill {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 4px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+
+.pm-pill-push {
+  border-color: var(--accent);
+  .pm-pill-t {
+    color: var(--accent);
+  }
+  .pm-pill-p {
+    color: var(--text-primary);
+  }
+}
+.pm-pill-complete {
+  border-color: var(--status-complete);
+  .pm-pill-t {
+    color: var(--status-complete);
+  }
+  .pm-pill-p {
+    color: var(--status-complete);
+  }
+}
+.pm-pill-partial {
+  border-color: var(--status-partial);
+  .pm-pill-t {
+    color: var(--status-partial);
+  }
+  .pm-pill-p {
+    color: var(--text-primary);
+  }
+}
+.pm-pill-next {
+  border-color: var(--border-hi);
+  .pm-pill-t {
+    color: var(--text-secondary);
+  }
+  .pm-pill-p {
+    color: var(--text-secondary);
+  }
+}
+.pm-pill-distant {
+  border-color: var(--border);
+  .pm-pill-t {
+    color: var(--text-muted);
+  }
+  .pm-pill-p {
+    color: var(--text-muted);
+  }
+}
+
+.pm-pill-t {
+  font-weight: 600;
+}
+.pm-pill-p {
+  font-variant-numeric: tabular-nums;
+}
+
+.pm-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Table ─── */
+
+.pm-scroll {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+}
+
+.pm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: var(--user-font-size, 11px);
+  line-height: 1.15;
+  table-layout: fixed;
+
+  th,
+  td {
+    padding: 0;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+}
+
+.pm-h-group {
+  width: 22px;
+}
+.pm-h-name {
+  width: auto;
+}
+.pm-h-col {
+  width: 72px;
+}
+
+.pm-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  font-weight: 600;
+  font-size: 10px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-hi);
+  padding: 3px 4px;
+
+  &.pm-h-name {
+    text-align: left;
+    padding-left: 6px;
+  }
+  &.pm-col-distant {
+    color: var(--text-muted);
+    opacity: 0.6;
+  }
+}
+
+/* ─── Vertical concern label ─── */
+
+.pm-label {
+  width: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  vertical-align: middle;
+  text-align: center;
+  padding: 0;
+  border-right: 2px solid var(--border);
+}
+
+.pm-label-text {
+  display: block;
+  writing-mode: vertical-lr;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin: auto;
+  padding: 4px 0;
+  color: var(--text-muted);
+}
+
+.pm-label-refined {
+  border-right-color: var(--accent);
+  .pm-label-text {
+    color: var(--accent);
+  }
+}
+.pm-label-gathered {
+  border-right-color: var(--success);
+  .pm-label-text {
+    color: var(--success);
+  }
+}
+.pm-label-scholar {
+  border-right-color: var(--accent2);
+  .pm-label-text {
+    color: var(--accent2);
+  }
+}
+.pm-label-other {
+  border-right-color: var(--text-muted);
+  .pm-label-text {
+    color: var(--text-muted);
+  }
+}
+
+/* ─── Row styling ─── */
+
+.pm-concern-refined {
+  background: rgba(122, 162, 247, 0.03);
+}
+.pm-concern-gathered {
+  background: rgba(158, 206, 106, 0.03);
+}
+.pm-concern-scholar {
+  background: rgba(187, 154, 247, 0.03);
+}
+.pm-concern-other {
+  background: transparent;
+}
+
+.pm-row {
+  border-bottom: 1px solid var(--border);
+  &:hover {
+    background: var(--bg-secondary);
+  }
+}
+
+.pm-name {
+  text-align: left;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  padding: 2px 4px 2px 6px;
+}
+
+/* ─── Cell structure ─── */
+
+.pm-cell {
+  vertical-align: bottom;
+  position: relative;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Text area above the bar */
+.pm-cell-body {
+  text-align: right;
+  padding: 2px 5px 1px;
+}
+
+/* ─── Progress bar: 3px strip at the bottom of each cell ─── */
+
+// Full-width solid bar (complete or fully missing)
+.pm-bar-full {
+  height: 3px;
+  width: 100%;
+}
+
+.pm-bar-green {
+  background: var(--status-complete);
+}
+
+.pm-bar-red {
+  background: var(--status-missing);
+}
+
+// Gradient bar for partial progress
+// Uses CSS custom property --pm-pct set inline
+.pm-bar-grad {
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    var(--status-complete) 0%,
+    var(--status-complete) var(--pm-pct),
+    var(--status-partial) var(--pm-pct),
+    var(--status-partial) calc(var(--pm-pct) + 2%),
+    var(--status-missing) calc(var(--pm-pct) + 2%),
+    var(--status-missing) 100%
+  );
+}
+
+/* ─── Cell text variants ─── */
+
+.pm-complete {
+  .pm-cell-body {
+    color: var(--status-complete);
+    text-align: center;
+    opacity: 0.6;
+  }
+}
+
+.pm-deficit {
+  color: var(--status-missing);
+  font-weight: 600;
+}
+
+.pm-frac {
+  color: var(--text-secondary);
+  font-size: 10px;
+}
+
+/* ─── Distant tier muting ─── */
+
+.pm-distant {
+  opacity: 0.35;
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+/* ─── Status ─── */
+
+.pm-status {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.pm-error {
+  color: var(--status-missing);
+}

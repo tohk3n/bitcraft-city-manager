@@ -36,6 +36,7 @@
   /* ─── Structure — tiling WM geometry ─── */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'IBM Plex Mono', monospace;
   --font-size: 12px;
+  --user-font-size: 13px; // overridden by JS; 13px medium fallback
   --radius: 2px;
   --gap: 3px;
   --bar-h: 28px;

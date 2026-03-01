@@ -276,6 +276,10 @@
   }
 }
 
+.dash-item {
+  font-size: var(--user-font-size);
+}
+
 .dash-item-name {
   color: var(--text-primary);
   white-space: nowrap;
@@ -286,7 +290,7 @@
 }
 
 .dash-item-tier {
-  font-size: 8px;
+  font-size: calc(var(--user-font-size) - 2px);
   font-weight: 600;
   color: var(--text-muted);
   padding: 1px 3px;
@@ -297,6 +301,7 @@
 }
 
 .dash-item-deficit {
+  font-size: calc(var(--user-font-size) - 1px);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   min-width: 36px;

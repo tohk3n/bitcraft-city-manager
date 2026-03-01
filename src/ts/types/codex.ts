@@ -44,6 +44,8 @@ export interface ExpandedNode {
   trackable: boolean;
   mappingType: MappingType;
   children: ExpandedNode[];
+  station: { type: number; tier: number; name: string | null } | null;
+  skill: { id: number; name: string; level: number } | null;
 }
 
 export interface ExpandedCodex {
@@ -75,6 +77,8 @@ export interface ProcessedNode {
   trackable: boolean;
   mappingType: MappingType;
   children: ProcessedNode[];
+  station: { type: number; tier: number; name: string | null } | null;
+  skill: { id: number; name: string; level: number } | null;
 }
 
 export interface ProcessedCodex {
