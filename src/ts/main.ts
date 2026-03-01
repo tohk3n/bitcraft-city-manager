@@ -28,6 +28,7 @@ import * as MaterialsView from './material-breakdown-view.js';
 import { initHotkeys } from './hotkeys.js';
 import { initWalkthrough } from './walkthrough.js';
 import { applyAll as applyPreferences } from './user-prefs.js';
+import { init as initTravelerTimer } from './traveler-timer.js';
 
 const log = createLogger('Main');
 
@@ -364,6 +365,7 @@ loadBtn?.addEventListener('click', () => {
 applyPreferences();
 setupTabs();
 initHotkeys();
+initTravelerTimer();
 initWalkthrough();
 
 if (claimParam) {

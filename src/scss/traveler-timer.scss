@@ -1,0 +1,89 @@
+/* ═══ Traveler Timer — status bar countdown ═══ */
+
+/* ─── Container: sits in status bar as a clickable segment ─── */
+
+.tt-widget {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border-left: 1px solid var(--border);
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s;
+
+  &:hover {
+    color: var(--text-primary);
+
+    .tt-icon {
+      color: var(--accent);
+    }
+  }
+}
+
+/* ─── Bell icon — muted when off, accent when armed ─── */
+
+.tt-icon {
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: color 0.15s;
+
+  .tt-armed & {
+    color: var(--accent);
+  }
+}
+
+/* ─── Countdown digits — terminal monospace with subtle glow ─── */
+
+.tt-time {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+
+  .tt-armed & {
+    color: var(--accent);
+    text-shadow: 0 0 6px rgba(122, 162, 247, 0.3);
+  }
+}
+
+/* ─── Announce flash — accent pulse on reset ─── */
+
+.tt-flash .tt-time {
+  animation: tt-pulse 0.5s ease-in-out 6;
+}
+
+@keyframes tt-pulse {
+  0%,
+  100% {
+    color: var(--accent);
+    text-shadow: 0 0 6px rgba(122, 162, 247, 0.3);
+  }
+  50% {
+    color: var(--accent4);
+    text-shadow: 0 0 10px rgba(255, 158, 100, 0.5);
+  }
+}
+
+/* ─── Screen shake — applied to .wm-root ─── */
+
+.tt-shake {
+  animation: tt-shake 0.1s linear 6;
+}
+
+@keyframes tt-shake {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(-2px, 1px);
+  }
+  50% {
+    transform: translate(2px, -1px);
+  }
+  75% {
+    transform: translate(-1px, -1px);
+  }
+}
