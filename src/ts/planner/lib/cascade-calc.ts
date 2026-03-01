@@ -147,6 +147,8 @@ function buildNode(
     trackable: node.trackable,
     mappingType: node.mappingType,
     children: node.children.map((c) => buildNode(c, items, satisfied, childScale)),
+    station: node.station,
+    skill: node.skill,
   };
 }
 

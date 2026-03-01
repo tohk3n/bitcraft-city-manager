@@ -18,6 +18,8 @@ function node(
     satisfiedByParent: false,
     trackable: true,
     mappingType: 'gathered',
+    station: null,
+    skill: null,
     children: [],
     ...overrides,
   };

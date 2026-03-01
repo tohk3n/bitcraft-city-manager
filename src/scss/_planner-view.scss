@@ -266,7 +266,18 @@
 
 /* ─── Copy group ─── */
 
-.pv-copy-group {
+.pv-font-size {
+  display: flex;
+  gap: 2px;
+
+  .pv-font-btn {
+    min-width: 24px;
+    padding: 2px 4px;
+    font-size: 10px;
+    text-align: center;
+  }
+}
+m .pv-copy-group {
   display: flex;
   gap: 4px;
 }

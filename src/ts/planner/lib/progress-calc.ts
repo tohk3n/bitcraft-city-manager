@@ -366,6 +366,8 @@ export function flattenPlan(codex: ProcessedCodex): PlanItem[] {
       mappingType: MappingType;
       hasTrackableChildren: boolean;
       trackable: boolean;
+      station: { type: number; tier: number; name: string | null } | null;
+      skill: { id: number; name: string; level: number } | null;
     }
   >();
 
@@ -375,7 +377,6 @@ export function flattenPlan(codex: ProcessedCodex): PlanItem[] {
       const key = createKey(node.name, node.tier);
       const hasTrackableChildren = node.children.some((c) => c.trackable);
       let item = items.get(key);
-
       if (!item) {
         item = {
           name: node.name,
@@ -385,6 +386,8 @@ export function flattenPlan(codex: ProcessedCodex): PlanItem[] {
           mappingType: node.mappingType,
           hasTrackableChildren,
           trackable: node.trackable,
+          station: node.station,
+          skill: node.skill,
         };
         items.set(key, item);
       }
@@ -421,6 +424,9 @@ export function flattenPlan(codex: ProcessedCodex): PlanItem[] {
         activity: categorizeByActivity(item.name),
         actionable: item.trackable && !item.hasTrackableChildren,
         mappingType: item.mappingType,
+        stationType: item.station?.type ?? null,
+        skillName: item.skill?.name ?? null,
+        skillLevel: item.skill?.level ?? null,
       };
     })
     .sort((a, b) => b.deficit - a.deficit);

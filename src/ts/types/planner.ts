@@ -154,6 +154,9 @@ export interface PlanItem {
   activity: Activity;
   actionable: boolean;
   mappingType: MappingType;
+  stationType: number | null;
+  skillName: string | null;
+  skillLevel: number | null;
 }
 
 export interface PlanProgressSummary {
