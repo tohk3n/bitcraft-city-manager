@@ -1,8 +1,11 @@
 /**
- * Dashboard - Material requirements grouped by activity
+ * Dashboard - Full-width stacked panels with column-wrapped items
  *
  * Consumes PlanItem[] — one flat list, one item type.
- * Grouping, filtering, and sorting are view concerns applied here.
+ * Groups by activity, splits Crafting into intermediates/finals,
+ * sorts panels by total deficit, renders items in CSS columns
+ * that fill horizontal space within each full-width panel.
+ * Deficit magnitude bars scale relative to the panel's max.
  */
 
 import { formatCompact } from './lib/progress-calc.js';
@@ -14,7 +17,8 @@ import type { PlanItem, Activity } from '../types/index.js';
 // =============================================================================
 
 interface ActivityGroup {
-  name: Activity;
+  name: string;
+  activity: Activity;
   items: PlanItem[];
 }
 
@@ -48,10 +52,16 @@ const TIER_PREFIXES = [
   'Refined',
 ];
 
+const CRAFTING_INTERMEDIATES = 'Crafting (inter)';
+const CRAFTING_FINALS = 'Crafting (finals)';
+
 // =============================================================================
 // PURE FUNCTIONS
 // =============================================================================
 
+/**
+ * Group items by activity, splitting Crafting into intermediates and finals.
+ */
 function groupByActivity(items: PlanItem[]): ActivityGroup[] {
   const map = new Map<Activity, PlanItem[]>();
 
@@ -64,9 +74,38 @@ function groupByActivity(items: PlanItem[]): ActivityGroup[] {
     group.push(item);
   }
 
-  return ACTIVITY_ORDER.flatMap((name) => {
-    const items = map.get(name);
-    return items ? [{ name, items }] : [];
+  const groups: ActivityGroup[] = [];
+
+  for (const activity of ACTIVITY_ORDER) {
+    const activityItems = map.get(activity);
+    if (!activityItems || activityItems.length === 0) continue;
+
+    if (activity === 'Crafting') {
+      const intermediates = activityItems.filter((i) => i.mappingType === 'intermediate');
+      const finals = activityItems.filter((i) => i.mappingType !== 'intermediate');
+
+      if (intermediates.length > 0) {
+        groups.push({ name: CRAFTING_INTERMEDIATES, activity, items: intermediates });
+      }
+      if (finals.length > 0) {
+        groups.push({ name: CRAFTING_FINALS, activity, items: finals });
+      }
+    } else {
+      groups.push({ name: activity, activity, items: activityItems });
+    }
+  }
+
+  return groups;
+}
+
+/**
+ * Sort panels by total deficit descending — biggest bottleneck first.
+ */
+function sortGroupsByDeficit(groups: ActivityGroup[]): ActivityGroup[] {
+  return [...groups].sort((a, b) => {
+    const aDeficit = a.items.reduce((sum, i) => sum + i.deficit, 0);
+    const bDeficit = b.items.reduce((sum, i) => sum + i.deficit, 0);
+    return bDeficit - aDeficit;
   });
 }
 
@@ -93,7 +132,7 @@ function sortItems(items: PlanItem[], by: Filters['sortBy']): PlanItem[] {
 
 function filterGroups(groups: ActivityGroup[], activity: string | null): ActivityGroup[] {
   if (!activity) return groups;
-  return groups.filter((g) => g.name === activity);
+  return groups.filter((g) => g.activity === activity);
 }
 
 function stripTierPrefix(name: string): string {
@@ -107,83 +146,82 @@ function stripTierPrefix(name: string): string {
 // RENDER FUNCTIONS
 // =============================================================================
 
-function renderItem(item: PlanItem, compactNames: boolean): string {
+function renderItem(item: PlanItem, compactNames: boolean, maxDeficit: number): string {
   const status = item.deficit === 0 ? 'complete' : item.pctComplete >= 50 ? 'partial' : 'missing';
-
   const displayName = compactNames ? stripTierPrefix(item.name) : item.name;
   const tooltip = compactNames && displayName !== item.name ? `title="${item.name}"` : '';
+  const barPct = maxDeficit > 0 ? Math.round((item.deficit / maxDeficit) * 100) : 0;
 
   return `
-        <div class="dash-item ${status}" ${tooltip}>
-            <span class="dash-item-name">${displayName}</span>
-            <span class="dash-item-tier">T${item.tier}</span>
-            <span class="dash-item-deficit">${item.deficit > 0 ? `-${formatCompact(item.deficit)}` : '✓'}</span>
-            <div class="dash-item-bar">
-                <div class="dash-item-bar-fill" style="width: ${item.pctComplete}%"></div>
-            </div>
-        </div>`;
+    <div class="dash-row ${status}" ${tooltip}>
+      <span class="dash-row-bar" style="width: ${barPct}%"></span>
+      <span class="dash-row-name">${displayName}</span>
+      <span class="dash-row-tier">T${item.tier}</span>
+      <span class="dash-row-deficit">${item.deficit > 0 ? `-${formatCompact(item.deficit)}` : '✓'}</span>
+    </div>`;
 }
 
-function renderGroup(group: ActivityGroup, collapsed: boolean, compactNames: boolean): string {
-  const deficit = group.items.reduce((sum, i) => sum + i.deficit, 0);
+function renderPanel(group: ActivityGroup, collapsed: boolean, compactNames: boolean): string {
+  const totalDeficit = group.items.reduce((sum, i) => sum + i.deficit, 0);
   const totalRequired = group.items.reduce((sum, i) => sum + i.required, 0);
   const totalHave = group.items.reduce((sum, i) => sum + Math.min(i.have, i.required), 0);
   const percent = totalRequired > 0 ? Math.round((totalHave / totalRequired) * 100) : 100;
+  const maxDeficit = group.items.reduce((max, i) => Math.max(max, i.deficit), 0);
 
   return `
-        <div class="dash-group ${collapsed ? 'collapsed' : ''}" data-activity="${group.name}">
-            <div class="dash-group-header">
-                <span class="dash-group-toggle">▼</span>
-                <span class="dash-group-name">${group.name}</span>
-                <span class="dash-group-stats">${group.items.length} · -${formatCompact(deficit)}</span>
-                <div class="dash-group-bar">
-                    <div class="dash-group-bar-fill" style="width: ${percent}%"></div>
-                </div>
-                <span class="dash-group-pct">${percent}%</span>
-                <button class="dash-copy-group" title="Copy ${group.name} tasks">📋</button>
-            </div>
-            <div class="dash-group-items">
-                ${group.items.map((item) => renderItem(item, compactNames)).join('')}
-            </div>
-        </div>`;
+    <div class="dash-panel ${collapsed ? 'collapsed' : ''}" data-group="${group.name}">
+      <div class="dash-panel-header">
+        <span class="dash-panel-toggle">▼</span>
+        <span class="dash-panel-name">${group.name}</span>
+        <span class="dash-panel-stats">${group.items.length} · -${formatCompact(totalDeficit)}</span>
+        <div class="dash-panel-bar">
+          <div class="dash-panel-bar-fill" style="width: ${percent}%"></div>
+        </div>
+        <span class="dash-panel-pct">${percent}%</span>
+        <button class="dash-copy-group" title="Copy ${group.name} tasks">📋</button>
+      </div>
+      <div class="dash-panel-items">
+        ${group.items.map((item) => renderItem(item, compactNames, maxDeficit)).join('')}
+      </div>
+    </div>`;
 }
 
 function renderToolbar(tiers: number[], activities: string[], filters: Filters): string {
   return `
-        <div class="dash-toolbar">
-            <div class="dash-filters">
-                <select id="dash-tier" class="dash-select">
-                    <option value="">All Tiers</option>
-                    ${tiers.map((t) => `<option value="${t}" ${filters.tier === t ? 'selected' : ''}>T${t}</option>`).join('')}
-                </select>
-                <select id="dash-activity" class="dash-select">
-                    <option value="">All Activities</option>
-                    ${activities.map((a) => `<option value="${a}" ${filters.activity === a ? 'selected' : ''}>${a}</option>`).join('')}
-                </select>
-            </div>
-            <div class="dash-options">
-                <label class="dash-toggle">
-                    <input type="checkbox" id="dash-hide-complete" ${filters.hideComplete ? 'checked' : ''}>
-                    <span>Hide ✓</span>
-                </label>
-                <label class="dash-toggle">
-                    <input type="checkbox" id="dash-actionable" ${filters.actionableOnly ? 'checked' : ''}>
-                    <span>Actionable</span>
-                </label>
-                <label class="dash-toggle">
-                    <input type="checkbox" id="dash-compact" ${filters.compactNames ? 'checked' : ''}>
-                    <span>Short names</span>
-                </label>
-            </div>
-            <div class="dash-sort">
-                <span>Sort:</span>
-                <select id="dash-sort" class="dash-select">
-                    <option value="deficit" ${filters.sortBy === 'deficit' ? 'selected' : ''}>Deficit</option>
-                    <option value="tier" ${filters.sortBy === 'tier' ? 'selected' : ''}>Tier</option>
-                    <option value="name" ${filters.sortBy === 'name' ? 'selected' : ''}>Name</option>
-                </select>
-            </div>
-        </div>`;
+    <div class="dash-toolbar">
+      <div class="dash-filters">
+        <select id="dash-tier" class="dash-select">
+          <option value="">All Tiers</option>
+          ${tiers.map((t) => `<option value="${t}" ${filters.tier === t ? 'selected' : ''}>T${t}</option>`).join('')}
+        </select>
+        <select id="dash-activity" class="dash-select">
+          <option value="">All Activities</option>
+          ${activities.map((a) => `<option value="${a}" ${filters.activity === a ? 'selected' : ''}>${a}</option>`).join('')}
+        </select>
+      </div>
+      <div class="dash-options">
+        <label class="dash-toggle">
+          <input type="checkbox" id="dash-hide-complete" ${filters.hideComplete ? 'checked' : ''}>
+          <span>Hide ✓</span>
+        </label>
+        <label class="dash-toggle">
+          <input type="checkbox" id="dash-actionable" ${filters.actionableOnly ? 'checked' : ''}>
+          <span>Actionable</span>
+        </label>
+        <label class="dash-toggle">
+          <input type="checkbox" id="dash-compact" ${filters.compactNames ? 'checked' : ''}>
+          <span>Short names</span>
+        </label>
+      </div>
+      <div class="dash-sort">
+        <span>Sort:</span>
+        <select id="dash-sort" class="dash-select">
+          <option value="deficit" ${filters.sortBy === 'deficit' ? 'selected' : ''}>Deficit</option>
+          <option value="tier" ${filters.sortBy === 'tier' ? 'selected' : ''}>Tier</option>
+          <option value="name" ${filters.sortBy === 'name' ? 'selected' : ''}>Name</option>
+        </select>
+      </div>
+    </div>`;
 }
 
 // =============================================================================
@@ -220,7 +258,7 @@ const filters: Filters = {
   hideComplete: true,
   actionableOnly: false,
   sortBy: 'deficit',
-  compactNames: false,
+  compactNames: true,
 };
 const collapsed = new Set<string>();
 let container: HTMLElement | null = null;
@@ -229,7 +267,8 @@ function getVisibleGroups(): ActivityGroup[] {
   const filtered = filterItems(items, filters);
   const sorted = sortItems(filtered, filters.sortBy);
   const grouped = groupByActivity(sorted);
-  return filterGroups(grouped, filters.activity);
+  const activityFiltered = filterGroups(grouped, filters.activity);
+  return sortGroupsByDeficit(activityFiltered);
 }
 
 function renderGroups(): void {
@@ -244,38 +283,36 @@ function renderGroups(): void {
   }
 
   groupsEl.innerHTML = groups
-    .map((g) => renderGroup(g, collapsed.has(g.name), filters.compactNames))
+    .map((g) => renderPanel(g, collapsed.has(g.name), filters.compactNames))
     .join('');
 
   wireGroupEvents(groupsEl as HTMLElement, groups);
 }
 
 function wireGroupEvents(el: HTMLElement, groups: ActivityGroup[]): void {
-  // Toggle collapse
-  el.querySelectorAll<HTMLElement>('.dash-group-header').forEach((header) => {
+  el.querySelectorAll<HTMLElement>('.dash-panel-header').forEach((header) => {
     header.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).closest('.dash-copy-group')) return;
 
-      const group = header.closest('.dash-group') as HTMLElement;
-      const activity = group?.dataset.activity;
-      if (!activity) return;
+      const panel = header.closest('.dash-panel') as HTMLElement;
+      const groupName = panel?.dataset.group;
+      if (!groupName) return;
 
-      if (collapsed.has(activity)) {
-        collapsed.delete(activity);
+      if (collapsed.has(groupName)) {
+        collapsed.delete(groupName);
       } else {
-        collapsed.add(activity);
+        collapsed.add(groupName);
       }
-      group.classList.toggle('collapsed', collapsed.has(activity));
+      panel.classList.toggle('collapsed', collapsed.has(groupName));
     });
   });
 
-  // Copy group
   el.querySelectorAll<HTMLElement>('.dash-copy-group').forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
-      const group = btn.closest('.dash-group') as HTMLElement;
-      const activity = group?.dataset.activity;
-      const data = groups.find((g) => g.name === activity);
+      const panel = btn.closest('.dash-panel') as HTMLElement;
+      const groupName = panel?.dataset.group;
+      const data = groups.find((g) => g.name === groupName);
       if (data) copyText(groupToText(data), btn);
     });
   });
@@ -345,10 +382,10 @@ export function render(el: HTMLElement, planItems: PlanItem[], tier: number): vo
   const activities = ACTIVITY_ORDER.filter((a) => items.some((i) => i.activity === a));
 
   el.innerHTML = `
-        <div class="dash">
-            ${renderToolbar(tiers, activities, filters)}
-            <div id="dash-groups"></div>
-        </div>`;
+    <div class="dash">
+      ${renderToolbar(tiers, activities, filters)}
+      <div class="dash-panels" id="dash-groups"></div>
+    </div>`;
 
   wireToolbarEvents();
   renderGroups();
@@ -368,7 +405,6 @@ export function generateDashboardText(): string {
 }
 
 export function generateFullText(): string {
-  // Unfiltered — all items with deficit, grouped by activity
   const allWithDeficit = items.filter((i) => i.deficit > 0);
   const sorted = sortItems(allWithDeficit, 'deficit');
   const groups = groupByActivity(sorted);
