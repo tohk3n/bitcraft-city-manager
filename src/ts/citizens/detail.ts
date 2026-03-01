@@ -1,4 +1,4 @@
-// Detail view, individual citizen profile.
+// Detail view — individual citizen profile.
 //
 // Shows skill bars with rarity-colored fills, equipped tools per skill,
 // and a gear grid showing best-in-slot armor across cloth/leather/metal.
@@ -28,6 +28,8 @@ export function renderDetail(record: CitizenRecord, data: CitizensData): string 
           <h3 class="cz-detail-name">${record.userName}</h3>
           <span class="cz-detail-meta">${relativeTime(record.lastLogin)} · Lv ${record.totalLevel} · ${record.totalXP.toLocaleString()} XP</span>
           <button class="copy-btn" data-id="${record.entityId}" title="Copy ID">${record.entityId}</button>
+          <a class="cz-map-link" href="https://map.bitjita.com/?playerId=${record.entityId}"
+             target="_blank" rel="noopener" title="Track on map">🗺</a>
         </div>
       </div>
       ${profileGrid(record, data)}
@@ -79,7 +81,7 @@ function legendContent(): string {
 // Each row shows: skill name, level bar, equipped tool, and (if gear loaded)
 // the armor piece for the corresponding body slot.
 //
-// The `gridRow` parameter maps skill rows to body slots, row 0 = head,
+// The `gridRow` parameter maps skill rows to body slots — row 0 = head,
 // row 1 = chest, etc. When there are more skills than body slots (there are),
 // extra rows just don't get gear cells. The last row gets the rarity legend
 // in the gear zone instead.
@@ -139,7 +141,7 @@ function skillRow(
 // --- Profile grid ---
 // Categorizes skills into professions, non-profession skills, and unknowns.
 // Unknowns are skills the API returned that aren't in our hardcoded ordering
-// these appear at the bottom so new game skills show up immediately even
+// — these appear at the bottom so new game skills show up immediately even
 // before we add them to the PROFESSIONS/SKILLS arrays.
 
 function profileGrid(r: CitizenRecord, data: CitizensData): string {
