@@ -155,7 +155,10 @@ export function renderPlannerView(
   claimId: string,
   cityTier: number,
   playerFilter: FilterContext | null,
-  onTierChange: (tier: number, count: number) => void
+  citizens: { entityId: string; userName: string }[] | null,
+  activePlayerId: string | null,
+  onTierChange: (tier: number, count: number) => void,
+  onPlayerChange: (playerId: string | null) => void
 ): void {
   if (!results.planItems || results.planItems.length === 0) {
     container.innerHTML = '<div class="pv-empty">No data</div>';
@@ -180,6 +183,9 @@ export function renderPlannerView(
     codexInfo: `${results.codexCount}\u00d7 T${req.codexTier} Codex`,
     playerFilter,
     onTierChange,
+    citizens,
+    activePlayerId,
+    onPlayerChange,
   });
 }
 

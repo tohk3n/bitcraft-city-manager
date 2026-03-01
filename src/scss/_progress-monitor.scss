@@ -321,3 +321,42 @@
 .pm-error {
   color: var(--status-missing);
 }
+
+progress monitor scope · SCSS
+/* ── Tier scope filter ── */
+
+.pm-scope {
+  display: flex;
+  gap: 2px;
+  margin-left: 8px;
+}
+
+.pm-scope-btn {
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    color 0.1s,
+    border-color 0.1s;
+
+  &:hover {
+    color: var(--text-secondary);
+  }
+
+  &.active {
+    color: var(--text-primary);
+    border-color: var(--accent);
+  }
+}
+
+/* Item tier badge inside monitor cells */
+.pm-item-tier {
+  font-size: 9px;
+  color: var(--text-muted);
+  margin-right: 2px;
+}

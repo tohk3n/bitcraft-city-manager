@@ -145,6 +145,7 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
   viewport.addEventListener(
     'wheel',
     (e: WheelEvent) => {
+      if (!e.shiftKey) return;
       e.preventDefault();
 
       const oldZoom = zoomLevel;
