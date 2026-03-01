@@ -11,7 +11,7 @@
 import { API } from '../api.js';
 import { createLogger } from '../logger.js';
 import type { FilterContext, PlayerTools, ClaimStations } from './player-filter.js';
-import type { CitizenRecord, CitizensData } from '../citizens.js';
+import type { CitizenRecord, CitizensData } from '../citizens/index.js';
 import type { Building } from '../types/index.js';
 
 const log = createLogger('PlayerCtx');
