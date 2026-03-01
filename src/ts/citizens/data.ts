@@ -1,7 +1,7 @@
 // Citizen data, fetching, merging, filtering.
 //
 // The API gives us two separate responses: members (who's in the claim)
-// and citizens (skill data). Merge them by entity ID. The members
+// and citizens (skill data). We merge them by entity ID. The members
 // response has login timestamps; the citizens response has skill levels.
 // A member without citizen data gets zeroed skills, they're in the
 // claim but the skills API didn't return them (happens with very new
@@ -33,7 +33,10 @@ interface CitizenWithSkills {
 
 // --- Merging ---
 
-export function mergeData(members: ClaimMember[], citizensResp: CitizensApiResponse): CitizensData {
+export function mergeData(
+  members: ClaimMember[],
+  citizensResp: CitizensApiResponse
+): CitizensData {
   const citizens = citizensResp.citizens || [];
   const skillNames = citizensResp.skillNames || {};
   const byId = new Map(citizens.map((c) => [c.entityId, c as CitizenWithSkills]));
@@ -60,7 +63,10 @@ export function mergeData(members: ClaimMember[], citizensResp: CitizensApiRespo
 
 // --- Filtering & sorting ---
 
-export function filterRecords(records: CitizenRecord[], viewState: ViewState): CitizenRecord[] {
+export function filterRecords(
+  records: CitizenRecord[],
+  viewState: ViewState
+): CitizenRecord[] {
   let result = records;
 
   if (viewState.activityDays > 0) {
@@ -83,7 +89,10 @@ export function filterRecords(records: CitizenRecord[], viewState: ViewState): C
 // --- Gear loading ---
 // Three API calls per citizen. Expensive. Only triggered on detail view open.
 
-export async function loadGear(record: CitizenRecord, onUpdate: () => void): Promise<void> {
+export async function loadGear(
+  record: CitizenRecord,
+  onUpdate: () => void
+): Promise<void> {
   if (record.gear || record.gearLoading) return;
 
   record.gearLoading = true;
@@ -137,6 +146,7 @@ export function daysSince(date: Date): number {
 export function relativeTime(date: Date): string {
   if (isNaN(date.getTime())) return 'unknown';
   const days = daysSince(date);
+  if (days < 0) return 'future';  // clock skew or bad timestamp
   if (days === 0) return 'today';
   if (days === 1) return 'yesterday';
   if (days < 30) return `${days}d ago`;

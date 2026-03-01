@@ -10,7 +10,11 @@
 // Pickaxe (equipped) +1 stashed".
 
 import { CITIZEN_CONFIG } from '../configuration/citizenconfig.js';
-import type { EquipmentSlot, VaultCollectible, PlayerInventoriesResponse } from '../types/index.js';
+import type {
+  EquipmentSlot,
+  VaultCollectible,
+  PlayerInventoriesResponse,
+} from '../types/index.js';
 import type { GearSlot, ToolItem } from '../types/citizens.js';
 
 const SLOTS = CITIZEN_CONFIG.EQUIPMENT_SLOTS;
@@ -120,7 +124,7 @@ export function parseTools(resp: PlayerInventoriesResponse): ToolItem[] {
         tag: meta.tag || 'Tool',
         toolLevel: meta.toolLevel || 0,
         toolPower: meta.toolPower || 0,
-        toolType: meta.toolType,
+        toolType: meta.toolType || 0,
         toolSkillId: meta.toolSkillId || 0,
         equipped: isToolbelt,
         source,
