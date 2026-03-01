@@ -141,7 +141,7 @@ function skillRow(
 // --- Profile grid ---
 // Categorizes skills into professions, non-profession skills, and unknowns.
 // Unknowns are skills the API returned that aren't in our hardcoded ordering
-//, these appear at the bottom so new game skills show up immediately even
+// these appear at the bottom so new game skills show up immediately even
 // before we add them to the PROFESSIONS/SKILLS arrays.
 
 function profileGrid(r: CitizenRecord, data: CitizensData): string {
