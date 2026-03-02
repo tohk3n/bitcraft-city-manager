@@ -110,8 +110,11 @@ async function loadClaim(claimId: string): Promise<void> {
     }
     UI.showTabs();
 
+    const statusEl = document.getElementById('status-claim');
+    if (statusEl) statusEl.textContent = claimName;
+
     const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
-    UI.renderDashboard(result);
+    UI.renderDashboard(result, claimData.claimInfo ?? undefined);
 
     // Buildings (needed for crafting stations display AND player filter)
     try {

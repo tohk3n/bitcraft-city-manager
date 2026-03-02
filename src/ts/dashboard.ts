@@ -1,5 +1,8 @@
 // Dashboard rendering methods
-// Handles: material matrix, quick stats, crafting stations, inventory grid
+// Handles: overview panels (food, supply, stations), inventory grid, profession sub-views
+//
+// Craftability (Can Make / Bottleneck) loads async after initial render.
+// Panels show "—" immediately, then update when recipe data arrives.
 
 import type {
   BuildingBreakdown,
@@ -7,20 +10,18 @@ import type {
   CraftingStationsResult,
   InventoryItem,
   InventoryProcessResult,
-  Item,
   Items,
   NamedMatrix,
   ProcessedInventory,
   Package,
   ResourceMatrix,
-  Rule,
   StationsByName,
-  StationSummary,
   TagGroup,
   Tier,
   TierQuantities,
+  InventoryLookup,
 } from './types/index.js';
-import { FILTER_TYPE, FOOD_BUFF, SUPPLY_CAT } from './types/index.js';
+import { FILTER_TYPE } from './types/index.js';
 import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
 import { createLogger } from './logger.js';
 import type {
@@ -30,20 +31,429 @@ import type {
 } from './components/data-matrix/data-matrix.js';
 import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 import { applyTabA11y } from './aria.js';
+import { loadRecipes } from './data/loader.js';
+import { calcCraftableBatch, calcSupplyPotential } from './craftability-calc.js';
+import type { CraftableResult, SupplyRow } from './craftability-calc.js';
 
 const log = createLogger('Dashboard');
 
+// ═══ FOOD PIN PERSISTENCE ═══
+// localStorage so pin state survives page reloads.
+// Stores item IDs (the numeric keys from Items record).
+
+const PINS_KEY = 'bcm-food-pins';
+
+function loadPins(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(PINS_KEY) || '[]'));
+  } catch {
+    return new Set();
+  }
+}
+
+function savePins(pins: Set<string>): void {
+  localStorage.setItem(PINS_KEY, JSON.stringify([...pins]));
+}
+
+const pinnedFoodIds: Set<string> = loadPins();
+let currentFoodFilter: 'all' | 'pinned' | 'stock' = 'all';
+
+// ═══ CRAFTABILITY STATE ═══
+// Computed async after initial render. null = still loading.
+let craftabilityMap: Map<string, CraftableResult> | null = null;
+let supplyRows: SupplyRow[] | null = null;
+
+// Claim info for supply panel hero (supply pool, burn rate, time remaining).
+// Set via setClaimInfo() from renderDashboard, read by renderSupplyPanel.
+let cachedClaimInfo: {
+  supplies?: number;
+  upkeepCost?: number;
+  suppliesRunOut?: string;
+} | null = null;
+
+// ═══ FOOD PANEL ═══
+
+interface FoodRow {
+  id: string;
+  tier: number;
+  name: string;
+  have: number;
+  canMake: number;
+  bottleneck: string | null;
+  pinned: boolean;
+}
+
+function buildFoodRows(foodItems: Items): FoodRow[] {
+  return Object.entries(foodItems).map(([id, item]) => {
+    const key = `${item.name}:${item.tier}`;
+    const craft = craftabilityMap?.get(key);
+    return {
+      id,
+      tier: item.tier,
+      name: item.name,
+      have: item.qty,
+      canMake: craft?.canMake ?? 0,
+      bottleneck: craft?.bottleneck ?? null,
+      pinned: pinnedFoodIds.has(id),
+    };
+  });
+}
+
+function sortFoodRows(rows: FoodRow[]): FoodRow[] {
+  return [...rows].sort((a, b) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+    if (a.have !== b.have) return b.have - a.have;
+    if (a.canMake !== b.canMake) return b.canMake - a.canMake;
+    return a.tier - b.tier;
+  });
+}
+
+function filterFoodRows(rows: FoodRow[], filter: string): FoodRow[] {
+  if (filter === 'pinned') return rows.filter((r) => r.pinned);
+  if (filter === 'stock') return rows.filter((r) => r.have > 0 || r.canMake > 0);
+  return rows;
+}
+
+function renderFoodTable(rows: FoodRow[]): string {
+  return rows
+    .map((row) => {
+      const dimmed = !row.pinned && row.have === 0 && row.canMake === 0;
+      const hCls = row.have > 0 ? '' : 'zero';
+      const cCls = row.canMake > 0 ? 'pos' : 'zero';
+      const craftText = row.canMake > 0 ? '+' + row.canMake.toLocaleString() : '—';
+      const noteText = row.bottleneck ?? '—';
+      return `<tr class="${dimmed ? 'dimmed' : ''}" data-id="${row.id}">
+      <td class="it-pin ${row.pinned ? 'pinned' : ''}" data-action="pin">⊙</td>
+      <td><span class="it-tier">T${row.tier}</span></td>
+      <td class="it-name">${row.name}</td>
+      <td class="it-qty ${hCls}">${row.have > 0 ? row.have.toLocaleString() : '—'}</td>
+      <td class="it-craft ${cCls}">${craftText}</td>
+      <td class="it-note">${noteText}</td>
+    </tr>`;
+    })
+    .join('');
+}
+
+// Full food panel render, idempotent, call whenever pins or filter change
+function renderFoodPanel(foodItems: Items): void {
+  const panel = document.getElementById('food-panel');
+  if (!panel) return;
+
+  const allRows = buildFoodRows(foodItems);
+  const totalHave = allRows.reduce((sum, r) => sum + r.have, 0);
+  const totalCraftable = allRows.reduce((sum, r) => sum + r.canMake, 0);
+  const visible = sortFoodRows(filterFoodRows(allRows, currentFoodFilter));
+
+  // Build pill active states
+  const pillHtml = (['all', 'pinned', 'stock'] as const)
+    .map((f) => {
+      const label = f === 'stock' ? 'in stock' : f;
+      return `<button class="pill ${currentFoodFilter === f ? 'on' : ''}" data-filter="${f}">${label}</button>`;
+    })
+    .join('');
+
+  const craftableSpan =
+    totalCraftable > 0
+      ? ` · <span style="color:var(--success);font-weight:600">+${totalCraftable}</span> craftable`
+      : '';
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <span class="panel-title">Food</span>
+      <div class="filter-pills" id="foodFilters">${pillHtml}</div>
+    </div>
+    <div class="panel-body">
+      <div class="panel-hero">
+        <span class="hero-big">${totalHave.toLocaleString()}</span>
+        <span class="hero-context">in stock${craftableSpan}</span>
+      </div>
+      <hr class="hero-divider">
+      <table class="item-table">
+        <thead><tr>
+          <th style="width:20px"></th>
+          <th style="width:28px"></th>
+          <th>Item</th>
+          <th class="r">Have</th>
+          <th class="r">Can Make</th>
+          <th>Bottleneck</th>
+        </tr></thead>
+        <tbody id="foodBody">${renderFoodTable(visible)}</tbody>
+      </table>
+    </div>`;
+
+  wireFoodEvents(panel, foodItems);
+}
+
+// Attach click handlers, separated so render stays pure
+function wireFoodEvents(panel: HTMLElement, foodItems: Items): void {
+  // Pin toggle
+  panel.querySelector('#foodBody')?.addEventListener('click', (e) => {
+    const pin = (e.target as HTMLElement).closest('[data-action="pin"]');
+    if (!pin) return;
+    const row = pin.closest('tr');
+    const id = row?.dataset.id;
+    if (!id) return;
+
+    if (pinnedFoodIds.has(id)) {
+      pinnedFoodIds.delete(id);
+    } else {
+      pinnedFoodIds.add(id);
+    }
+    savePins(pinnedFoodIds);
+    renderFoodPanel(foodItems);
+  });
+
+  // Filter pills
+  panel.querySelector('#foodFilters')?.addEventListener('click', (e) => {
+    const pill = (e.target as HTMLElement).closest('.pill') as HTMLElement | null;
+    if (!pill?.dataset.filter) return;
+    currentFoodFilter = pill.dataset.filter as typeof currentFoodFilter;
+    renderFoodPanel(foodItems);
+  });
+}
+
+// ═══ SUPPLY CARGO PANEL ═══
+
+// Supply panel shows city supply pool stats and production potential.
+// Finished cargo is almost always 0 because players deposit immediately.
+// The useful question is "how much could we make from what's in chests?"
+function renderSupplyPanel(): void {
+  const panel = document.getElementById('supply-panel');
+  if (!panel) return;
+
+  const rows = (supplyRows ?? []).filter((r) => r.canMake > 0);
+  const totalCraftable = rows.reduce((sum, r) => sum + r.canMake, 0);
+
+  // Hero: supply pool from claim API
+  const claim = cachedClaimInfo;
+  const poolNum = claim?.supplies ?? 0;
+  const upkeep = claim?.upkeepCost ?? 0;
+
+  let timeStr = '';
+  if (claim?.suppliesRunOut) {
+    const diffMs = new Date(claim.suppliesRunOut).getTime() - Date.now();
+    if (diffMs > 0) {
+      const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      timeStr = days > 0 ? `${days}d ${hours}h remaining` : `${hours}h remaining`;
+    } else {
+      timeStr = 'Depleted';
+    }
+  }
+
+  const rateStr = upkeep > 0 ? `@ ${upkeep.toLocaleString()}/h` : '';
+  const contextParts = ['supplies', timeStr, rateStr].filter(Boolean).join(' \u00b7 ');
+  const craftableSpan =
+    totalCraftable > 0
+      ? ` \u00b7 <span style="color:var(--success);font-weight:600">${totalCraftable.toLocaleString()}</span> craftable`
+      : '';
+
+  const tableRows = rows
+    .map((row) => {
+      const dimmed = row.canMake === 0;
+      const cCls = row.canMake > 0 ? 'pos' : 'zero';
+      const craftText = row.canMake > 0 ? row.canMake.toLocaleString() : '\u2014';
+      const noteText = row.bottleneckDetail ?? '\u2014';
+      return `<tr class="${dimmed ? 'dimmed' : ''}">
+      <td><span class="it-tier">T${row.tier}</span></td>
+      <td class="it-name">${row.label}</td>
+      <td class="it-craft ${cCls}">${craftText}</td>
+      <td class="it-note">${noteText}</td>
+    </tr>`;
+    })
+    .join('');
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <span class="panel-title">Supply Cargo</span>
+    </div>
+    <div class="panel-body">
+      <div class="panel-hero">
+        <span class="hero-big">${poolNum.toLocaleString()}</span>
+        <span class="hero-context">${contextParts}${craftableSpan}</span>
+      </div>
+      <hr class="hero-divider">
+      <table class="item-table">
+        <thead><tr>
+          <th style="width:28px"></th>
+          <th>Cargo</th>
+          <th class="r">Can Make</th>
+          <th>Bottleneck</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ═══ STATION PANELS ═══
+
+function renderStationPanel(stations: StationsByName, panelId: string, title: string): void {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+
+  const names = Object.keys(stations).sort();
+  const total = names.reduce((sum, n) => sum + stations[n].total, 0);
+
+  // Find highest occupied tier so we don't render empty trailing columns
+  let maxTier = 1;
+  for (const name of names) {
+    const tiers = stations[name].tiers;
+    for (let t = CONFIG.MAX_TIER; t >= 1; t--) {
+      if (tiers[t as keyof TierQuantities] > 0) {
+        maxTier = Math.max(maxTier, t);
+        break;
+      }
+    }
+  }
+
+  let headerCells = '<th></th>';
+  for (let t = 1; t <= maxTier; t++) headerCells += `<th>T${t}</th>`;
+  headerCells += '<th>Total</th>';
+
+  const bodyRows = names
+    .map((name) => {
+      const station = stations[name];
+      let cells = `<td>${name}</td>`;
+      for (let t = 1; t <= maxTier; t++) {
+        const val = station.tiers[t as keyof TierQuantities] || 0;
+        cells += `<td class="${val > 0 ? 'has' : ''}">${val > 0 ? val : '–'}</td>`;
+      }
+      cells += `<td class="rtotal">${station.total}</td>`;
+      return `<tr>${cells}</tr>`;
+    })
+    .join('');
+
+  panel.innerHTML = `
+    <div class="panel-header">
+      <span class="panel-title">${title}</span>
+      <span class="panel-stat">${total} total</span>
+    </div>
+    <div class="panel-body">
+      <div class="station-body">
+        <table class="st-table">
+          <thead><tr>${headerCells}</tr></thead>
+          <tbody>${bodyRows}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+// ═══ STATION SPECIFIER REMOVAL ═══
+// "Simple Cooking Station" + "Sturdy Cooking Station" → "cooking station"
+// with counts in the right tier columns. Same logic as before, just cleaner.
+
+function condenseStations(source: StationsByName, specifiers: string[]): StationsByName {
+  const result: StationsByName = {};
+
+  for (const [name, summary] of Object.entries(source)) {
+    const normalized = normalizeStationName(name, specifiers);
+
+    if (!result[normalized]) {
+      result[normalized] = { tiers: { ...summary.tiers }, total: summary.total };
+    } else {
+      for (const t of Object.keys(summary.tiers) as unknown as Tier[]) {
+        result[normalized].tiers[t] = (result[normalized].tiers[t] ?? 0) + summary.tiers[t];
+      }
+      result[normalized].total += summary.total;
+    }
+  }
+
+  return result;
+}
+
+function normalizeStationName(name: string, specifiers: string[]): string {
+  let result = name.toLowerCase();
+  for (const spec of specifiers) {
+    result = result.replace(new RegExp(`\\b${spec}\\b`, 'gi'), '');
+  }
+  return result.replace(/\s+/g, ' ').trim();
+}
+
+// ═══ ASYNC CRAFTABILITY ═══
+// Loads recipes.json, builds an inventory lookup from the processed items,
+// computes canMake for every food and supply item, then re-renders panels.
+// Fails silently, panels just keep showing "—" if recipes don't load.
+
+async function loadCraftability(data: InventoryProcessResult): Promise<void> {
+  try {
+    const recipes = await loadRecipes();
+
+    // Build a unified inventory lookup from ALL processed items
+    // (not just food/supply -- inputs might be in any category)
+    const lookup = buildInventoryLookupFromProcessed(data);
+
+    // Food craftability: batch compute for all food items
+    const foodItems = Object.values(data.foodItems).map((i) => ({ name: i.name, tier: i.tier }));
+    craftabilityMap = calcCraftableBatch(recipes, foodItems, lookup);
+
+    // Supply production potential: find recipes by tag, compute from inventory
+    supplyRows = calcSupplyPotential(recipes, lookup);
+
+    // Re-render panels with real data
+    if (lastFoodItems) renderFoodPanel(lastFoodItems);
+    renderSupplyPanel();
+
+    log.debug(
+      'Craftability loaded:',
+      craftabilityMap?.size ?? 0,
+      'food,',
+      supplyRows.length,
+      'supply rows'
+    );
+  } catch (e) {
+    log.debug('Craftability load failed, panels keep showing dashes:', e);
+  }
+}
+
+// Build "name:tier" → qty from the full ProcessedInventory.
+// Includes all categories so recipe inputs (plank, ingot, etc.) are found.
+function buildInventoryLookupFromProcessed(data: InventoryProcessResult): InventoryLookup {
+  const lookup: InventoryLookup = new Map();
+
+  for (const category of Object.values(data.inventory)) {
+    for (const tagGroup of Object.values(category)) {
+      for (const item of Object.values(tagGroup.items)) {
+        const key = `${item.name}:${item.tier}`;
+        lookup.set(key, (lookup.get(key) ?? 0) + item.qty);
+      }
+    }
+  }
+
+  return lookup;
+}
+
+// ═══ DATA REFS FOR RE-RENDER ═══
+// Stored so craftability async callback can re-render panels without re-processing.
+let lastFoodItems: Items | null = null;
+
+// ═══ PUBLIC API, what UI.ts calls ═══
+
 export const DashboardUI = {
   // Main render entry point for inventory view
-  renderDashboard(data: InventoryProcessResult): void {
-    const { inventory, foodItems, supplyCargo, packages } = data;
-    const foods: Items = DashboardUI.filterFridge(
-      foodItems,
-      DASHBOARD_CONFIG.FRIDGE,
-      FILTER_TYPE.RARITY_RARE
-    );
-    this.renderQuickStats(foods, supplyCargo, 'quick-stats');
-    this.renderInventory(inventory, 'inventory-grid');
+  renderDashboard(
+    data: InventoryProcessResult,
+    claimInfo?: { claim?: { supplies?: number; upkeepCost?: number; suppliesRunOut?: string } }
+  ): void {
+    const { inventory, foodItems, packages } = data;
+
+    // Cache claim info for supply panel hero
+    cachedClaimInfo = claimInfo?.claim ?? null;
+
+    // Show all food. The old RARITY_RARE filter dropped everything in
+    // settlements with only common (rarity 1) food, which is most of them.
+    const foods: Items = foodItems;
+
+    // Stash for async re-render
+    lastFoodItems = foods;
+
+    // Overview panels -- render immediately with canMake = 0
+    renderFoodPanel(foods);
+    renderSupplyPanel();
+
+    // Kick off async craftability computation
+    loadCraftability(data);
+
+    // Profession sub-views
     this.renderSubView(
       inventory,
       packages,
@@ -119,30 +529,19 @@ export const DashboardUI = {
     this.wireButtons();
     this.show('dashboard');
   },
-  // Used to set subview button listener
-  wireButtons(): void {
-    const subViews = document.getElementById('sub-views');
-    if (subViews) applyTabA11y(subViews, '.sub-btn');
 
-    const viewTabs = document.querySelectorAll<HTMLElement>('#sub-views .sub-btn');
-    viewTabs.forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const view = tab.dataset.view;
-
-        // Update active tab
-        viewTabs.forEach((t) => t.classList.remove('active'));
-        tab.classList.add('active');
-        // Show correct view
-        document
-          .querySelectorAll('#dashboard .dash-view')
-          .forEach((s) => s.classList.add('hidden'));
-        const viewEl = document.getElementById(`${view}`);
-        viewEl?.classList.remove('hidden');
-      });
-    });
+  // Station panels are rendered separately because buildings come from a different API call
+  renderCraftingStations(data: CraftingStationsResult): void {
+    log.debug('Rendering station panels');
+    const condensed = {
+      active: condenseStations(data.active, DASHBOARD_CONFIG.SPECIFIER),
+      passive: condenseStations(data.passive, DASHBOARD_CONFIG.SPECIFIER),
+    };
+    renderStationPanel(condensed.active, 'active-stations-panel', 'Active Stations');
+    renderStationPanel(condensed.passive, 'passive-stations-panel', 'Passive Stations');
   },
+
   filterFridge(food: Items, fridge: string[], filter: FILTER_TYPE): Items {
-    // defines what we show in the food tab
     switch (filter) {
       case FILTER_TYPE.FRIDGE:
         return Object.fromEntries(
@@ -156,283 +555,35 @@ export const DashboardUI = {
         return food;
     }
   },
-  // Helper to show a section
+
   show(sectionId: string): void {
     const el: HTMLElement | null = document.getElementById(sectionId);
     if (el) el.classList.remove('hidden');
   },
 
-  // Food and Supply quick stats
-  renderQuickStats(foodItems: Items, supplies: Items, view: string): void {
-    const container: HTMLElement | null = document.getElementById(view);
-    if (!container) return;
+  // ═══ SUB-VIEW TABS ═══
 
-    // Food section
-    const foodList: Item[] = DashboardUI.sortItems(foodItems, DASHBOARD_CONFIG.FOOD_RULE);
-    //total amount
-    const foodTotal: number = Object.values(foodItems).reduce(
-      (sum: number, item: Item): number => sum + (item.qty ?? 0),
-      0
-    );
+  wireButtons(): void {
+    const subViews = document.getElementById('sub-views');
+    if (subViews) applyTabA11y(subViews, '.sub-btn');
 
-    let html: string = DashboardUI.generateFoodHtml(foodTotal, foodList, 15);
-
-    // Supply cargo items available
-    const suppliesTotal: number = Object.values(supplies).reduce(
-      (sum: number, item: Item): number => sum + (item.qty ?? 0),
-      0
-    );
-    const supplyList: Item[] = DashboardUI.sortItems(supplies, []);
-
-    html += DashboardUI.generateSupplyHtml(suppliesTotal, supplyList, 15);
-
-    container.innerHTML = html;
+    const viewTabs = document.querySelectorAll<HTMLElement>('#sub-views .sub-btn');
+    viewTabs.forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const view = tab.dataset.view;
+        viewTabs.forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        document
+          .querySelectorAll('#dashboard .dash-view')
+          .forEach((s) => s.classList.add('hidden'));
+        const viewEl = document.getElementById(`${view}`);
+        viewEl?.classList.remove('hidden');
+      });
+    });
   },
-  generateItemTableHtml<CAT>(
-    icon: string,
-    title: string,
-    total: number,
-    items: Item[],
-    maxEntries: number,
-    getCategory: (item: Item) => CAT,
-    renderCategory: (cat: CAT) => string,
-    showMoreRow = false
-  ): string {
-    let html: string = DashboardUI.makeTableHeaderHtml(icon, total, title);
-    let lastCat: CAT | undefined = undefined;
 
-    for (const item of items.slice(0, maxEntries)) {
-      const cat: CAT = getCategory(item);
-      if (lastCat !== cat) {
-        lastCat = cat;
-        html += `<tr><td>${renderCategory(cat)}</td><td class="cat-header"></td></tr>`;
-      }
-      const tierBadge: string =
-        item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
+  // ═══ INVENTORY GRID, collapsible category cards ═══
 
-      html += `<tr>
-      <td>${tierBadge} ${item.name}</td>
-      <td class="qty">${item.qty.toLocaleString()}</td>
-    </tr>`;
-    }
-    if (showMoreRow && items.length > maxEntries) {
-      html += `<tr class="more">
-      <td colspan="2">+${items.length - maxEntries} more</td>
-    </tr>`;
-    }
-    html += '</table></div></div>';
-    return html;
-  },
-  generateFoodHtml(foodTotal: number, foodList: Item[], maxEntries: number) {
-    return DashboardUI.generateItemTableHtml(
-      '🍖',
-      'Food',
-      foodTotal,
-      foodList,
-      maxEntries,
-      (item) => DashboardUI.getFoodBuffCategory(item.name),
-      (cat) => String(cat),
-      true
-    );
-  },
-  // requires the supplyList to be sorted by tag/category -> look into SUPPLY_CAT
-  generateSupplyHtml(suppliesTotal: number, supplyList: Item[], maxEntries: number) {
-    return DashboardUI.generateItemTableHtml(
-      '📦',
-      'Supply Cargo',
-      suppliesTotal,
-      supplyList,
-      maxEntries,
-      (item) => DashboardUI.getSupplyCategory(item.name),
-      (cat) => String(cat),
-      false
-    );
-  },
-  getFoodBuffCategory(name: string): FOOD_BUFF {
-    name = name.toLowerCase();
-    let cat;
-    if (name.includes('fish')) {
-      cat = FOOD_BUFF.CRAFTING;
-    } else if (name.includes('meat')) {
-      cat = FOOD_BUFF.COMBAT;
-    } else if (name.includes('mushroom') || name.includes('berry')) {
-      cat = FOOD_BUFF.MOVEMENT;
-    } else {
-      cat = FOOD_BUFF.NONE;
-    }
-    return cat;
-  },
-  getSupplyCategory(name: string): SUPPLY_CAT {
-    name = name.toLowerCase();
-    let cat;
-    if (name.includes('timber')) {
-      cat = SUPPLY_CAT.TIMBER;
-    } else if (name.includes('frame')) {
-      cat = SUPPLY_CAT.FRAMES;
-    } else if (name.includes('tarp')) {
-      cat = SUPPLY_CAT.TARP;
-    } else if (name.includes('sack')) {
-      cat = SUPPLY_CAT.HEX;
-    } else if (name.includes('slab')) {
-      cat = SUPPLY_CAT.SLAB;
-    } else if (name.includes('sheeting')) {
-      cat = SUPPLY_CAT.LEATHER;
-    } else if (name.includes('experimental')) {
-      cat = SUPPLY_CAT.SCHOLAR;
-    } else {
-      cat = SUPPLY_CAT.NONE;
-    }
-    return cat;
-  },
-  sortItems(items: Items, rules: Rule[]): Item[] {
-    return Object.values(items).sort(
-      DashboardUI.prioritySort(
-        (item) => {
-          const n: string = item.name.toLowerCase();
-          for (const r of rules) {
-            if (r.words.some((w) => n.includes(w))) return r.prio;
-          }
-          return rules.length;
-        },
-        (item) => item.tier
-      )
-    );
-  },
-  // Generic sort function
-  prioritySort<T>(getPriority: (item: T) => number, getSecondary: (item: T) => number) {
-    return (a: T, b: T) => {
-      const pA: number = getPriority(a);
-      const pB: number = getPriority(b);
-
-      if (pA !== pB) {
-        return pA - pB;
-      }
-
-      return getSecondary(b) - getSecondary(a);
-    };
-  },
-  makeTableHeaderHtml(icon: string, total: number, title: string): string {
-    const html = `
-    <div class="quick-card">
-    <div class="quick-header">
-    <span class="icon">${icon}</span>
-    <h4>${title}</h4>
-    <span class="total">${total.toLocaleString()}</span>
-    </div>
-    <div class="quick-body">
-    <table>
-    `;
-    return html;
-  },
-  // Crafting stations summary
-  renderCraftingStations(data: CraftingStationsResult): void {
-    log.debug('Start rendering Stations');
-    const container: HTMLElement | null = document.getElementById('crafting-stations');
-    if (!container) return;
-    log.debug('Stations data:', data);
-    data = this.removeSpecifier(data, DASHBOARD_CONFIG.SPECIFIER);
-    const { active, passive } = data;
-    const activeNames: string[] = Object.keys(active).sort();
-    const passiveNames: string[] = Object.keys(passive).sort();
-    if (activeNames.length === 0 && passiveNames.length === 0) {
-      container.innerHTML = '';
-      log.debug('No stations to render found (active and passive)');
-      return;
-    }
-    log.debug(active, activeNames);
-    let html = `<div id="station-box">`;
-    html += this.generateMatrixHtml(active, activeNames, 'Active Crafting Stations');
-    html += this.generateMatrixHtml(passive, passiveNames, 'Passive Crafting Stations');
-
-    html += `</div>`;
-    container.innerHTML = html;
-    this.show('crafting-stations');
-  },
-  removeSpecifier(data: CraftingStationsResult, specifier: string[]): CraftingStationsResult {
-    const condense = (source: StationsByName): StationsByName => {
-      const result: StationsByName = {};
-
-      for (const [name, summary] of Object.entries(source)) {
-        const normalizedName: string = this.normalizeStationName(name, specifier);
-
-        if (!result[normalizedName]) {
-          result[normalizedName] = {
-            tiers: { ...summary.tiers },
-            total: summary.total,
-          };
-        } else {
-          result[normalizedName].tiers = this.mergeTiers(
-            result[normalizedName].tiers,
-            summary.tiers
-          );
-
-          result[normalizedName].total += summary.total;
-        }
-      }
-
-      return result;
-    };
-
-    return {
-      active: condense(data.active),
-      passive: condense(data.passive),
-    };
-  },
-  normalizeStationName(name: string, specifier: string[]): string {
-    let result = name.toLowerCase();
-
-    for (const spec of specifier) {
-      const regex = new RegExp(`\\b${spec}\\b`, 'gi');
-      result = result.replace(regex, '');
-    }
-
-    return result.replace(/\s+/g, ' ').trim();
-  },
-  mergeTiers(target: TierQuantities, source: TierQuantities): TierQuantities {
-    const result: TierQuantities = { ...target };
-
-    for (const tier of Object.keys(source) as unknown as Tier[]) {
-      result[tier] = (result[tier] ?? 0) + source[tier];
-    }
-
-    return result;
-  },
-  generateMatrixHtml(stations: StationsByName, names: string[], title: string): string {
-    if (names.length === 0) return '';
-
-    let total = 0;
-    for (const name of names) {
-      total += stations[name].total;
-    }
-
-    let out = `<div class="stations-section">`;
-    out += `<div class="matrix-header"><h3>${title}</h3><span class="total">${total} total</span></div>`;
-    out += '<table class="material-matrix"><thead><tr>';
-    out += '<th></th>';
-    for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-      out += `<th>T${t}</th>`;
-    }
-    out += '<th class="row-total">Total</th>';
-    out += '</tr></thead><tbody>';
-
-    for (const name of names) {
-      const station: StationSummary = stations[name];
-      out += `<tr><td class="cat-label">${name}</td>`;
-      for (let t = 1; t <= CONFIG.MAX_TIER; t++) {
-        const val: number = station.tiers[t as keyof TierQuantities] || 0;
-        const displayVal: string = val > 0 ? String(val) : '—';
-        const bgStyle: string = val > 0 ? DASHBOARD_CONFIG.BG_CONST : '';
-        out += `<td class="matrix-cell" style="${bgStyle}">${displayVal}</td>`;
-      }
-      out += `<td class="row-total">${station.total}</td>`;
-      out += '</tr>';
-    }
-
-    out += '</tbody></table></div>';
-    log.debug('Finished generating matrix');
-    return out;
-  },
-  // Inventory grid with expandable category cards
   renderInventory(inventory: ProcessedInventory, view: string): void {
     const grid: HTMLElement | null = document.getElementById(view);
     log.debug('start rendering inventory');
@@ -441,7 +592,6 @@ export const DashboardUI = {
       return;
     }
 
-    // Exclude Food and Scholar from main grid (shown in quick stats)
     const exclude: string[] = DASHBOARD_CONFIG.INVENTORY_GRID_EXCLUDE;
     const sortedCategories: string[] = Object.keys(inventory)
       .filter((c) => !exclude.includes(c))
@@ -522,7 +672,6 @@ export const DashboardUI = {
 
     grid.innerHTML = html;
 
-    // Attach event listeners after innerHTML assignment
     grid.querySelectorAll('.card-header').forEach((header) => {
       header.addEventListener('click', () => {
         const card: Element | null = header.closest('.inventory-card');
@@ -532,83 +681,9 @@ export const DashboardUI = {
 
     this.show('inventory');
   },
-  // Filters so only allowedItems are kept and convert to NamedMatrix
-  filterInventory(
-    inventory: ProcessedInventory,
-    completeTags: string[],
-    additionalItems: string[]
-  ): NamedMatrix {
-    const additionalSet = new Set(additionalItems);
-    const completeTagSet = new Set(completeTags);
 
-    const map: ResourceMatrix = {};
+  // ═══ PROFESSION SUB-VIEWS ═══
 
-    for (const category of Object.values(inventory)) {
-      for (const [tag, tagGroup] of Object.entries(category)) {
-        const includesTag = completeTagSet.has(tag);
-        for (const item of Object.values(tagGroup.items)) {
-          if (!includesTag && !additionalSet.has(item.name)) {
-            continue;
-          }
-          // add for tag row
-          if (includesTag) {
-            if (!map[tag]) {
-              map[tag] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-            }
-            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
-            map[tag][tierIndex].push(item.qty);
-          }
-          // Add single row for additional items -> can be used to show single items as one line
-          if (additionalSet.has(item.name)) {
-            if (!map[item.name]) {
-              map[item.name] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-            }
-            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0; // single items with tier -1 get set to index 0
-            map[item.name][tierIndex].push(item.qty);
-          }
-        }
-      }
-    }
-    // Fill up missing items to show all rows
-    completeTagSet.forEach((value) => {
-      if (!map[value]) {
-        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-      }
-    });
-    additionalSet.forEach((value) => {
-      if (!map[value]) {
-        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-      }
-    });
-    return { map };
-  },
-  filterPackages(inventory: Package, allowedPackages: string[]): NamedMatrix {
-    const allowedSet = new Set(allowedPackages);
-    const map: ResourceMatrix = {};
-
-    for (const [shortenedId, items] of Object.entries(inventory)) {
-      if (!allowedSet.has(shortenedId)) continue;
-
-      if (!map[shortenedId]) {
-        map[shortenedId] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-      }
-
-      for (const item of Object.values(items)) {
-        const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
-        map[shortenedId][tierIndex].push(item.qty);
-      }
-    }
-
-    // add missing packages
-    allowedSet.forEach((value) => {
-      if (!map[value]) {
-        map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
-      }
-    });
-
-    return { map };
-  },
-  // Used to render a sub view matrix containing the specified items by tag or name
   renderSubView(
     inventory: ProcessedInventory,
     packages: Package,
@@ -627,13 +702,11 @@ export const DashboardUI = {
       completeTags,
       singleItems
     );
-    // build matrix for specified tags/items
     const config: MatrixConfig = this.createMatrixConfig(sortedInventory);
     const el: HTMLElement | null = document.getElementById(view + '-inventory');
     if (!el) return;
     createDataMatrix(el, config);
 
-    // build matrix for specified packages
     const filteredPackages: NamedMatrix = this.filterPackages(packages, allowedPackages);
     const sortedPackages: NamedMatrix = this.sortMatrix(filteredPackages, allowedPackages, []);
     const configP: MatrixConfig = this.createMatrixConfig(sortedPackages);
@@ -641,44 +714,87 @@ export const DashboardUI = {
     if (!elP) return;
     createDataMatrix(elP, configP);
   },
-  sortMatrix(inventory: NamedMatrix, tags: string[], additionalItems: string[]): NamedMatrix {
-    // Build a single priority list: tags first, then additional items
-    // Each entry's array index would become its sort rank
-    const priority = new Map([...tags, ...additionalItems].map((t, i) => [t, i])); // tag, index
 
-    const entries = Object.entries(inventory.map);
+  filterInventory(
+    inventory: ProcessedInventory,
+    completeTags: string[],
+    additionalItems: string[]
+  ): NamedMatrix {
+    const additionalSet = new Set(additionalItems);
+    const completeTagSet = new Set(completeTags);
+    const map: ResourceMatrix = {};
 
-    // Items with a priority rank sort by that rank
-    // Items not in the priority map get Infinity, pushing them to the end
-    entries.sort(([a], [b]) => (priority.get(a) ?? Infinity) - (priority.get(b) ?? Infinity));
+    for (const category of Object.values(inventory)) {
+      for (const [tag, tagGroup] of Object.entries(category)) {
+        const includesTag = completeTagSet.has(tag);
+        for (const item of Object.values(tagGroup.items)) {
+          if (!includesTag && !additionalSet.has(item.name)) continue;
 
-    return { map: Object.fromEntries(entries) };
-  },
-  createMatrixConfig(named: NamedMatrix): MatrixConfig {
-    const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => {
-      const tier = i + 1;
-      return { key: String(tier), label: `T${tier}` };
+          if (includesTag) {
+            if (!map[tag]) map[tag] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+            map[tag][tierIndex].push(item.qty);
+          }
+
+          if (additionalSet.has(item.name)) {
+            if (!map[item.name]) map[item.name] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+            map[item.name][tierIndex].push(item.qty);
+          }
+        }
+      }
+    }
+
+    completeTagSet.forEach((value) => {
+      if (!map[value]) map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+    });
+    additionalSet.forEach((value) => {
+      if (!map[value]) map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
     });
 
-    const rows: MatrixRow[] = this.buildRows(named);
-
-    return {
-      columns,
-      rows,
-      showRowTotals: false,
-    };
+    return { map };
   },
-  buildRows(sourceMatrix: NamedMatrix): MatrixRow[] {
-    return Object.entries(sourceMatrix.map).map(([tag, tiers]) => {
+
+  filterPackages(inventory: Package, allowedPackages: string[]): NamedMatrix {
+    const allowedSet = new Set(allowedPackages);
+    const map: ResourceMatrix = {};
+
+    for (const [shortenedId, items] of Object.entries(inventory)) {
+      if (!allowedSet.has(shortenedId)) continue;
+      if (!map[shortenedId]) map[shortenedId] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      for (const item of Object.values(items)) {
+        const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+        map[shortenedId][tierIndex].push(item.qty);
+      }
+    }
+
+    allowedSet.forEach((value) => {
+      if (!map[value]) map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+    });
+
+    return { map };
+  },
+
+  sortMatrix(inventory: NamedMatrix, tags: string[], additionalItems: string[]): NamedMatrix {
+    const priority = new Map([...tags, ...additionalItems].map((t, i) => [t, i]));
+    const entries = Object.entries(inventory.map);
+    entries.sort(([a], [b]) => (priority.get(a) ?? Infinity) - (priority.get(b) ?? Infinity));
+    return { map: Object.fromEntries(entries) };
+  },
+
+  createMatrixConfig(named: NamedMatrix): MatrixConfig {
+    const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => ({
+      key: String(i + 1),
+      label: `T${i + 1}`,
+    }));
+
+    const rows: MatrixRow[] = Object.entries(named.map).map(([tag, tiers]) => {
       const cells = Object.fromEntries(
         tiers.map((qtyList, i) => [String(i + 1), qtyList.reduce((sum, q) => sum + q, 0)])
       ) as Record<string, number>;
-
-      return {
-        key: tag,
-        label: tag.toLowerCase(),
-        cells,
-      };
+      return { key: tag, label: tag.toLowerCase(), cells };
     });
+
+    return { columns, rows, showRowTotals: false };
   },
 };

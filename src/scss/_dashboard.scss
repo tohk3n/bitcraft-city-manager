@@ -1,146 +1,294 @@
 @use 'variables';
 
-/* ═══ Inventory Dashboard — dense, scannable ═══ */
+/* ═══ Inventory Dashboard — 2×2 panel grid ═══
+   Four panels: food, supply cargo, active stations, passive stations. */
 
-/* Quick stats — horizontal row */
-#quick-stats {
-  display: flex;
+/* ── Panel grid ── */
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--gap);
-  margin-bottom: 8px;
+  margin-bottom: var(--gap);
 }
 
-.quick-card {
-  flex: 1;
+@media (max-width: 900px) {
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── Panel — shared container for all four quadrants ── */
+
+.panel {
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.quick-header {
+.panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 4px 8px;
+  padding: 6px 10px;
+  background: var(--bg-quaternary);
   border-bottom: 1px solid var(--border);
+  gap: 8px;
+}
+
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.panel-stat {
   font-size: 10px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
 
-  .label {
-    color: var(--text-muted);
-    font-weight: 600;
-    letter-spacing: 0.04em;
-  }
+.panel-body {
+  flex: 1;
+}
 
-  .total {
-    font-weight: 600;
-    color: var(--accent);
+/* ── Hero headline — the big number that answers "how much" at a glance ── */
+
+.panel-hero {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 8px 10px 2px;
+}
+
+.hero-big {
+  font-size: 24px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.hero-context {
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.hero-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 6px 0 0;
+}
+
+@media (max-width: 900px) {
+  .hero-big {
+    font-size: 20px;
   }
 }
 
-.quick-body {
-  padding: 4px 8px;
-  max-height: 200px;
-  overflow-y: auto;
+/* ── Filter pills — food panel filter controls ── */
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
+.filter-pills {
+  display: flex;
+  gap: 3px;
+}
+
+.pill {
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.1s;
+
+  &:hover {
+    color: var(--text-secondary);
+    border-color: var(--text-muted);
   }
 
-  tr {
+  &.on {
+    color: var(--accent3);
+    border-color: var(--accent3);
+    background: rgba(125, 207, 255, 0.06);
+  }
+}
+
+/* ── Item table — shared by food and cargo panels ── */
+
+.item-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: 4px 8px;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: left;
     border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+
+    &.r {
+      text-align: right;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42, 48, 80, 0.3);
 
     &:last-child {
       border-bottom: none;
     }
 
-    &.more td {
-      color: var(--text-muted);
-      text-align: center;
+    &:hover {
+      background: rgba(122, 162, 247, 0.04);
+    }
+
+    &.dimmed {
+      opacity: 0.35;
+
+      &:hover {
+        opacity: 0.6;
+      }
     }
   }
 
   td {
-    padding: 2px 0;
+    padding: 4px 8px;
+  }
+}
 
-    &.qty {
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-      color: var(--text-secondary);
+.it-pin {
+  width: 16px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 10px;
+  user-select: none;
+
+  &:hover {
+    color: var(--accent3);
+  }
+
+  &.pinned {
+    color: var(--accent3);
+  }
+}
+
+.it-tier {
+  display: inline-block;
+  min-width: 24px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 1px 4px;
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+}
+
+.it-name {
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 11px;
+}
+
+.it-qty {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+
+  &.zero {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+}
+
+.it-craft {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+
+  &.pos {
+    color: var(--success);
+  }
+
+  &.zero {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+}
+
+.it-note {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* ── Station table — tier matrix for active/passive panels ── */
+
+.st-table {
+  width: auto;
+  border-collapse: collapse;
+  font-size: 11px;
+
+  th {
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--text-muted);
+    padding: 3px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+
+    &:first-child {
+      text-align: left;
     }
   }
 
-  .tier-badge {
-    font-size: 9px;
-    padding: 1px 5px;
-    border-radius: var(--radius);
-    background: var(--bg-quaternary);
-    color: var(--text-secondary);
-    margin-right: 4px;
+  td {
+    padding: 3px 6px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+
+    &:first-child {
+      text-align: left;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    &.has {
+      color: var(--text-primary);
+      font-weight: 500;
+      background: rgba(122, 162, 247, 0.06);
+    }
   }
-}
 
-/* ─── Crafting stations ─── */
-
-#crafting-stations {
-  width: 100%;
-  margin-top: 8px;
-  flex-direction: column;
-}
-
-#toggleStationsBtn {
-  width: 100%;
-  padding: 4px 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition:
-    background 0.1s,
-    color 0.1s;
-
-  &:hover {
-    background: var(--bg-quaternary);
+  .rtotal {
+    text-align: right;
+    font-weight: 600;
     color: var(--text-primary);
   }
-}
 
-#station-box {
-  width: 100%;
-  display: flex;
-  gap: 8px;
-  flex: 1;
-
-  &.hidden {
-    display: none;
+  tbody tr:hover {
+    background: rgba(122, 162, 247, 0.04);
   }
 }
 
-.stations-section {
-  background: var(--bg-tertiary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 8px;
-  margin-bottom: 8px;
-  flex: 1;
-}
-
-/* station matrix */
-.matrix-cell {
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  font-size: 11px;
-  padding: 2px 4px;
-}
-
-.row-total {
-  text-align: right;
-  font-weight: 600;
-  font-size: 11px;
+.station-body {
+  padding: 6px 10px;
+  overflow-x: auto;
 }
 
 /* ═══ INVENTORY GRID — the category cards ═══ */
