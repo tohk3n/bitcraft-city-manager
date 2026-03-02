@@ -3,7 +3,6 @@
 //
 // Craftability (Can Make / Bottleneck) loads async after initial render.
 // Panels show "—" immediately, then update when recipe data arrives.
-// This keeps initial paint fast — recipes.json is ~400KB.
 
 import type {
   BuildingBreakdown,
@@ -135,7 +134,7 @@ function renderFoodTable(rows: FoodRow[]): string {
     .join('');
 }
 
-// Full food panel render — idempotent, call whenever pins or filter change
+// Full food panel render, idempotent, call whenever pins or filter change
 function renderFoodPanel(foodItems: Items): void {
   const panel = document.getElementById('food-panel');
   if (!panel) return;
@@ -185,7 +184,7 @@ function renderFoodPanel(foodItems: Items): void {
   wireFoodEvents(panel, foodItems);
 }
 
-// Attach click handlers — separated so render stays pure
+// Attach click handlers, separated so render stays pure
 function wireFoodEvents(panel: HTMLElement, foodItems: Items): void {
   // Pin toggle
   panel.querySelector('#foodBody')?.addEventListener('click', (e) => {
@@ -373,7 +372,7 @@ function normalizeStationName(name: string, specifiers: string[]): string {
 // ═══ ASYNC CRAFTABILITY ═══
 // Loads recipes.json, builds an inventory lookup from the processed items,
 // computes canMake for every food and supply item, then re-renders panels.
-// Fails silently — panels just keep showing "—" if recipes don't load.
+// Fails silently, panels just keep showing "—" if recipes don't load.
 
 async function loadCraftability(data: InventoryProcessResult): Promise<void> {
   try {
@@ -427,7 +426,7 @@ function buildInventoryLookupFromProcessed(data: InventoryProcessResult): Invent
 // Stored so craftability async callback can re-render panels without re-processing.
 let lastFoodItems: Items | null = null;
 
-// ═══ PUBLIC API — what UI.ts calls ═══
+// ═══ PUBLIC API, what UI.ts calls ═══
 
 export const DashboardUI = {
   // Main render entry point for inventory view
@@ -583,7 +582,7 @@ export const DashboardUI = {
     });
   },
 
-  // ═══ INVENTORY GRID — collapsible category cards (unchanged) ═══
+  // ═══ INVENTORY GRID, collapsible category cards ═══
 
   renderInventory(inventory: ProcessedInventory, view: string): void {
     const grid: HTMLElement | null = document.getElementById(view);
@@ -683,7 +682,7 @@ export const DashboardUI = {
     this.show('inventory');
   },
 
-  // ═══ PROFESSION SUB-VIEWS (unchanged — PR 2 scope) ═══
+  // ═══ PROFESSION SUB-VIEWS ═══
 
   renderSubView(
     inventory: ProcessedInventory,
