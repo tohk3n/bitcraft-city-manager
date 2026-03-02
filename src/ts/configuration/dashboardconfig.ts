@@ -99,7 +99,18 @@ export const DASHBOARD_CONFIG = {
     'Tannin',
     'Raw Meat',
   ]),
-  SUPPLY: new Set(['Frame', 'Timber', 'Tarp', 'Slab', 'Sheeting']),
+  SUPPLY: new Set(['Frame', 'Timber', 'Tarp', 'Brick Slab', 'Sheeting']),
+
+  // Supply cargo types for the production potential panel.
+  // Tags match recipe tags exactly from recipes.json.
+  // Discovered via diagnostic dump of actual recipe data.
+  SUPPLY_TYPES: [
+    { label: 'Timber', tag: 'Timber' },
+    { label: 'Frames', tag: 'Frame' },
+    { label: 'Tarp', tag: 'Tarp' },
+    { label: 'Slab', tag: 'Brick Slab' },
+    { label: 'Sheeting', tag: 'Sheeting' },
+  ] as const,
   // Build reverse lookup: tag -> category (computed at load time)
   TAG_TO_CATEGORY: {} as Record<string, string>,
   // Inventory category display order
@@ -142,7 +153,6 @@ export const DASHBOARD_CONFIG = {
     'Flawless',
     'Magnificent',
   ],
-  //TODO check if this can not be done with css
   BG_CONST: 'background: rgba(88, 166, 255, 0.2);',
   // Array containing the tailoring item names to be shown in the tailoring sub view
   TAILOR_TAGS: [
