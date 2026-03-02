@@ -8,6 +8,15 @@ import type { ViewState, ActivityThreshold, SortField } from '../types/citizens.
 
 type PaintFn = () => void;
 
+// Bitcraft map with player tracking.
+// Ctrl+click a row to open the map centered on that player.
+const MAP_BASE = 'https://map.bitjita.com/';
+
+function openMap(entityId: string): void {
+  const url = `${MAP_BASE}?playerId=${entityId}`;
+  window.open(url, '_blank', 'noopener');
+}
+
 // --- Roster wiring ---
 
 export function wireRoster(el: HTMLElement, viewState: ViewState, paint: PaintFn): void {
@@ -117,8 +126,13 @@ function wireRowClicks(
 ): void {
   const selector = sourceView === 'matrix' ? '.mx-row' : '.cz-member-row';
   el.querySelectorAll<HTMLElement>(selector).forEach((row) => {
-    row.addEventListener('click', () => {
-      viewState.selectedId = row.dataset.id || null;
+    row.addEventListener('click', (e) => {
+      const id = row.dataset.id || '';
+      if ((e.ctrlKey || e.metaKey) && id) {
+        openMap(id);
+        return;
+      }
+      viewState.selectedId = id || null;
       viewState.previousListView = sourceView;
       viewState.view = 'detail';
       paint();

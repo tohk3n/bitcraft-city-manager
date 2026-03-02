@@ -28,6 +28,8 @@ export function renderDetail(record: CitizenRecord, data: CitizensData): string 
           <h3 class="cz-detail-name">${record.userName}</h3>
           <span class="cz-detail-meta">${relativeTime(record.lastLogin)} · Lv ${record.totalLevel} · ${record.totalXP.toLocaleString()} XP</span>
           <button class="copy-btn" data-id="${record.entityId}" title="Copy ID">${record.entityId}</button>
+          <a class="cz-map-link" href="https://map.bitjita.com/?playerId=${record.entityId}"
+             target="_blank" rel="noopener" title="Track on map">🗺</a>
         </div>
       </div>
       ${profileGrid(record, data)}
