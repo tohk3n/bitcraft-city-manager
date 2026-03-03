@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DashboardUI } from './dashboard.js';
-import { FILTER_TYPE } from './types';
+import { DashboardUI } from '../dashboard.js';
+import { FILTER_TYPE } from '../types/index.js';
 
 describe('filterFridge', () => {
   it('filters food items based on fridge list', () => {

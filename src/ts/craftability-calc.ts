@@ -142,7 +142,10 @@ function calcFromRecipe(
     if (batches < minBatches) {
       minBatches = batches;
       // Use the stripped display name for bottleneck
-      const displayName = strippedName || normalizeName(inputRecipe.name);
+      const displayName =
+        inputRecipe.name.replace(SPECIFIER_REGEX, '').replace(/\s+/g, ' ').trim() ||
+        inputRecipe.name;
+
       bottleneck = displayName;
       bottleneckDetail = `${displayName} (${have} of ${input.qty} per)`;
     }
