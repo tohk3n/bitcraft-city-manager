@@ -1,0 +1,352 @@
+// src/ts/components/sub-view/_sub-view.scss
+//
+// Profession sub-view styling. Lives next to the component.
+// Uses global design tokens with no local overrides.
+//
+// Visual grammar:
+//   amber  = bottleneck (have some, need more)
+//   red    = bottleneck-zero (have none, need some)
+//   cyan   = cargo
+//   green  = consumable names, "no bottlenecks"
+//   purple = cross-domain materials (from other professions)
+
+// -- Status bar --
+
+.sv-status-bar {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 6px 6px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+.sv-status-segment {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sv-status-label {
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 9px;
+  margin-right: 2px;
+  white-space: nowrap;
+}
+
+.sv-status-sep {
+  color: var(--border);
+  font-size: 14px;
+  line-height: 1;
+  user-select: none;
+}
+
+// -- Bottleneck chips --
+
+.sv-bn-item {
+  color: var(--text-secondary);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.sv-bn-qty {
+  font-weight: 600;
+
+  &.warn {
+    color: var(--warning);
+  }
+  &.crit {
+    color: var(--status-missing);
+  }
+}
+
+.sv-bn-tier {
+  color: var(--text-muted);
+}
+
+.sv-bn-dot {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+
+.sv-bn-clear {
+  color: var(--success);
+  font-size: 9px;
+  font-weight: 500;
+}
+
+// -- Consumable chips --
+
+.sv-con-item {
+  font-size: 10px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sv-con-name {
+  color: var(--success);
+}
+
+.sv-con-val {
+  color: var(--text-primary);
+  font-weight: 500;
+
+  &.zero {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+}
+
+.sv-con-hint {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+// -- Copy button --
+
+.sv-copy-btn {
+  margin-left: auto;
+  padding: 1px 6px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color 0.1s,
+    border-color 0.1s;
+
+  &:hover {
+    color: var(--text-secondary);
+    border-color: var(--text-muted);
+  }
+
+  &.copied {
+    color: var(--success);
+    border-color: var(--success);
+  }
+}
+
+// -- Cargo --
+
+.sv-cargo {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 4px 6px;
+  margin-bottom: 4px;
+  font-size: 11px;
+}
+
+.sv-cargo-name {
+  color: var(--accent3);
+  font-weight: 600;
+}
+
+.sv-cargo-tier {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.sv-cargo-val {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.sv-cargo-empty {
+  color: var(--text-muted);
+}
+
+.sv-cargo-dot {
+  color: var(--text-muted);
+  margin: 0 2px;
+}
+
+// -- Matrix --
+
+.sv-matrix {
+  border-collapse: collapse;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+  width: auto;
+}
+
+.sv-col-name {
+  width: 150px;
+}
+.sv-col-tier {
+  width: 60px;
+}
+
+.sv-matrix thead th {
+  padding: 2px 4px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  border-bottom: 1px solid var(--border);
+
+  &:first-child {
+    text-align: left;
+    padding-left: 6px;
+  }
+}
+
+.sv-matrix td {
+  padding: 3px 6px;
+  text-align: center;
+  color: var(--text-muted);
+
+  &:first-child {
+    text-align: left;
+    padding-left: 6px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.sv-matrix td.has {
+  color: var(--text-primary);
+  font-weight: 500;
+  background: rgba(122, 162, 247, 0.06);
+}
+
+.sv-matrix tbody tr:hover td {
+  background: rgba(122, 162, 247, 0.04);
+}
+
+.sv-matrix tbody tr:hover td.has {
+  background: rgba(122, 162, 247, 0.1);
+}
+
+// -- Section labels --
+
+.sv-section-row td {
+  padding: 10px 0 3px 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  background: none !important;
+}
+
+// First section snugs up to the header
+.sv-section-first td {
+  padding-top: 2px;
+}
+
+.sv-section-row:hover td {
+  background: none !important;
+}
+
+// -- Semantic row colors --
+
+.sv-row-output td:first-child {
+  color: var(--warning);
+  font-weight: 600;
+}
+
+.sv-row-xdomain td:first-child {
+  color: var(--accent2);
+  font-weight: 500;
+  font-size: 10px;
+}
+
+// -- Bottleneck cell states --
+//
+// Cell value shows supply (what you have).
+// Color signals whether that's enough.
+// Hover tooltip reveals need/have/deficit.
+
+.sv-bottleneck {
+  position: relative;
+  color: var(--warning) !important;
+  font-weight: 600;
+  background: rgba(224, 175, 104, 0.06) !important;
+}
+
+tr:hover td.sv-bottleneck {
+  background: rgba(224, 175, 104, 0.1) !important;
+}
+
+.sv-bottleneck-zero {
+  position: relative;
+  color: var(--status-missing) !important;
+  font-weight: 600;
+}
+
+// Corner triangle -- small visual anchor so you can spot
+// bottlenecks without hovering. Amber for partial, red for zero.
+.sv-bottleneck::after,
+.sv-bottleneck-zero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 5px 5px 0;
+  border-color: transparent var(--warning) transparent transparent;
+}
+
+.sv-bottleneck-zero::after {
+  border-color: transparent var(--status-missing) transparent transparent;
+}
+
+// -- Tooltip --
+// Appended to document.body, positioned via JS.
+
+.sv-tooltip {
+  position: fixed;
+  padding: 4px 8px;
+  background: var(--bg-quaternary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+  pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
+}
+
+.sv-tt-need {
+  color: var(--status-missing);
+  font-weight: 600;
+}
+.sv-tt-have {
+  color: var(--success);
+  font-weight: 600;
+}
+.sv-tt-deficit {
+  color: var(--warning);
+  font-weight: 600;
+}
+.sv-tt-sep {
+  color: var(--text-muted);
+}
+
+// -- Responsive --
+
+@media (max-width: 900px) {
+  .sv-col-name {
+    width: 120px;
+  }
+  .sv-col-tier {
+    width: 50px;
+  }
+}
