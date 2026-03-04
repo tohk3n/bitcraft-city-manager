@@ -112,7 +112,6 @@ async function loadClaim(claimId: string): Promise<void> {
 
     const statusEl = document.getElementById('status-claim');
     if (statusEl) statusEl.textContent = claimName;
-
     const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
     UI.renderDashboard(result, claimData.claimInfo ?? undefined);
 

@@ -26,7 +26,6 @@ import type {
 function createTierQuantities(): TierQuantities {
   return { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0 };
 }
-
 // Process raw API response into structured inventory
 export const InventoryProcessor = {
   processInventory(data: ClaimInventoriesResponse): InventoryProcessResult {
@@ -169,7 +168,9 @@ export const InventoryProcessor = {
   ): void {
     if (tag === 'Package') {
       const shortenedId: string = meta.name.replace(regex, '').trim();
-      packages[shortenedId] = {};
+      if (!packages[shortenedId]) {
+        packages[shortenedId] = {};
+      }
       if (!packages[shortenedId][id]) {
         packages[shortenedId][id] = InventoryProcessor.buildEntry(meta);
       }
