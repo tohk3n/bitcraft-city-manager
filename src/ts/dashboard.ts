@@ -706,7 +706,6 @@ export const DashboardUI = {
     const el: HTMLElement | null = document.getElementById(view + '-inventory');
     if (!el) return;
     createDataMatrix(el, config);
-
     const filteredPackages: NamedMatrix = this.filterPackages(packages, allowedPackages);
     const sortedPackages: NamedMatrix = this.sortMatrix(filteredPackages, allowedPackages, []);
     const configP: MatrixConfig = this.createMatrixConfig(sortedPackages);
