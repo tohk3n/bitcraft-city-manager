@@ -11,8 +11,7 @@
 import { formatCompact } from './lib/progress-calc.js';
 import { CONFIG } from '../configuration/index.js';
 import type { PlanItem, Activity } from '../types/index.js';
-import { createLogger } from '../logger.js';
-const log = createLogger('planner-dashboard');
+
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -394,7 +393,6 @@ export function render(el: HTMLElement, planItems: PlanItem[], tier: number): vo
   container = el;
   items = planItems;
   targetTier = tier;
-  log.info(items);
   if (items.length === 0) {
     el.innerHTML = '<div class="dash-empty">No materials needed</div>';
     return;

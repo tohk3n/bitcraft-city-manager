@@ -28,9 +28,7 @@ import type {
 } from '../types/index.js';
 import type { RecipesFile, PackagesFile } from '../data/types.js';
 import type { FilterContext } from './player-filter.js';
-import { createLogger } from '../logger.js';
 
-const log = createLogger('Planner');
 let codexCache: CodexFile | null = null;
 let recipesCache: RecipesFile | null = null;
 let gatheredCache: Set<string> | null = null;
@@ -83,7 +81,6 @@ export function buildLookupFromResponse(
   packages: PackagesFile
 ): InventoryLookup {
   const { itemMeta, cargoMeta } = buildMetaLookups(inventoryData.items, inventoryData.cargos);
-  log.info(itemMeta, cargoMeta);
   return buildInventoryLookup(inventoryData.buildings || [], itemMeta, cargoMeta, packages);
 }
 
