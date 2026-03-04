@@ -11,29 +11,37 @@ import type {
   InventoryItem,
   InventoryProcessResult,
   Items,
-  NamedMatrix,
   ProcessedInventory,
-  Package,
-  ResourceMatrix,
   StationsByName,
   TagGroup,
   Tier,
   TierQuantities,
   InventoryLookup,
+  Package,
+  NamedMatrix,
+  ResourceMatrix,
 } from './types/index.js';
 import { FILTER_TYPE } from './types/index.js';
 import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
 import { createLogger } from './logger.js';
+import { applyTabA11y } from './aria.js';
+import { loadRecipes } from './data/loader.js';
+import { calcCraftableBatch, calcSupplyPotential } from './craftability-calc.js';
+import type { CraftableResult, SupplyRow } from './craftability-calc.js';
+import {
+  createSubView,
+  buildSubViewConfig,
+  ALL_PROFESSIONS,
+  calcProfessionBottlenecks,
+  applyBottlenecks,
+} from './sub-view/index.js';
+import type { SubViewHandle } from './components/sub-view/index.js';
 import type {
   MatrixColumn,
   MatrixConfig,
   MatrixRow,
 } from './components/data-matrix/data-matrix.js';
 import { createDataMatrix } from './components/data-matrix/data-matrix.js';
-import { applyTabA11y } from './aria.js';
-import { loadRecipes } from './data/loader.js';
-import { calcCraftableBatch, calcSupplyPotential } from './craftability-calc.js';
-import type { CraftableResult, SupplyRow } from './craftability-calc.js';
 
 const log = createLogger('Dashboard');
 
@@ -379,19 +387,28 @@ async function loadCraftability(data: InventoryProcessResult): Promise<void> {
     const recipes = await loadRecipes();
 
     // Build a unified inventory lookup from ALL processed items
-    // (not just food/supply -- inputs might be in any category)
     const lookup = buildInventoryLookupFromProcessed(data);
 
-    // Food craftability: batch compute for all food items
+    // Food craftability
     const foodItems = Object.values(data.foodItems).map((i) => ({ name: i.name, tier: i.tier }));
     craftabilityMap = calcCraftableBatch(recipes, foodItems, lookup);
 
-    // Supply production potential: find recipes by tag, compute from inventory
+    // Supply production potential
     supplyRows = calcSupplyPotential(recipes, lookup);
 
-    // Re-render panels with real data
+    // Re-render overview panels with real data
     if (lastFoodItems) renderFoodPanel(lastFoodItems);
     renderSupplyPanel();
+
+    // Sub-view bottlenecks (re-render with craftability data)
+    if (lastInventory && lastPackages) {
+      for (const profession of ALL_PROFESSIONS) {
+        const config = buildSubViewConfig(lastInventory, lastPackages, profession);
+        const results = calcProfessionBottlenecks(profession, recipes, lookup);
+        applyBottlenecks(config, results);
+        subViewHandles.get(profession.id)?.update(config);
+      }
+    }
 
     log.debug(
       'Craftability loaded:',
@@ -425,6 +442,9 @@ function buildInventoryLookupFromProcessed(data: InventoryProcessResult): Invent
 // ═══ DATA REFS FOR RE-RENDER ═══
 // Stored so craftability async callback can re-render panels without re-processing.
 let lastFoodItems: Items | null = null;
+let lastInventory: ProcessedInventory | null = null;
+let lastPackages: Package | null = null;
+const subViewHandles = new Map<string, SubViewHandle>();
 
 // ═══ PUBLIC API, what UI.ts calls ═══
 
@@ -454,78 +474,25 @@ export const DashboardUI = {
     loadCraftability(data);
 
     // Profession sub-views
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.FARMING_TAGS,
-      DASHBOARD_CONFIG.FARMING_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.FARMING_PACKAGES,
-      'farming-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.TAILOR_TAGS,
-      DASHBOARD_CONFIG.TAILOR_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.TAILOR_PACKAGES,
-      'tailor-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.WOODWORKING_TAGS,
-      DASHBOARD_CONFIG.WOODWORKING_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.WOODWORKING_PACKAGES,
-      'woodworking-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.LEATHERWORKING_TAGS,
-      DASHBOARD_CONFIG.LEATHERWORKING_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.LEATHERWORKING_PACKAGES,
-      'leatherworking-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.MASONRY_TAGS,
-      DASHBOARD_CONFIG.MASONRY_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.MASONRY_PACKAGES,
-      'masonry-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.SMITHING_TAGS,
-      DASHBOARD_CONFIG.SMITHING_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.SMITHING_PACKAGES,
-      'smithing-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.FISHING_TAGS,
-      DASHBOARD_CONFIG.FISHING_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.FISHING_PACKAGES,
-      'fishing-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.SCHOLAR_TAGS,
-      DASHBOARD_CONFIG.SCHOLAR_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.SCHOLAR_PACKAGES,
-      'scholar-view'
-    );
-    this.renderSubView(
-      inventory,
-      packages,
-      DASHBOARD_CONFIG.COOKING_TAGS,
-      DASHBOARD_CONFIG.COOKING_ITEMS_ADDITIONAL,
-      DASHBOARD_CONFIG.COOKING_PACKAGES,
-      'cooking-view'
-    );
+    // Store handles for update() when bottleneck data arrives
+    const subViewHandles = new Map<string, SubViewHandle>();
+    lastInventory = inventory;
+    lastPackages = packages;
+
+    for (const profession of ALL_PROFESSIONS) {
+      const el = document.getElementById(profession.id);
+      if (!el) continue;
+
+      const config = buildSubViewConfig(inventory, packages, profession);
+
+      // First render or re-render
+      const existing = subViewHandles.get(profession.id);
+      if (existing) {
+        existing.update(config);
+      } else {
+        subViewHandles.set(profession.id, createSubView(el, config));
+      }
+    }
     this.wireButtons();
     this.show('dashboard');
   },

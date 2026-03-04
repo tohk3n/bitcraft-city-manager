@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { InventoryProcessor } from './inventory.js';
-import type { ApiItem } from './types/index.js';
+import { InventoryProcessor } from '../inventory.js';
+import type { ApiItem } from '../types/index.js';
 describe('buildEntry', () => {
   it('builds entry according to entered data', () => {
     const meta1: ApiItem = { id: 1, name: 'testEntry', tier: 1, rarity: 2 };
