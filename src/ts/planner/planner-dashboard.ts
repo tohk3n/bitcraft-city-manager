@@ -158,7 +158,7 @@ function stripTierPrefix(name: string): string {
   for (const prefix of TIER_PREFIXES) {
     const index = name.indexOf(prefix + ' ');
     if (index !== -1) {
-      return name.slice(index + prefix.length + 1);
+      return name.replace(prefix + ' ', '');
     }
   }
   return name;
