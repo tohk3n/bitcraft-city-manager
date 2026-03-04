@@ -11,7 +11,8 @@
 import { formatCompact } from './lib/progress-calc.js';
 import { CONFIG } from '../configuration/index.js';
 import type { PlanItem, Activity } from '../types/index.js';
-
+import { createLogger } from '../logger.js';
+const log = createLogger('planner-dashboard');
 // =============================================================================
 // TYPES
 // =============================================================================
@@ -38,18 +39,36 @@ interface Filters {
 const ACTIVITY_ORDER = CONFIG.PLANNER.ACTIVITY_ORDER;
 
 const TIER_PREFIXES = [
-  'Basic',
-  'Simple',
+  // Materials
+  'Rough',
   'Sturdy',
   'Fine',
+  'Peerless',
+  'Ornate',
+  'Pristine',
+  'Magnificent',
   'Exquisite',
-  'Rough',
+  // Farming
+  'Simple',
+  'Basic',
+  'Infused',
+  // Scholar
+  "Beginner's",
   'Novice',
+  'Comprehensive',
   'Essential',
   'Proficient',
   'Advanced',
-  'Infused',
-  'Refined',
+  // Ore
+  'Ferralith',
+  'Pyrelite',
+  'Emarium',
+  'Elenvar',
+  'Rathium',
+  'Aurumite',
+  'Umbracite',
+  'Celestium',
+  'Luminite',
 ];
 
 const CRAFTING_INTERMEDIATES = 'Crafting (inter)';
@@ -137,7 +156,10 @@ function filterGroups(groups: ActivityGroup[], activity: string | null): Activit
 
 function stripTierPrefix(name: string): string {
   for (const prefix of TIER_PREFIXES) {
-    if (name.startsWith(prefix + ' ')) return name.slice(prefix.length + 1);
+    const index = name.indexOf(prefix + ' ');
+    if (index !== -1) {
+      return name.slice(index + prefix.length + 1);
+    }
   }
   return name;
 }
@@ -372,7 +394,7 @@ export function render(el: HTMLElement, planItems: PlanItem[], tier: number): vo
   container = el;
   items = planItems;
   targetTier = tier;
-
+  log.info(items);
   if (items.length === 0) {
     el.innerHTML = '<div class="dash-empty">No materials needed</div>';
     return;
