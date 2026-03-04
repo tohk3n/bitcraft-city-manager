@@ -640,4 +640,119 @@ export const DashboardUI = {
 
     this.show('inventory');
   },
+
+  // ═══ PROFESSION SUB-VIEWS ═══
+
+  renderSubView(
+    inventory: ProcessedInventory,
+    packages: Package,
+    completeTags: string[],
+    singleItems: string[],
+    allowedPackages: string[],
+    view: string
+  ): void {
+    const filteredInventory: NamedMatrix = this.filterInventory(
+      inventory,
+      completeTags,
+      singleItems
+    );
+    const sortedInventory: NamedMatrix = this.sortMatrix(
+      filteredInventory,
+      completeTags,
+      singleItems
+    );
+    const config: MatrixConfig = this.createMatrixConfig(sortedInventory);
+    const el: HTMLElement | null = document.getElementById(view + '-inventory');
+    if (!el) return;
+    createDataMatrix(el, config);
+    const filteredPackages: NamedMatrix = this.filterPackages(packages, allowedPackages);
+    const sortedPackages: NamedMatrix = this.sortMatrix(filteredPackages, allowedPackages, []);
+    const configP: MatrixConfig = this.createMatrixConfig(sortedPackages);
+    const elP: HTMLElement | null = document.getElementById(view + '-package');
+    if (!elP) return;
+    createDataMatrix(elP, configP);
+  },
+
+  filterInventory(
+    inventory: ProcessedInventory,
+    completeTags: string[],
+    additionalItems: string[]
+  ): NamedMatrix {
+    const additionalSet = new Set(additionalItems);
+    const completeTagSet = new Set(completeTags);
+    const map: ResourceMatrix = {};
+
+    for (const category of Object.values(inventory)) {
+      for (const [tag, tagGroup] of Object.entries(category)) {
+        const includesTag = completeTagSet.has(tag);
+        for (const item of Object.values(tagGroup.items)) {
+          if (!includesTag && !additionalSet.has(item.name)) continue;
+
+          if (includesTag) {
+            if (!map[tag]) map[tag] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+            map[tag][tierIndex].push(item.qty);
+          }
+
+          if (additionalSet.has(item.name)) {
+            if (!map[item.name]) map[item.name] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+            const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+            map[item.name][tierIndex].push(item.qty);
+          }
+        }
+      }
+    }
+
+    completeTagSet.forEach((value) => {
+      if (!map[value]) map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+    });
+    additionalSet.forEach((value) => {
+      if (!map[value]) map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+    });
+
+    return { map };
+  },
+
+  filterPackages(inventory: Package, allowedPackages: string[]): NamedMatrix {
+    const allowedSet = new Set(allowedPackages);
+    const map: ResourceMatrix = {};
+
+    for (const [shortenedId, items] of Object.entries(inventory)) {
+      if (!allowedSet.has(shortenedId)) continue;
+      if (!map[shortenedId]) map[shortenedId] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+      for (const item of Object.values(items)) {
+        const tierIndex = item.tier >= 1 ? item.tier - 1 : 0;
+        map[shortenedId][tierIndex].push(item.qty);
+      }
+    }
+
+    allowedSet.forEach((value) => {
+      if (!map[value]) map[value] = Array.from({ length: CONFIG.MAX_TIER }, () => []);
+    });
+
+    return { map };
+  },
+
+  sortMatrix(inventory: NamedMatrix, tags: string[], additionalItems: string[]): NamedMatrix {
+    const priority = new Map([...tags, ...additionalItems].map((t, i) => [t, i]));
+    const entries = Object.entries(inventory.map);
+    entries.sort(([a], [b]) => (priority.get(a) ?? Infinity) - (priority.get(b) ?? Infinity));
+    return { map: Object.fromEntries(entries) };
+  },
+
+  createMatrixConfig(named: NamedMatrix): MatrixConfig {
+    const columns: MatrixColumn[] = Array.from({ length: CONFIG.MAX_TIER }, (_, i) => ({
+      key: String(i + 1),
+      label: `T${i + 1}`,
+    }));
+
+    const rows: MatrixRow[] = Object.entries(named.map).map(([tag, tiers]) => {
+      const cells = Object.fromEntries(
+        tiers.map((qtyList, i) => [String(i + 1), qtyList.reduce((sum, q) => sum + q, 0)])
+      ) as Record<string, number>;
+      return { key: tag, label: tag.toLowerCase(), cells };
+    });
+
+    return { columns, rows, showRowTotals: false };
+  },
 };
