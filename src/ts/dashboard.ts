@@ -18,6 +18,8 @@ import type {
   TierQuantities,
   InventoryLookup,
   Package,
+  NamedMatrix,
+  ResourceMatrix,
 } from './types/index.js';
 import { FILTER_TYPE } from './types/index.js';
 import { CONFIG, DASHBOARD_CONFIG } from './configuration/index.js';
@@ -34,6 +36,12 @@ import {
   applyBottlenecks,
 } from './sub-view/index.js';
 import type { SubViewHandle } from './components/sub-view/index.js';
+import type {
+  MatrixColumn,
+  MatrixConfig,
+  MatrixRow,
+} from './components/data-matrix/data-matrix.js';
+import { createDataMatrix } from './components/data-matrix/data-matrix.js';
 
 const log = createLogger('Dashboard');
 
