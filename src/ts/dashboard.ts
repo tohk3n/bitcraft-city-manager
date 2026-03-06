@@ -482,9 +482,7 @@ export const DashboardUI = {
     for (const profession of ALL_PROFESSIONS) {
       const el = document.getElementById(profession.id);
       if (!el) continue;
-
       const config = buildSubViewConfig(inventory, packages, profession);
-
       // First render or re-render
       const existing = subViewHandles.get(profession.id);
       if (existing) {
