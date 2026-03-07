@@ -59,8 +59,9 @@ export const InventoryProcessor = {
 
         const meta: ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
         if (!meta) continue;
-        const isGem: boolean = this.gemCheck(meta.name);
-        const tag: string = isGem ? this.normalizeGemTag(meta.name) : meta.tag || 'Other';
+        const tag: string = this.isGemCheck(meta.name)
+          ? this.normalizeGemTag(meta.name)
+          : meta.tag || 'Other';
         const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
 
         // Track food items
@@ -82,7 +83,7 @@ export const InventoryProcessor = {
       packages: packages,
     };
   },
-  gemCheck(itemName: string): boolean {
+  isGemCheck(itemName: string): boolean {
     for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
       if (itemName.includes(gemName)) return true;
     }
@@ -91,19 +92,14 @@ export const InventoryProcessor = {
   normalizeGemTag(itemName: string): string {
     const uncut = itemName.includes('Uncut');
     const fragment = itemName.includes('Fragment');
+    const gemName = DASHBOARD_CONFIG.GEM_NAMES.find((value) => value.includes(itemName));
+    if (!gemName) return 'Other';
     if (uncut) {
-      for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
-        if (itemName.includes(gemName)) return 'Uncut ' + gemName;
-      }
+      return 'Uncut ' + gemName;
     } else if (fragment) {
-      for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
-        if (itemName.includes(gemName)) return gemName + ' Fragment';
-      }
+      return gemName + ' Fragment';
     }
-    for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
-      if (itemName.includes(gemName)) return gemName;
-    }
-    return 'Other';
+    return gemName;
   },
   updateInventory(
     inventory: ProcessedInventory,
