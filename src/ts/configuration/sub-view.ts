@@ -201,7 +201,8 @@ export const SMITHING: ProfessionDef = {
     {
       label: 'materials',
       rows: [
-        tag('Ore Piece'),
+        tag('Ore Chunk'),
+        tag('Ore'),
         tag('Ore Concentrate'),
         tag('Molten Ingot'),
         tag('Ingot', 'output'),
@@ -326,14 +327,18 @@ export const JEWELRY: ProfessionDef = {
     {
       label: 'Gems',
       rows: [
-        tag('Ruby'),
-        tag('Ruby Fragment'),
         tag('Emerald'),
-        tag('Emerald Fragment'),
-        tag('Diamond'),
-        tag('Diamond Fragment'),
         tag('Sapphire'),
+        tag('Ruby'),
+        tag('Diamond'),
+        tag('Uncut Emerald'),
+        tag('Uncut Sapphire'),
+        tag('Uncut Ruby'),
+        tag('Uncut Diamond'),
+        tag('Emerald Fragment'),
         tag('Sapphire Fragment'),
+        tag('Ruby Fragment'),
+        tag('Diamond Fragment'),
         tag('Ingot'),
       ],
     },
