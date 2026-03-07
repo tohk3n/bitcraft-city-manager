@@ -36,7 +36,6 @@ export const InventoryProcessor = {
 
     // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
     const inventory: ProcessedInventory = {};
-
     // Material matrix: category -> tier -> quantity
     const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
     for (const cat of DASHBOARD_CONFIG.MATRIX_CATEGORIES) {
@@ -66,8 +65,8 @@ export const InventoryProcessor = {
 
         const meta: ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
         if (!meta) continue;
-
-        const tag: string = meta.tag || 'Other';
+        const isGem: boolean = this.gemCheck(meta.name);
+        const tag: string = isGem ? this.normalizeGemTag(meta.name) : meta.tag || 'Other';
         const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
         const tier: number = meta.tier > 0 ? meta.tier : 1;
         const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
@@ -94,6 +93,29 @@ export const InventoryProcessor = {
       supplyCargo: supplies,
       packages: packages,
     };
+  },
+  gemCheck(itemName: string): boolean {
+    for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
+      if (itemName.includes(gemName)) return true;
+    }
+    return false;
+  },
+  normalizeGemTag(itemName: string): string {
+    const uncut = itemName.includes('Uncut');
+    const fragment = itemName.includes('Fragment');
+    if (uncut) {
+      for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
+        if (itemName.includes(gemName)) return 'Uncut ' + gemName;
+      }
+    } else if (fragment) {
+      for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
+        if (itemName.includes(gemName)) return gemName + ' Fragment';
+      }
+    }
+    for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
+      if (itemName.includes(gemName)) return gemName;
+    }
+    return 'Other';
   },
   updateInventory(
     inventory: ProcessedInventory,
