@@ -9,8 +9,6 @@ import type {
   Building,
   InventoryProcessResult,
   ProcessedInventory,
-  MaterialMatrix,
-  MaterialCategory,
   Items,
   Package,
   TierQuantities,
@@ -20,6 +18,7 @@ import type {
   BuildingFunction,
   InventorySlotContents,
   TagGroup,
+  MaterialMatrix,
 } from './types/index.js';
 
 // Helper to create fresh tier quantities object
@@ -36,11 +35,6 @@ export const InventoryProcessor = {
 
     // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
     const inventory: ProcessedInventory = {};
-    // Material matrix: category -> tier -> quantity
-    const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
-    for (const cat of DASHBOARD_CONFIG.MATRIX_CATEGORIES) {
-      materialMatrix[cat as MaterialCategory] = createTierQuantities();
-    }
 
     // Food items
     const foodItems: Items = {};
@@ -68,13 +62,7 @@ export const InventoryProcessor = {
         const isGem: boolean = this.gemCheck(meta.name);
         const tag: string = isGem ? this.normalizeGemTag(meta.name) : meta.tag || 'Other';
         const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
-        const tier: number = meta.tier > 0 ? meta.tier : 1;
-        const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
 
-        // Aggregate raw materials into matrix by category and tier
-        if (DASHBOARD_CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
-          materialMatrix[category as MaterialCategory][tierKey] += qty;
-        }
         // Track food items
         InventoryProcessor.updateFood(category, foodItems, meta, id, qty);
         // Track supply cargo
@@ -88,7 +76,7 @@ export const InventoryProcessor = {
     }
     return {
       inventory: inventory,
-      materialMatrix: materialMatrix,
+      materialMatrix: {} as MaterialMatrix,
       foodItems: foodItems,
       supplyCargo: supplies,
       packages: packages,

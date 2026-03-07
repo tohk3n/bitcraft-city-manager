@@ -1,6 +1,4 @@
 export const DASHBOARD_CONFIG = {
-  // Categories shown in the material matrix
-  MATRIX_CATEGORIES: ['Wood', 'Metal', 'Stone', 'Cloth', 'Farming', 'Fishing', 'Leather', 'Gem'],
   // Category mappings: which tags belong to which high-level category
   TAG_CATEGORIES: {
     Wood: ['Wood Log', 'Plank', 'Bark', 'Timber', 'Trunk', 'Stripped Wood'],
@@ -63,43 +61,6 @@ export const DASHBOARD_CONFIG = {
     ],
   },
 
-  // Tags that count as "raw materials" for tier aggregation
-  RAW_MATERIAL_TAGS: new Set([
-    'Wood Log',
-    'Plank',
-    'Bark',
-    'Timber',
-    'Trunk',
-    'Ingot',
-    'Ore Concentrate',
-    'Ore Chunk',
-    'Nail',
-    'Pebbles',
-    'Brick',
-    'Clay',
-    "Potter's Mix",
-    'Chunk',
-    'Sand',
-    'Glass',
-    'Plant Fiber',
-    'Thread',
-    'Cloth',
-    'Filament',
-    'Rope',
-    'Fertilizer',
-    'Grain',
-    'Vegetable',
-    'Bait',
-    'Lake Fish',
-    'Lake Fish Filet',
-    'Ocean Fish',
-    'Oceanfish Filet',
-    'Chum',
-    'Leather',
-    'Tanned Pelt',
-    'Tannin',
-    'Raw Meat',
-  ]),
   SUPPLY: new Set(['Frame', 'Timber', 'Tarp', 'Brick Slab', 'Sheeting']),
 
   // Supply cargo types for the production potential panel.
