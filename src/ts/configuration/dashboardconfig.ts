@@ -75,20 +75,6 @@ export const DASHBOARD_CONFIG = {
   ] as const,
   // Build reverse lookup: tag -> category (computed at load time)
   TAG_TO_CATEGORY: {} as Record<string, string>,
-  // Inventory category display order
-  CATEGORY_ORDER: [
-    'Wood',
-    'Metal',
-    'Stone',
-    'Cloth',
-    'Farming',
-    'Fishing',
-    'Leather',
-    'Packages',
-    'Tools',
-    'Gem',
-    'Other',
-  ],
   // Actual food to be shown in the food tab, incomplete and not yet used
   FRIDGE: ['Fine Deluxe Ocean Fish Sticks', 'Succulent Ocean Fish Sticks'],
   // rules for sorting food
