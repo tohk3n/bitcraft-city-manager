@@ -94,7 +94,6 @@ function buildSection(
 function buildRow(inventory: ProcessedInventory, packages: Package, rowDef: RowDef): SubViewRow {
   const tiers = emptyTiers();
   const label = rowDef.label ?? rowDef.key.toLowerCase();
-
   if (rowDef.source === 'tag') {
     aggregateByTag(inventory, rowDef.key, tiers);
   } else {

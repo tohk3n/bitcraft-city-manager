@@ -54,10 +54,17 @@ export const WOODWORKING: ProfessionDef = {
         tag('Nail'),
         tag('Timber', 'output'),
         name('Refined Plank', 'output'),
-        tag('Bark'),
-        tag("Potter's Mix"),
+        tag('Bark', 'output'),
+      ],
+    },
+    {
+      label: 'planting',
+      rows: [
         tag('Pebbles'),
         tag('Clay'),
+        tag("Potter's Mix"),
+        tag("Unfired Forester's Pot"),
+        tag("Forester's Pot"),
         tag('Sapling'),
       ],
     },
@@ -92,15 +99,11 @@ export const FARMING: ProfessionDef = {
     },
     {
       label: 'crops',
-      rows: [
-        tag('Grain'),
-        tag('Vegetable'),
-        tag('Filament'),
-        tag('Berry'),
-        tag('Mushroom'),
-        tag('Flower'),
-        tag('Roots'),
-      ],
+      rows: [tag('Grain'), tag('Vegetable'), tag('Filament')],
+    },
+    {
+      label: 'rares',
+      rows: [tag('Straw'), tag('Crop Oil')],
     },
     {
       label: 'supplies',
@@ -114,7 +117,7 @@ export const TAILORING: ProfessionDef = {
   id: 'tailor-view',
   title: 'Tailoring',
   cargo: null,
-  consumables: [{ name: "Clothmaker's Mordant" }],
+  consumables: [{ name: "Clothmaker's Mordant" }, { name: 'Water Bucket' }],
   sections: [
     {
       label: 'materials',
@@ -123,10 +126,13 @@ export const TAILORING: ProfessionDef = {
         tag('Filament'),
         tag('Roots'),
         tag('Cloth Strip'),
-        tag('Cloth'),
-        tag('Rope'),
-        tag('Refined Cloth', 'output'),
+        tag('Cloth', 'output'),
+        tag('Rope', 'output'),
       ],
+    },
+    {
+      label: 'rares',
+      rows: [tag('Animal Hair'), tag('Straw'), tag('Refined Cloth', 'output')],
     },
   ],
   packages: [],
@@ -136,18 +142,23 @@ export const LEATHERWORKING: ProfessionDef = {
   id: 'leatherworking-view',
   title: 'Leatherworking',
   cargo: null,
-  consumables: [{ name: 'Water Bucket', hint: '-> provisions' }, { name: 'Hideworking Salt' }],
+  consumables: [
+    { name: 'Water Bucket', hint: '-> provisions' },
+    { name: 'Hideworking Salt' },
+    { name: 'Leather Treatment' },
+  ],
   sections: [
     {
       label: 'materials',
-      rows: [
-        tag('Pelt'),
-        tag('Cleaned Pelt'),
-        tag('Tanned Pelt'),
-        tag('Tannin'),
-        tag('Leather', 'output'),
-        tag('Raw Meat'),
-      ],
+      rows: [tag('Pelt'), tag('Cleaned Pelt'), tag('Tanned Pelt'), tag('Leather', 'output')],
+    },
+    {
+      label: 'process',
+      rows: [tag('Bark'), tag('Tannin'), tag('Raw Meat')],
+    },
+    {
+      label: 'rares',
+      rows: [tag('Animal Hair', 'output')],
     },
   ],
   packages: [],
@@ -167,6 +178,11 @@ export const MASONRY: ProfessionDef = {
         tag('Clay'),
         tag("Potter's Mix"),
         tag('Unfired Brick'),
+        tag('Sand'),
+        tag('Glass'),
+        tag('Brickworking Ash'),
+        tag('Braxite'),
+        tag('Vial', 'output'),
         tag('Brick', 'output'),
         tag('Stone Slab', 'output'),
         name('Refined Brick', 'output'),
@@ -185,6 +201,7 @@ export const SMITHING: ProfessionDef = {
     {
       label: 'materials',
       rows: [
+        tag('Ore Chunk'),
         tag('Ore'),
         tag('Ore Concentrate'),
         tag('Molten Ingot'),
@@ -200,7 +217,7 @@ export const SMITHING: ProfessionDef = {
       ],
     },
   ],
-  packages: [],
+  packages: ['Ore Piece Package'],
 };
 
 export const FISHING: ProfessionDef = {
@@ -243,6 +260,31 @@ export const SCHOLAR: ProfessionDef = {
         tag('Parchment', 'output'),
         tag('Journal', 'output'),
         tag('Ancient Hieroglyphs'),
+        tag('Stone Diagram'),
+        tag('Metal Solvent', 'output'),
+        tag('Leather Treatment', 'output'),
+        tag('Wood Polish', 'output'),
+        tag('Vial'),
+        tag('Sugar'),
+      ],
+    },
+    {
+      label: 'refining',
+      rows: [tag('Pebble'), tag('Braxite'), tag('Gypsite'), tag('Fish Oil'), tag('Citric Berry')],
+    },
+    {
+      label: 'potions',
+      rows: [
+        tag('Vegetable Seed'),
+        tag('Grain Seed'),
+        tag('Wispweave Seed'),
+        tag('Catalyst'),
+        tag('Flower'),
+        tag('Mushroom'),
+        tag('Raw Meat'),
+        tag('Crop Oil'),
+        tag('Pitch'),
+        tag('Amber Resin'),
       ],
     },
     {
@@ -276,6 +318,47 @@ export const COOKING: ProfessionDef = {
   ],
   packages: [],
 };
+export const JEWELRY: ProfessionDef = {
+  id: 'jewelry-view',
+  title: 'Jewelry',
+  cargo: null,
+  consumables: [],
+  sections: [
+    {
+      label: 'Gems',
+      rows: [
+        tag('Emerald'),
+        tag('Sapphire'),
+        tag('Ruby'),
+        tag('Diamond'),
+        tag('Uncut Emerald'),
+        tag('Uncut Sapphire'),
+        tag('Uncut Ruby'),
+        tag('Uncut Diamond'),
+        tag('Emerald Fragment'),
+        tag('Sapphire Fragment'),
+        tag('Ruby Fragment'),
+        tag('Diamond Fragment'),
+        tag('Ingot'),
+      ],
+    },
+    {
+      label: 'Monster Materials',
+      rows: [
+        name('Jakyl Fang'),
+        name('Hardened Shell'),
+        name('Crystalized Slime'),
+        name('Glittering Junk'),
+        name('Umbura Fang'),
+        name('Umbura Fur'),
+        name('Jakyl Fur'),
+        name('Chitin'),
+        name('Eye of the Sentinal'),
+      ],
+    },
+  ],
+  packages: [],
+};
 
 // tab order
 export const ALL_PROFESSIONS: ProfessionDef[] = [
@@ -284,6 +367,7 @@ export const ALL_PROFESSIONS: ProfessionDef[] = [
   WOODWORKING,
   LEATHERWORKING,
   MASONRY,
+  JEWELRY,
   SMITHING,
   FISHING,
   SCHOLAR,

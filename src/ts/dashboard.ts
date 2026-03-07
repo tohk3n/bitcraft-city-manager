@@ -5,15 +5,11 @@
 // Panels show "—" immediately, then update when recipe data arrives.
 
 import type {
-  BuildingBreakdown,
-  CategoryInventory,
   CraftingStationsResult,
-  InventoryItem,
   InventoryProcessResult,
   Items,
   ProcessedInventory,
   StationsByName,
-  TagGroup,
   Tier,
   TierQuantities,
   InventoryLookup,
@@ -478,13 +474,11 @@ export const DashboardUI = {
     const subViewHandles = new Map<string, SubViewHandle>();
     lastInventory = inventory;
     lastPackages = packages;
-
+    console.log(inventory);
     for (const profession of ALL_PROFESSIONS) {
       const el = document.getElementById(profession.id);
       if (!el) continue;
-
       const config = buildSubViewConfig(inventory, packages, profession);
-
       // First render or re-render
       const existing = subViewHandles.get(profession.id);
       if (existing) {
@@ -547,106 +541,6 @@ export const DashboardUI = {
         viewEl?.classList.remove('hidden');
       });
     });
-  },
-
-  // ═══ INVENTORY GRID, collapsible category cards ═══
-
-  renderInventory(inventory: ProcessedInventory, view: string): void {
-    const grid: HTMLElement | null = document.getElementById(view);
-    log.debug('start rendering inventory');
-    if (!grid) {
-      log.debug('inventory-grid not found ', view);
-      return;
-    }
-
-    const exclude: string[] = DASHBOARD_CONFIG.INVENTORY_GRID_EXCLUDE;
-    const sortedCategories: string[] = Object.keys(inventory)
-      .filter((c) => !exclude.includes(c))
-      .sort((a, b): number => {
-        const aIdx: number = DASHBOARD_CONFIG.CATEGORY_ORDER.indexOf(a);
-        const bIdx: number = DASHBOARD_CONFIG.CATEGORY_ORDER.indexOf(b);
-        return (aIdx === -1 ? 999 : aIdx) - (bIdx === -1 ? 999 : bIdx);
-      });
-
-    let html = '';
-
-    for (const category of sortedCategories) {
-      const tags: CategoryInventory = inventory[category];
-
-      let categoryTotal = 0;
-      for (const tagData of Object.values(tags) as TagGroup[]) {
-        categoryTotal += tagData.total;
-      }
-
-      if (categoryTotal === 0) continue;
-
-      let tableHtml = '';
-      const sortedTags: string[] = Object.keys(tags).sort();
-
-      for (const tag of sortedTags) {
-        const tagData: TagGroup = tags[tag];
-
-        const items: InventoryItem[] = (Object.values(tagData.items) as InventoryItem[]).sort(
-          (a, b) => {
-            if (a.tier !== b.tier) return a.tier - b.tier;
-            return a.name.localeCompare(b.name);
-          }
-        );
-
-        for (const item of items) {
-          const tierBadge: string =
-            item.tier > 0 ? `<span class="tier-badge">T${item.tier}</span>` : '';
-
-          let breakdownHtml = '';
-          if (item.buildings.length > 1) {
-            const buildingList: string = [...item.buildings]
-              .sort((a: BuildingBreakdown, b: BuildingBreakdown): number => b.qty - a.qty)
-              .map((b) => `<li>${b.name}: ${b.qty.toLocaleString()}</li>`)
-              .join('');
-            breakdownHtml = `
-            <details class="building-breakdown">
-            <summary>${item.buildings.length} locations</summary>
-            <ul>${buildingList}</ul>
-            </details>
-            `;
-          }
-
-          tableHtml += `
-          <tr>
-          <td>
-          <div class="item-name">${tierBadge} ${item.name}</div>
-          ${breakdownHtml}
-          </td>
-          <td class="qty">${item.qty.toLocaleString()}</td>
-          </tr>
-          `;
-        }
-      }
-
-      html += `
-      <div class="inventory-card" data-category="${category}">
-      <div class="card-header">
-      <h4>${category}</h4>
-      <span class="total">${categoryTotal.toLocaleString()}</span>
-      <span class="chevron">▼</span>
-      </div>
-      <div class="card-body">
-      <table>${tableHtml}</table>
-      </div>
-      </div>
-      `;
-    }
-
-    grid.innerHTML = html;
-
-    grid.querySelectorAll('.card-header').forEach((header) => {
-      header.addEventListener('click', () => {
-        const card: Element | null = header.closest('.inventory-card');
-        card?.classList.toggle('expanded');
-      });
-    });
-
-    this.show('inventory');
   },
 
   // ═══ PROFESSION SUB-VIEWS ═══

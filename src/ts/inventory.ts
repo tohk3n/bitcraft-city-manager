@@ -9,8 +9,6 @@ import type {
   Building,
   InventoryProcessResult,
   ProcessedInventory,
-  MaterialMatrix,
-  MaterialCategory,
   Items,
   Package,
   TierQuantities,
@@ -20,6 +18,7 @@ import type {
   BuildingFunction,
   InventorySlotContents,
   TagGroup,
+  MaterialMatrix,
 } from './types/index.js';
 
 // Helper to create fresh tier quantities object
@@ -36,12 +35,6 @@ export const InventoryProcessor = {
 
     // Structure: { category: { tag: { items: [{id, name, tier, qty, buildings}], total } } }
     const inventory: ProcessedInventory = {};
-
-    // Material matrix: category -> tier -> quantity
-    const materialMatrix: MaterialMatrix = {} as MaterialMatrix;
-    for (const cat of DASHBOARD_CONFIG.MATRIX_CATEGORIES) {
-      materialMatrix[cat as MaterialCategory] = createTierQuantities();
-    }
 
     // Food items
     const foodItems: Items = {};
@@ -66,16 +59,11 @@ export const InventoryProcessor = {
 
         const meta: ApiItem = isItem ? itemMeta[id] : cargoMeta[id];
         if (!meta) continue;
-
-        const tag: string = meta.tag || 'Other';
+        const tag: string = this.isGemCheck(meta.name)
+          ? this.normalizeGemTag(meta.name)
+          : meta.tag || 'Other';
         const category: string = DASHBOARD_CONFIG.TAG_TO_CATEGORY[tag] || 'Other';
-        const tier: number = meta.tier > 0 ? meta.tier : 1;
-        const tierKey = Math.min(tier, CONFIG.MAX_TIER) as keyof TierQuantities;
 
-        // Aggregate raw materials into matrix by category and tier
-        if (DASHBOARD_CONFIG.RAW_MATERIAL_TAGS.has(tag) && category in materialMatrix) {
-          materialMatrix[category as MaterialCategory][tierKey] += qty;
-        }
         // Track food items
         InventoryProcessor.updateFood(category, foodItems, meta, id, qty);
         // Track supply cargo
@@ -89,11 +77,29 @@ export const InventoryProcessor = {
     }
     return {
       inventory: inventory,
-      materialMatrix: materialMatrix,
+      materialMatrix: {} as MaterialMatrix,
       foodItems: foodItems,
       supplyCargo: supplies,
       packages: packages,
     };
+  },
+  isGemCheck(itemName: string): boolean {
+    for (const gemName of DASHBOARD_CONFIG.GEM_NAMES) {
+      if (itemName.includes(gemName)) return true;
+    }
+    return false;
+  },
+  normalizeGemTag(itemName: string): string {
+    const uncut = itemName.includes('Uncut');
+    const fragment = itemName.includes('Fragment');
+    const gemName = DASHBOARD_CONFIG.GEM_NAMES.find((value) => value.includes(itemName));
+    if (!gemName) return 'Other';
+    if (uncut) {
+      return 'Uncut ' + gemName;
+    } else if (fragment) {
+      return gemName + ' Fragment';
+    }
+    return gemName;
   },
   updateInventory(
     inventory: ProcessedInventory,
