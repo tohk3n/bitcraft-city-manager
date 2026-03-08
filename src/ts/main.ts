@@ -29,6 +29,7 @@ import { initHotkeys } from './hotkeys.js';
 import { initWalkthrough } from './walkthrough.js';
 import { applyAll as applyPreferences } from './user-prefs.js';
 import { init as initTravelerTimer } from './traveler-timer.js';
+import * as LogParserView from './log-parser-view.js';
 
 const log = createLogger('Main');
 
@@ -115,7 +116,7 @@ async function loadClaim(claimId: string): Promise<void> {
     const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
     UI.renderDashboard(result, claimData.claimInfo ?? undefined);
 
-    // Buildings (needed for crafting stations display AND player filter)
+    // Buildings (needed for crafting stations display AND player filter AND for retrieving logs)
     try {
       const buildings: Building[] = await API.getClaimBuildings(claimId);
       claimData.buildings = { buildings };
@@ -324,6 +325,9 @@ function setupTabs(): void {
       } else if (view === 'resourceCalculator') {
         const container = document.getElementById('resource-calculator-content');
         if (container) MaterialsView.render(container);
+      } else if (view === 'log') {
+        const container = document.getElementById('log-content');
+        if (container) LogParserView.render(container);
       }
     });
   });

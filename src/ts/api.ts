@@ -76,4 +76,16 @@ export const API = {
   getPlayerVault(playerId: string): Promise<PlayerVaultResponse> {
     return this.fetch<PlayerVaultResponse>(`/players/${playerId}/vault`);
   },
+
+  getPlayerContainerLogs(playerId: string){
+    return this.fetch<LogResponse>(`/logs/storage?playerEntityId=${playerId}`);
+  },
+
+  getPlayerContainerLogsSince(playerId: string, since: string){
+    return this.fetch<LogResponse>(`/logs/storage?playerEntityId=${playerId}&since=${since}`);
+  },
+
+  getContainerLogs(buildingId: string){
+    return this.fetch<LogResponse>(`/logs/storage?buildingEntityId=${buildingId}`);
+  },
 };
