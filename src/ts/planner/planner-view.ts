@@ -102,9 +102,9 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
         </div>
         <div class="pv-toolbar-center">
           <div class="pv-tabs">
-            <button class="pv-tab active" data-view="dashboard">Tasks</button>
-            <button class="pv-tab" data-view="flowchart">Tree</button>
-            <button class="pv-tab" data-view="monitor">Monitor</button>
+            <button class="pv-tab active" data-view="dashboard"><span class="hk">T</span>asks</button>
+            <button class="pv-tab" data-view="flowchart"><span class="hk">F</span>lowchart</button>
+            <button class="pv-tab" data-view="monitor">M<span class="hk">o</span>nitor</button>
           </div>
           <div class="pv-progress-inline">
             <span class="pv-pct">${progress.percent}%</span>
