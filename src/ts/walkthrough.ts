@@ -120,7 +120,7 @@ export function initWalkthrough(): void {
       const focusable = modal.querySelectorAll<HTMLElement>(
         'button:not(:disabled), [tabindex]:not([tabindex="-1"])'
       );
-      if (!focusable.length) return;
+      if (focusable.length === 0) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       if (e.shiftKey && document.activeElement === first) {
