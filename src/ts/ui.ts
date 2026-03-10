@@ -175,9 +175,19 @@ const BaseUI = {
     }
 
     // Generate label and checkbox for region selection
+    const cols = 5;
+    const rows = Math.ceil(CONFIG.REGION_COUNT / cols);
     let html = '';
-    for (let i = 1; i <= CONFIG.REGION_COUNT; i++) {
-      html += `<label><input type="checkbox" value="${i}"> R${i}</label>`;
+    for (let row = rows - 1; row >= 0; row--) {
+      for (let col = 0; col < cols; col++) {
+        const region = row * cols + col + 1;
+        if (region > CONFIG.REGION_COUNT) {
+          html += '<span class="rgn-spacer"></span>';
+        } else {
+          const disabled = !CONFIG.ENABLED_REGIONS.has(region);
+          html += `<label class="${disabled ? 'rgn-disabled' : ''}"><input type="checkbox" value="${region}" ${disabled ? 'disabled' : ''}> ${region}</label>`;
+        }
+      }
     }
 
     checkboxContainer.innerHTML = html;

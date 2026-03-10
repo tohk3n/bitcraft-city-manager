@@ -8,47 +8,54 @@
 }
 
 #checkbox-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
+  display: grid;
+  grid-template-columns: repeat(5, auto);
+  gap: 1px 2px;
+  justify-content: start;
+
+  .rgn-disabled {
+    opacity: 0.25;
+    pointer-events: none;
+    cursor: default;
+  }
 
   /* ─── Terminal bracket checkboxes ───
-     [ ] R1  [×] R2  [ ] R3
+     [ ] 12  [x] 13  [ ] 14
      Hide native input, render brackets via ::before on the label. */
 
   label {
     display: inline-flex;
     align-items: center;
-    padding: 2px 6px;
+    justify-content: center;
+    padding: 4px 0;
     font-family: var(--font-mono);
     font-size: 11px;
     color: var(--text-muted);
     cursor: pointer;
-    transition: color 0.1s;
-    white-space: nowrap;
+    transition: all 0.1s;
     user-select: none;
-
-    &::before {
-      content: '[ ] ';
-      white-space: pre;
-      color: var(--text-muted);
-    }
+    min-width: 44px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--bg-tertiary);
 
     &:hover {
       color: var(--text-secondary);
-      &::before {
-        color: var(--text-secondary);
-      }
+      border-color: var(--border-hi, var(--text-muted));
     }
 
-    /* Checked: swap brackets, accent color.
-       Input is a child of label (JS: <label><input>R1</label>). */
     &:has(input:checked) {
       color: var(--accent);
-      &::before {
-        content: '[×] ';
-        color: var(--accent);
-      }
+      border-color: var(--accent);
+      background: rgba(122, 162, 247, 0.15);
+    }
+
+    input[type='checkbox'] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+      pointer-events: none;
     }
   }
 
@@ -59,6 +66,11 @@
     width: 0;
     height: 0;
     pointer-events: none;
+  }
+
+  .rgn-spacer {
+    /* empty cells if region count isn't a multiple of 5 */
+    visibility: hidden;
   }
 }
 
