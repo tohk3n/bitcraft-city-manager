@@ -116,7 +116,7 @@
     border-color: var(--text-muted);
   }
 
-  &.on {
+  &.active {
     color: var(--accent3);
     border-color: var(--accent3);
     background: rgba(125, 207, 255, 0.06);
@@ -170,15 +170,34 @@
 }
 
 .it-pin {
-  width: 16px;
+  width: 24px;
+  padding: 0 !important;
   text-align: center;
-  cursor: pointer;
-  color: var(--text-muted);
+  vertical-align: middle;
+}
+
+.pin-toggle {
+  display: inline-block;
+  font-family: var(--font-mono);
   font-size: 10px;
-  user-select: none;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  white-space: pre;
+  line-height: 1;
+  min-width: 0;
 
   &:hover {
-    color: var(--accent3);
+    color: var(--text-secondary);
+  }
+
+  &:focus-visible {
+    color: var(--text-primary);
+    outline: none;
+    background: rgba(122, 162, 247, 0.12);
   }
 
   &.pinned {

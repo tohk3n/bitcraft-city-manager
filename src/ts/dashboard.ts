@@ -127,7 +127,15 @@ function renderFoodTable(rows: FoodRow[]): string {
       const craftText = row.canMake > 0 ? '+' + row.canMake.toLocaleString() : '—';
       const noteText = row.bottleneck ?? '—';
       return `<tr class="${dimmed ? 'dimmed' : ''}" data-id="${row.id}">
-      <td class="it-pin ${row.pinned ? 'pinned' : ''}" data-action="pin">⊙</td>
+      <td class="it-pin">
+        <button
+        class="pin-toggle ${row.pinned ? 'pinned' : ''}" 
+        data-action="pin"
+        aria-label="${row.pinned ? 'Unpin' : 'Pin'} ${row.name}" 
+        aria-pressed="${row.pinned}">
+          ${row.pinned ? '[x]' : '[ ]'}
+        </button>
+      </td>
       <td><span class="it-tier">T${row.tier}</span></td>
       <td class="it-name">${row.name}</td>
       <td class="it-qty ${hCls}">${row.have > 0 ? row.have.toLocaleString() : '—'}</td>
@@ -152,7 +160,7 @@ function renderFoodPanel(foodItems: Items): void {
   const pillHtml = (['all', 'pinned', 'stock'] as const)
     .map((f) => {
       const label = f === 'stock' ? 'in stock' : f;
-      return `<button class="pill ${currentFoodFilter === f ? 'on' : ''}" data-filter="${f}">${label}</button>`;
+      return `<button class="pill ${currentFoodFilter === f ? 'active' : ''}" data-filter="${f}">${label}</button>`;
     })
     .join('');
 
@@ -190,6 +198,17 @@ function renderFoodPanel(foodItems: Items): void {
 
 // Attach click handlers, separated so render stays pure
 function wireFoodEvents(panel: HTMLElement, foodItems: Items): void {
+  // Arrow-key nav for food filter pills
+  const filtersEl = panel.querySelector('#foodFilters') as HTMLElement | null;
+  if (filtersEl) {
+    applyTabA11y(filtersEl, '.pill');
+    // Re-focus active pill after re-render so arrow keys keep working
+    const activePill = filtersEl.querySelector('.pill.active') as HTMLElement | null;
+    if (activePill && document.activeElement === document.body) {
+      activePill.focus();
+    }
+  }
+
   // Pin toggle
   panel.querySelector('#foodBody')?.addEventListener('click', (e) => {
     const pin = (e.target as HTMLElement).closest('[data-action="pin"]');

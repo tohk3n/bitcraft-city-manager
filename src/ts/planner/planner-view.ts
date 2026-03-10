@@ -220,6 +220,10 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
     { signal }
   );
 
+  // Arrow-key nav for planner sub-tabs
+  const pvTabs = container.querySelector('.pv-tabs') as HTMLElement | null;
+  if (pvTabs) applyTabA11y(pvTabs, '.pv-tab');
+
   // -- View tabs --
   container.querySelectorAll<HTMLElement>('.pv-tab').forEach((tab) => {
     tab.addEventListener(
