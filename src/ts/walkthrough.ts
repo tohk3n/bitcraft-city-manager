@@ -79,7 +79,7 @@ function show(index: number): void {
     els.nextBtn.textContent = 'next \u2192';
     els.nextBtn.classList.add('primary');
   }
-
+  els.nextBtn.focus();
   els.indicator.textContent = `${current + 1} / ${total}`;
   els.body.scrollTop = 0;
 }
@@ -89,6 +89,7 @@ function close(): void {
   if (!els) return;
   els.overlay.style.display = 'none';
   markSeen();
+  document.getElementById('guide-btn')?.focus();
 }
 
 export function open(startPage?: number): void {
@@ -111,6 +112,26 @@ export function initWalkthrough(): void {
 
   const els = getElements();
   if (!els) return;
+
+  const modal = els.overlay.querySelector('.wt-modal') as HTMLElement;
+  if (modal) {
+    modal.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const focusable = modal.querySelectorAll<HTMLElement>(
+        'button:not(:disabled), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  }
 
   // Build progress pips
   const total = els.pages.length;

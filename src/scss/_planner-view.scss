@@ -229,29 +229,41 @@
 }
 
 .pv-tab {
-  padding: 2px 8px;
+  padding: 3px 10px;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 500;
-  background: transparent;
-  border: none;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
   color: var(--text-secondary);
   cursor: pointer;
+  transition: all 0.1s;
+
+  .hk {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-color: var(--accent3);
+  }
 
   &:hover {
     color: var(--text-primary);
+    border-color: var(--border-hi);
+  }
+
+  &:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
   }
 
   &.active {
     color: var(--accent2);
     font-weight: 600;
-    &::before {
-      content: '[ ';
-      color: var(--text-muted);
-    }
-    &::after {
-      content: ' ]';
-      color: var(--text-muted);
+    border-color: var(--accent2);
+    background: var(--bg-quaternary);
+
+    .hk {
+      text-decoration-color: var(--accent2);
     }
   }
 }

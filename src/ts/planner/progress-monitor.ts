@@ -20,6 +20,7 @@ import { calculatePlanProgress, formatCompact } from './lib/progress-calc.js';
 import { TIER_REQUIREMENTS } from '../configuration/index.js';
 import { createLogger } from '../logger.js';
 import type { PlanItem, PlanProgressSummary, MappingType } from '../types/index.js';
+import { applyTabA11y } from '../aria.js';
 
 const log = createLogger('Monitor');
 
@@ -412,6 +413,18 @@ function renderScopeBtn(scope: TierScope, label: string): string {
 
 function wireScopeButtons(): void {
   if (!container) return;
+
+  // Arrow-key nav for scope filter tabs
+  const scopeEl = container.querySelector('.pm-scope') as HTMLElement | null;
+  if (scopeEl) {
+    applyTabA11y(scopeEl, '.pm-scope-btn');
+    // Re-focus active scope button after re-render so arrow keys keep working
+    const activeBtn = scopeEl.querySelector('.pm-scope-btn.active') as HTMLElement | null;
+    if (activeBtn && document.activeElement === document.body) {
+      activeBtn.focus();
+    }
+  }
+
   container.querySelectorAll<HTMLElement>('.pm-scope-btn').forEach((btn) => {
     btn.addEventListener('click', () => {
       tierScope = btn.dataset.scope as TierScope;

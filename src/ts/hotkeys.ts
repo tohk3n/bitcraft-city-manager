@@ -14,11 +14,12 @@ const TAB_HOTKEYS: Record<string, string> = {
   r: 'resourceCalculator',
 };
 
-// ── Planner sub-view hotkeys (only when planner is active) ──────
+// ── Planner scoped: t/f/o switch between Tasks, Flowchart, Monitor ──────
 
 const PLANNER_HOTKEYS: Record<string, string> = {
   t: 'dashboard',
   f: 'flowchart',
+  o: 'monitor',
 };
 
 // ── Per-view search targets for / key ───────────────────────────
