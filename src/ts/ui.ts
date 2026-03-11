@@ -4,6 +4,7 @@ import { MAP_LINK } from './maplink.js';
 import { DashboardUI } from './dashboard.js';
 import { IdsUI } from './ids.js';
 import { createLogger } from './logger.js';
+import { KeyboardKey } from './types/index.js';
 
 const log = createLogger('UI');
 // Base UI utilities
@@ -178,6 +179,7 @@ const BaseUI = {
     const cols = 5;
     const rows = Math.ceil(CONFIG.REGION_COUNT / cols);
     let html = '';
+    let firstEnabled = true;
     for (let row = rows - 1; row >= 0; row--) {
       for (let col = 0; col < cols; col++) {
         const region = row * cols + col + 1;
@@ -185,12 +187,21 @@ const BaseUI = {
           html += '<span class="rgn-spacer"></span>';
         } else {
           const disabled = !CONFIG.ENABLED_REGIONS.has(region);
-          html += `<label class="${disabled ? 'rgn-disabled' : ''}"><input type="checkbox" value="${region}" ${disabled ? 'disabled' : ''}> ${region}</label>`;
+          if (disabled) {
+            html += `<label class="rgn-disabled"><input type="checkbox" value="${region}" tabindex="-1" disabled> ${region}</label>`;
+          } else {
+            const ti = firstEnabled ? '0' : '-1';
+            firstEnabled = false;
+            html += `<label tabindex="${ti}" data-region="${region}"><input type="checkbox" value="${region}" tabindex="-1"> ${region}</label>`;
+          }
         }
       }
     }
 
-    checkboxContainer.innerHTML = html;
+    checkboxContainer.innerHTML = '<div class="rgn-header">Region Select</div>' + html;
+
+    // Keyboard grid navigation for region selector
+    wireRegionGridKeys(checkboxContainer);
 
     // Add link generation to check boxes
     const checkboxes =
@@ -218,6 +229,56 @@ const BaseUI = {
     btn?.addEventListener('click', (): void => MAP_LINK.generateLinkEvent());
   },
 };
+
+function wireRegionGridKeys(container: HTMLElement): void {
+  // Enabled regions form a 3x3 interior grid
+  const NAV_COLS = 3;
+
+  container.addEventListener('keydown', (e: KeyboardEvent) => {
+    const current = e.target as HTMLElement;
+    if (!current.matches('label[tabindex]')) return;
+
+    const labels = Array.from(container.querySelectorAll<HTMLElement>('label[tabindex]'));
+    const idx = labels.indexOf(current);
+    if (idx === -1) return;
+
+    let next: number | null = null;
+
+    switch (e.key) {
+      case KeyboardKey.ArrowRight:
+        if ((idx + 1) % NAV_COLS !== 0) next = idx + 1;
+        break;
+      case KeyboardKey.ArrowLeft:
+        if (idx % NAV_COLS !== 0) next = idx - 1;
+        break;
+      case KeyboardKey.ArrowDown:
+        next = idx + NAV_COLS;
+        break;
+      case KeyboardKey.ArrowUp:
+        next = idx - NAV_COLS;
+        break;
+      case KeyboardKey.Enter:
+      case ' ': {
+        e.preventDefault();
+        const input = current.querySelector('input') as HTMLInputElement | null;
+        if (input && !input.disabled) {
+          input.checked = !input.checked;
+          input.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        return;
+      }
+      default:
+        return;
+    }
+
+    e.preventDefault();
+    if (next === null || next < 0 || next >= labels.length) return;
+
+    current.setAttribute('tabindex', '-1');
+    labels[next].setAttribute('tabindex', '0');
+    labels[next].focus();
+  });
+}
 
 // Combine all UI modules into single export
 export const UI = Object.assign({}, BaseUI, DashboardUI, IdsUI);

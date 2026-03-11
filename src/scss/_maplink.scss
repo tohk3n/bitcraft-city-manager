@@ -7,6 +7,17 @@
   max-width: 720px;
 }
 
+.rgn-header {
+  grid-column: 1 / -1;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 2px;
+}
+
 #checkbox-row {
   display: grid;
   grid-template-columns: repeat(5, auto);
@@ -20,8 +31,19 @@
   }
 
   /* ─── Terminal bracket checkboxes ───
-     [ ] 12  [x] 13  [ ] 14
-     Hide native input, render brackets via ::before on the label. */
+    [ ] 12  [x] 13  [ ] 14
+    Hide native input, render brackets via ::before on the label. */
+
+  label[tabindex] {
+    &:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: -1px;
+    }
+
+    &:focus:not(:focus-visible) {
+      outline: none;
+    }
+  }
 
   label {
     display: inline-flex;

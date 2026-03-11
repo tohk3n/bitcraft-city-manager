@@ -245,7 +245,8 @@ export const MAP_LINK = {
       columns: cols,
       rows,
       showRowTotals: false,
-      onCellClick: (rowKey, colKey, value) =>
+      // In createResourceMatrixConfig, update the onCellClick callback:
+      onCellClick: (rowKey, colKey, value) => {
         MAP_LINK.cellButtonEvent(
           rowKey,
           value as number[],
@@ -255,8 +256,10 @@ export const MAP_LINK = {
           () => {
             MAP_LINK.renderResourceMatrix();
             MAP_LINK.generateLinkEvent();
+            restoreMatrixFocus('res-id-matrix', rowKey, colKey);
           }
-        ),
+        );
+      },
       renderCell: (value) => this.mapCellRenderer(value, this.selectedResourceIds),
     };
   },
@@ -283,9 +286,33 @@ export const MAP_LINK = {
           () => {
             MAP_LINK.renderEnemyMatrix();
             MAP_LINK.generateLinkEvent();
+            restoreMatrixFocus('enemy-id-matrix', rowKey, colKey);
           }
         ),
       renderCell: (value) => this.mapCellRenderer(value, this.selectedEnemyIds),
     };
   },
 };
+
+// ── Focus Helper ───────────────────────────────────────────
+
+function restoreMatrixFocus(containerId: string, rowKey: string, colKey: string): void {
+  if (document.activeElement !== document.body) return;
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Find the row, then the cell by column index
+  const rows = container.querySelectorAll('tbody tr');
+  for (const tr of rows) {
+    const label = tr.querySelector('.dm-row-label');
+    if (label?.textContent?.toLowerCase() !== rowKey.toLowerCase()) continue;
+    const cells = tr.querySelectorAll<HTMLElement>('.dm-clickable');
+    const colIdx = parseInt(colKey, 10) - 1;
+    const cell = cells[colIdx];
+    if (cell) {
+      cell.setAttribute('tabindex', '0');
+      cell.focus();
+    }
+    break;
+  }
+}
