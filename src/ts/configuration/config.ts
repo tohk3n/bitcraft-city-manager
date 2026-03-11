@@ -25,4 +25,6 @@ export const CONFIG = {
       'Crafting',
     ] as const,
   },
+
+  ENABLED_REGIONS: new Set([7, 8, 9, 12, 13, 14, 17, 18, 19]),
 };

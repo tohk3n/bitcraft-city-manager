@@ -5,6 +5,7 @@
  * Rendering is driven by config.
  * The caller owns the data. The matrix owns the pixels.
  */
+import { KeyboardKey } from '../../types/index.js';
 
 // ── Types ──────────────────────────────────────────────────────
 
@@ -92,6 +93,7 @@ function buildHead(config: MatrixConfig): HTMLTableSectionElement {
 
 function buildBody(config: MatrixConfig): HTMLTableSectionElement {
   const tbody = document.createElement('tbody');
+  let firstClickable = true;
 
   for (const row of config.rows) {
     const tr = document.createElement('tr');
@@ -120,6 +122,8 @@ function buildBody(config: MatrixConfig): HTMLTableSectionElement {
 
       if (config.onCellClick) {
         td.classList.add('dm-clickable');
+        td.setAttribute('tabindex', firstClickable ? '0' : '-1');
+        firstClickable = false;
         td.addEventListener('click', () => {
           config.onCellClick?.(row.key, col.key, value);
         });
@@ -141,7 +145,58 @@ function buildBody(config: MatrixConfig): HTMLTableSectionElement {
     tbody.appendChild(tr);
   }
 
+  // Keyboard nav for clickable grids
+  if (config.onCellClick) {
+    wireGridKeys(tbody, config.columns.length);
+  }
+
   return tbody;
+}
+
+// ── Wire Keyboard Nav ───────────────────────────────────────────
+
+function wireGridKeys(tbody: HTMLTableSectionElement, colCount: number): void {
+  tbody.addEventListener('keydown', (e: KeyboardEvent) => {
+    const current = e.target as HTMLElement;
+    if (!current.matches('.dm-clickable[tabindex]')) return;
+
+    const cells = Array.from(tbody.querySelectorAll<HTMLElement>('.dm-clickable[tabindex]'));
+    const idx = cells.indexOf(current);
+    if (idx === -1) return;
+
+    let next: number | null = null;
+
+    switch (e.key) {
+      case KeyboardKey.ArrowRight:
+        // Don't wrap to next row
+        if ((idx + 1) % colCount !== 0) next = idx + 1;
+        break;
+      case KeyboardKey.ArrowLeft:
+        // Don't wrap to previous row
+        if (idx % colCount !== 0) next = idx - 1;
+        break;
+      case KeyboardKey.ArrowDown:
+        next = idx + colCount;
+        break;
+      case KeyboardKey.ArrowUp:
+        next = idx - colCount;
+        break;
+      case KeyboardKey.Enter:
+      case ' ':
+        e.preventDefault();
+        current.click();
+        return;
+      default:
+        return;
+    }
+
+    e.preventDefault();
+    if (next === null || next < 0 || next >= cells.length) return;
+
+    current.setAttribute('tabindex', '-1');
+    cells[next].setAttribute('tabindex', '0');
+    cells[next].focus();
+  });
 }
 
 // ── Defaults ───────────────────────────────────────────────────
