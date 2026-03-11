@@ -245,7 +245,6 @@ export const MAP_LINK = {
       columns: cols,
       rows,
       showRowTotals: false,
-      // In createResourceMatrixConfig, update the onCellClick callback:
       onCellClick: (rowKey, colKey, value) => {
         MAP_LINK.cellButtonEvent(
           rowKey,
