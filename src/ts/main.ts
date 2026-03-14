@@ -377,7 +377,9 @@ initAeolith({
   getInventoryLookup: () => Planner.getLastInventoryLookup(),
   getPlanItems: () => plannerState.results?.planItems ?? null,
   getTargetTier: () => plannerState.targetTier,
+  getCitizens: () => claimData.citizensData,
   loadClaim: (id) => loadClaim(id),
+  loadCitizens: () => loadCitizens(),
 });
 
 if (claimParam) {

@@ -1,4 +1,4 @@
-// Aeolith — hidden terminal, summoned by Naming
+// Aeolith, hidden terminal, summoned by Naming
 // type "aeolith" anywhere (no input focused) to open.
 // full screen takeover. you're in a different machine now.
 
@@ -7,7 +7,9 @@ import { loadCoreData } from './data/loader.js';
 import { getRecipeById, findRecipes } from './data/recipe-data.js';
 import { formatCompact } from './planner/lib/progress-calc.js';
 import * as Planner from './planner/planner.js';
-import type { PlanItem, ClaimResponse, InventoryLookup } from './types/index.js';
+import { API } from './api.js';
+import type { PlanItem, ClaimResponse, InventoryLookup, ClaimSearchResult } from './types/index.js';
+import type { CitizensData, CitizenRecord } from './citizens/index.js';
 import type { RecipesFile } from './data/types.js';
 
 const log = createLogger('Aeolith');
@@ -17,7 +19,7 @@ const log = createLogger('Aeolith');
 const NAME = 'aeolith';
 const BUFFER_TIMEOUT_MS = 2000;
 
-// ── Context provider — main.ts injects this ─────────────────────
+// ── Context provider, main.ts injects this ─────────────────────
 
 export interface AeolithContext {
   getClaimId: () => string | null;
@@ -25,7 +27,9 @@ export interface AeolithContext {
   getInventoryLookup: () => InventoryLookup | null;
   getPlanItems: () => PlanItem[] | null;
   getTargetTier: () => number;
+  getCitizens: () => CitizensData | null;
   loadClaim: (claimId: string) => Promise<void>;
+  loadCitizens: () => Promise<void>;
 }
 
 let ctx: AeolithContext | null = null;
@@ -47,7 +51,7 @@ let completionMatches: string[] = [];
 let completionIndex = -1;
 let completionPrefix = '';
 
-// ── Voice lines — Aeolith's personality ─────────────────────────
+// ── Voice lines, Aeolith's personality ─────────────────────────
 // rotated through randomly. blue accent text. the device has opinions.
 
 function pick(lines: readonly string[]): string {
@@ -78,16 +82,21 @@ const VOICE = {
     "i'm going to pretend you didn't type that.",
   ],
   noClaim: [
-    'you need to load a city first. set city <id>. i can wait.',
-    'nothing loaded. i need context to be useful. set city <id>.',
+    'you need to load a city first. set city <name>. i can wait.',
+    'nothing loaded. i need context to be useful. set city <name or id>.',
     "you're asking me to search nothing. load a city first.",
-    "i'm powerful, not psychic. set city <id>.",
+    "i'm powerful, not psychic. set city <name>.",
   ],
   noInventory: [
     'nothing here. run the planner once so i can index your stuff.',
     "can't search what i haven't seen. run the planner first.",
     'i need data to work with. run the planner, then come back.',
     'my index is empty. the planner builds it. go.',
+  ],
+  noCitizens: [
+    'no citizens data. open the citizens tab first, or just wait.',
+    "i don't have the roster yet. loading it now, hold on.",
+    "citizens? i'll pull them. one moment.",
   ],
   noMatch: [
     "check your spelling, or accept you don't have it.",
@@ -119,11 +128,6 @@ const VOICE = {
     'bound. anything else?',
     "there it is. wasn't hard, was it?",
   ],
-  setCityNumeric: [
-    'numbers. claim ids are numbers. we talked about this.',
-    "that's not a number. claim ids are numeric.",
-    'letters are for names. ids are numbers. try again.',
-  ],
   whoamiCity: [
     'at least you run something. most who find me are just lost.',
     "not bad. i've seen worse settlements.",
@@ -131,7 +135,7 @@ const VOICE = {
   ],
   whoamiNone: [
     "you haven't even loaded a city yet. come back with context.",
-    "nobody, apparently. set city <id> and we'll talk.",
+    "nobody, apparently. set city <name> and we'll talk.",
     'who are you? good question. load a city and find out.',
   ],
   helpFooter: [
@@ -204,10 +208,15 @@ async function handleTab(): Promise<void> {
 
   if (!partial) return;
 
+  // first word = complete command names, not recipes
+  const isFirstWord = lastSpace === -1;
+
   // first tab press: build matches
   if (completionPrefix !== partial || completionMatches.length === 0) {
     completionPrefix = partial;
-    completionMatches = await buildCompletions(partial);
+    completionMatches = isFirstWord
+      ? completeCommandNames(partial)
+      : await buildCompletions(partial);
     completionIndex = -1;
 
     if (completionMatches.length === 0) return;
@@ -233,6 +242,13 @@ async function handleTab(): Promise<void> {
   // cycle through matches on subsequent tabs
   completionIndex = (completionIndex + 1) % completionMatches.length;
   input.value = beforeCursor + completionMatches[completionIndex];
+}
+
+function completeCommandNames(partial: string): string[] {
+  const lower = partial.toLowerCase();
+  return Object.keys(commands)
+    .filter((name) => name.startsWith(lower))
+    .sort();
 }
 
 function resetCompletion(): void {
@@ -288,7 +304,7 @@ const commands: Record<string, Command> = {
         lines.push('', voice(pick(VOICE.whoamiCity)));
         return lines;
       }
-      return [voice(pick(VOICE.whoamiNone)), 'use: set city <id>'];
+      return [voice(pick(VOICE.whoamiNone)), 'use: set city <name or id>'];
     },
   },
 
@@ -302,34 +318,41 @@ const commands: Record<string, Command> = {
 
   set: {
     description: 'bind a settlement',
-    usage: 'set city <claim_id>',
+    usage: 'set city [name or id]',
     run: async (args) => {
-      if (args[0] !== 'city' || !args[1]) {
-        return ['usage: set city <claim_id>'];
+      if (args[0] !== 'city') {
+        return ['usage: set city [name or id]'];
       }
 
-      const id = args[1];
-      if (!/^\d+$/.test(id)) {
-        return [voice(pick(VOICE.setCityNumeric))];
+      // no second arg, list nearby/all claims (broad search)
+      if (!args[1]) {
+        return await searchCities('');
       }
 
-      appendLine(`looking for claim ${id}...`);
+      const rest = args.slice(1).join(' ');
 
-      try {
-        await ctx?.loadClaim(id);
-        const info = ctx?.getClaimInfo();
-        const name = info?.claim?.name ?? 'unknown';
-        return [`${name} (${id})`, voice(pick(VOICE.setCityOk))];
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : 'unknown error';
-        return [`couldn't find that one. ${msg}`];
+      // pure numeric, direct claim load
+      if (/^\d+$/.test(rest)) {
+        appendLine(`looking for claim ${rest}...`);
+        try {
+          await ctx?.loadClaim(rest);
+          const info = ctx?.getClaimInfo();
+          const name = info?.claim?.name ?? 'unknown';
+          return [`${name} (${rest})`, voice(pick(VOICE.setCityOk))];
+        } catch (e) {
+          const msg = e instanceof Error ? e.message : 'unknown error';
+          return [`couldn't find that one. ${msg}`];
+        }
       }
+
+      // has letters, search by name
+      return await searchCities(rest);
     },
   },
 
   inv: {
     description: 'inventory queries',
-    usage: 'inv search <term> | inv cur',
+    usage: 'inv search [-d] <term> | inv cur',
     run: (args) => {
       const sub = args[0]?.toLowerCase();
 
@@ -338,25 +361,32 @@ const commands: Record<string, Command> = {
       }
 
       if (sub === 'search' && args.length > 1) {
-        const term = args.slice(1).join(' ');
-        return invSearch(term);
+        const rest = args.slice(1);
+        const detail = rest.some((a) => a === '-d' || a === '--detail');
+        const termParts = rest.filter((a) => a !== '-d' && a !== '--detail');
+        if (termParts.length === 0) return ['usage: inv search [-d] <term>'];
+        return invSearch(termParts.join(' '), detail);
       }
 
-      return ['usage: inv search <term> | inv cur'];
+      return ['usage: inv search [-d] <term> | inv cur'];
     },
   },
 
   plan: {
     description: 'show or calculate upgrade plan',
-    usage: 'plan [t<N>]',
+    usage: 'plan [t<N>] [-d]',
     run: async (args) => {
       if (!claimOrWarn()) return [];
 
-      // parse optional tier arg
+      // flags and tier can appear in any order
+      const detail = args.some((a) => a === '-d' || a === '--detail');
       let targetTier = ctx?.getTargetTier() ?? 0;
-      if (args[0]) {
-        const match = args[0].match(/^t?(\d+)$/i);
-        if (match) targetTier = parseInt(match[1], 10);
+      for (const a of args) {
+        const match = a.match(/^t?(\d+)$/i);
+        if (match) {
+          targetTier = parseInt(match[1], 10);
+          break;
+        }
       }
 
       // try cached results first
@@ -378,7 +408,36 @@ const commands: Record<string, Command> = {
         }
       }
 
-      return formatPlan(planItems, targetTier);
+      return formatPlan(planItems, targetTier, detail);
+    },
+  },
+
+  cit: {
+    description: 'citizen roster and skills',
+    usage: 'cit [name] [-d]',
+    run: async (args) => {
+      if (!claimOrWarn()) return [];
+
+      // fetch citizens if not cached, aeolith pulls its own weight
+      let citizens = ctx?.getCitizens() ?? null;
+      if (!citizens) {
+        appendLine('loading citizens...');
+        await ctx?.loadCitizens();
+        citizens = ctx?.getCitizens() ?? null;
+      }
+      if (!citizens || citizens.records.length === 0) {
+        return [voice(pick(VOICE.noCitizens))];
+      }
+
+      const detail = args.some((a) => a === '-d' || a === '--detail');
+      const nameArgs = args.filter((a) => a !== '-d' && a !== '--detail');
+      const search = nameArgs.join(' ').toLowerCase();
+
+      if (search) {
+        return citSearch(citizens, search, detail);
+      }
+
+      return citRoster(citizens);
     },
   },
 
@@ -460,7 +519,7 @@ function invCurrent(): string[] {
   return lines;
 }
 
-function invSearch(term: string): string[] {
+function invSearch(term: string, detail = false): string[] {
   if (!claimOrWarn()) return [];
 
   const lookup = ctx?.getInventoryLookup();
@@ -483,7 +542,8 @@ function invSearch(term: string): string[] {
   }
 
   matches.sort((a, b) => b.qty - a.qty);
-  const shown = matches.slice(0, 20);
+  const cap = detail ? Infinity : 20;
+  const shown = matches.slice(0, cap);
 
   const lines: string[] = [
     `${matches.length} match${matches.length === 1 ? '' : 'es'} for "${term}":`,
@@ -492,16 +552,148 @@ function invSearch(term: string): string[] {
     lines.push(`  T${m.tier}  ${formatCompact(m.qty).padStart(6)}  ${m.name}`);
   }
 
-  if (matches.length > 20) {
-    lines.push(`  ... ${matches.length - 20} more (narrow your search)`);
+  if (matches.length > cap) {
+    lines.push(`  ... ${matches.length - cap} more (narrow your search or use -d)`);
   }
 
   return lines;
 }
 
+// ── set sub-commands ────────────────────────────────────────────
+
+async function searchCities(query: string): Promise<string[]> {
+  // empty query gets a broad listing; BitJita requires min 2 chars
+  const searchTerm = query.length >= 2 ? query : '';
+
+  try {
+    // empty string won't match the min-length, so fetch a page of all claims
+    const response = searchTerm
+      ? await API.searchClaims(searchTerm, 10)
+      : await API.searchClaims('', 10);
+
+    const claims = response.claims ?? [];
+    if (claims.length === 0) {
+      return [voice(pick(VOICE.noMatch))];
+    }
+
+    // single exact match, load it directly
+    if (claims.length === 1) {
+      const c = claims[0];
+      appendLine(`found ${c.name}. loading...`);
+      try {
+        await ctx?.loadClaim(c.entityId);
+        return [`${c.name} (${c.entityId})`, voice(pick(VOICE.setCityOk))];
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : 'unknown error';
+        return [`found it but couldn't load: ${msg}`];
+      }
+    }
+
+    // multiple, list them
+    return formatCityList(claims, query);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : 'search failed';
+    return [`error: ${msg}`];
+  }
+}
+
+function formatCityList(claims: ClaimSearchResult[], query: string): string[] {
+  const header = query
+    ? `${claims.length} settlements matching "${query}":`
+    : `${claims.length} settlements:`;
+
+  const lines: string[] = [header];
+  for (const c of claims) {
+    const region = c.regionName ? `  ${c.regionName}` : '';
+    lines.push(`  ${c.entityId.padEnd(22)} T${c.tier}  ${c.name}${region}`);
+  }
+  lines.push('');
+  lines.push('set city <id> to load one.');
+  return lines;
+}
+
+// ── cit sub-commands ────────────────────────────────────────────
+
+function citRoster(data: CitizensData): string[] {
+  const records = [...data.records].sort((a, b) => a.userName.localeCompare(b.userName));
+  const lines: string[] = [`${records.length} citizens:`];
+  lines.push('');
+
+  for (const r of records) {
+    const lvl = r.totalLevel > 0 ? `lvl ${String(r.totalLevel).padStart(4)}` : '        ';
+    const ago = daysSince(r.lastLogin);
+    const active = ago <= 7 ? '+' : ago <= 30 ? '~' : ' ';
+    lines.push(`  ${active} ${r.userName.padEnd(20)} ${lvl}  last seen ${formatDaysAgo(ago)}`);
+  }
+
+  lines.push('');
+  lines.push('cit <name> for details. + = active this week, ~ = this month.');
+  return lines;
+}
+
+function citSearch(data: CitizensData, search: string, detail: boolean): string[] {
+  const matches = data.records.filter((r) => r.userName.toLowerCase().includes(search));
+
+  if (matches.length === 0) {
+    return [voice(pick(VOICE.noMatch))];
+  }
+
+  // multiple matches, list them
+  if (matches.length > 1) {
+    const lines = [`${matches.length} citizens matching "${search}":`];
+    for (const r of matches) {
+      lines.push(`  ${r.userName.padEnd(20)} lvl ${r.totalLevel}`);
+    }
+    return lines;
+  }
+
+  // single match, show detail
+  return citDetail(matches[0], data, detail);
+}
+
+function citDetail(r: CitizenRecord, data: CitizensData, detail: boolean): string[] {
+  const ago = daysSince(r.lastLogin);
+  const lines: string[] = [
+    r.userName,
+    `  level: ${r.totalLevel}  highest: ${r.highestLevel}  xp: ${formatCompact(r.totalXP ?? 0)}`,
+    `  last seen: ${formatDaysAgo(ago)}`,
+  ];
+
+  if (!r.skills || !detail) {
+    if (r.skills && !detail) {
+      const count = Object.keys(r.skills).length;
+      lines.push(`  ${count} skills (use -d to expand)`);
+    }
+    return lines;
+  }
+
+  // full skill breakdown
+  lines.push('');
+  const names = data.skillNames;
+  const entries = Object.entries(r.skills)
+    .map(([id, level]) => ({ name: names[id] ?? `skill ${id}`, level }))
+    .sort((a, b) => b.level - a.level);
+
+  for (const s of entries) {
+    lines.push(`    ${String(s.level).padStart(3)}  ${s.name}`);
+  }
+
+  return lines;
+}
+
+function daysSince(date: Date): number {
+  return Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function formatDaysAgo(days: number): string {
+  if (days === 0) return 'today';
+  if (days === 1) return 'yesterday';
+  return `${days}d ago`;
+}
+
 // ── plan formatting ─────────────────────────────────────────────
 
-function formatPlan(planItems: PlanItem[], targetTier: number): string[] {
+function formatPlan(planItems: PlanItem[], targetTier: number, detail = false): string[] {
   const deficit = planItems.filter((i) => i.deficit > 0);
   const complete = planItems.filter((i) => i.deficit === 0);
 
@@ -521,18 +713,20 @@ function formatPlan(planItems: PlanItem[], targetTier: number): string[] {
     byActivity.get(item.activity)?.push(item);
   }
 
+  const cap = detail ? Infinity : 8;
+
   for (const [activity, activityItems] of byActivity) {
     activityItems.sort((a, b) => b.deficit - a.deficit);
     lines.push(`  ${activity.toLowerCase()}`);
-    for (const item of activityItems.slice(0, 8)) {
+    for (const item of activityItems.slice(0, cap)) {
       const tierStr = item.tier > 0 ? `T${item.tier}` : '  ';
       const pct = `${item.pctComplete}%`.padStart(4);
       lines.push(
         `    ${tierStr}  ${formatCompact(item.deficit).padStart(6)} needed  ${pct}  ${item.name}`
       );
     }
-    if (activityItems.length > 8) {
-      lines.push(`    ... ${activityItems.length - 8} more`);
+    if (activityItems.length > cap) {
+      lines.push(`    ... ${activityItems.length - cap} more`);
     }
     lines.push('');
   }
@@ -567,7 +761,7 @@ async function calcMats(
   if (exact.length === 1) {
     matches = exact;
   } else if (exact.length > 1) {
-    // exact name but multiple tiers — show tier disambiguation
+    // exact name but multiple tiers, show tier disambiguation
     const lines = [`"${exact[0].name}" exists at multiple tiers:`];
     for (const m of exact) {
       lines.push(`  T${m.tier}  ${m.name}`);
@@ -576,7 +770,7 @@ async function calcMats(
     return lines;
   }
 
-  // still ambiguous — show the list
+  // still ambiguous, show the list
   if (matches.length > 1) {
     const lines = [`${matches.length} recipes match "${searchTerm}":`];
     for (const m of matches.slice(0, 15)) {
@@ -588,7 +782,7 @@ async function calcMats(
     return lines;
   }
 
-  // single match — show breakdown
+  // single match, show breakdown
   const recipe = matches[0];
   const lines: string[] = [`${recipe.name} (T${recipe.tier}) x${qty}`];
 
@@ -605,7 +799,7 @@ async function calcMats(
       lines.push(`    ${tierStr}  ${(inp.qty * qty).toString().padStart(6)}  ${name}`);
     }
   } else {
-    lines.push('  (gathered — no crafting inputs)');
+    lines.push('  (gathered, no crafting inputs)');
   }
 
   return lines;
