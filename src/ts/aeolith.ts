@@ -1,4 +1,4 @@
-// Aeolith — hidden terminal, summoned by Naming
+// Aeolith, hidden terminal, summoned by Naming
 // type "aeolith" anywhere (no input focused) to open.
 // full screen takeover. you're in a different machine now.
 
@@ -19,7 +19,7 @@ const log = createLogger('Aeolith');
 const NAME = 'aeolith';
 const BUFFER_TIMEOUT_MS = 2000;
 
-// ── Context provider — main.ts injects this ─────────────────────
+// ── Context provider, main.ts injects this ─────────────────────
 
 export interface AeolithContext {
   getClaimId: () => string | null;
@@ -51,7 +51,7 @@ let completionMatches: string[] = [];
 let completionIndex = -1;
 let completionPrefix = '';
 
-// ── Voice lines — Aeolith's personality ─────────────────────────
+// ── Voice lines, Aeolith's personality ─────────────────────────
 // rotated through randomly. blue accent text. the device has opinions.
 
 function pick(lines: readonly string[]): string {
@@ -324,14 +324,14 @@ const commands: Record<string, Command> = {
         return ['usage: set city [name or id]'];
       }
 
-      // no second arg — list nearby/all claims (broad search)
+      // no second arg, list nearby/all claims (broad search)
       if (!args[1]) {
         return await searchCities('');
       }
 
       const rest = args.slice(1).join(' ');
 
-      // pure numeric — direct claim load
+      // pure numeric, direct claim load
       if (/^\d+$/.test(rest)) {
         appendLine(`looking for claim ${rest}...`);
         try {
@@ -345,7 +345,7 @@ const commands: Record<string, Command> = {
         }
       }
 
-      // has letters — search by name
+      // has letters, search by name
       return await searchCities(rest);
     },
   },
@@ -418,7 +418,7 @@ const commands: Record<string, Command> = {
     run: async (args) => {
       if (!claimOrWarn()) return [];
 
-      // fetch citizens if not cached — aeolith pulls its own weight
+      // fetch citizens if not cached, aeolith pulls its own weight
       let citizens = ctx?.getCitizens() ?? null;
       if (!citizens) {
         appendLine('loading citizens...');
@@ -576,7 +576,7 @@ async function searchCities(query: string): Promise<string[]> {
       return [voice(pick(VOICE.noMatch))];
     }
 
-    // single exact match — load it directly
+    // single exact match, load it directly
     if (claims.length === 1) {
       const c = claims[0];
       appendLine(`found ${c.name}. loading...`);
@@ -589,7 +589,7 @@ async function searchCities(query: string): Promise<string[]> {
       }
     }
 
-    // multiple — list them
+    // multiple, list them
     return formatCityList(claims, query);
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'search failed';
@@ -638,7 +638,7 @@ function citSearch(data: CitizensData, search: string, detail: boolean): string[
     return [voice(pick(VOICE.noMatch))];
   }
 
-  // multiple matches — list them
+  // multiple matches, list them
   if (matches.length > 1) {
     const lines = [`${matches.length} citizens matching "${search}":`];
     for (const r of matches) {
@@ -647,7 +647,7 @@ function citSearch(data: CitizensData, search: string, detail: boolean): string[
     return lines;
   }
 
-  // single match — show detail
+  // single match, show detail
   return citDetail(matches[0], data, detail);
 }
 
@@ -761,7 +761,7 @@ async function calcMats(
   if (exact.length === 1) {
     matches = exact;
   } else if (exact.length > 1) {
-    // exact name but multiple tiers — show tier disambiguation
+    // exact name but multiple tiers, show tier disambiguation
     const lines = [`"${exact[0].name}" exists at multiple tiers:`];
     for (const m of exact) {
       lines.push(`  T${m.tier}  ${m.name}`);
@@ -770,7 +770,7 @@ async function calcMats(
     return lines;
   }
 
-  // still ambiguous — show the list
+  // still ambiguous, show the list
   if (matches.length > 1) {
     const lines = [`${matches.length} recipes match "${searchTerm}":`];
     for (const m of matches.slice(0, 15)) {
@@ -782,7 +782,7 @@ async function calcMats(
     return lines;
   }
 
-  // single match — show breakdown
+  // single match, show breakdown
   const recipe = matches[0];
   const lines: string[] = [`${recipe.name} (T${recipe.tier}) x${qty}`];
 
@@ -799,7 +799,7 @@ async function calcMats(
       lines.push(`    ${tierStr}  ${(inp.qty * qty).toString().padStart(6)}  ${name}`);
     }
   } else {
-    lines.push('  (gathered — no crafting inputs)');
+    lines.push('  (gathered, no crafting inputs)');
   }
 
   return lines;
