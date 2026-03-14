@@ -29,6 +29,7 @@ import { initHotkeys } from './hotkeys.js';
 import { initWalkthrough } from './walkthrough.js';
 import { applyAll as applyPreferences } from './user-prefs.js';
 import { init as initTravelerTimer } from './traveler-timer.js';
+import { initAeolith } from './aeolith.js';
 
 const log = createLogger('Main');
 
@@ -369,6 +370,15 @@ setupTabs();
 initHotkeys();
 initTravelerTimer();
 initWalkthrough();
+
+initAeolith({
+  getClaimId: () => claimData.claimId,
+  getClaimInfo: () => claimData.claimInfo,
+  getInventoryLookup: () => Planner.getLastInventoryLookup(),
+  getPlanItems: () => plannerState.results?.planItems ?? null,
+  getTargetTier: () => plannerState.targetTier,
+  loadClaim: (id) => loadClaim(id),
+});
 
 if (claimParam) {
   const input = document.getElementById('claim-input-field') as HTMLInputElement | null;

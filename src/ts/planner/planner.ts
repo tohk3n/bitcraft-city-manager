@@ -34,6 +34,7 @@ let recipesCache: RecipesFile | null = null;
 let gatheredCache: Set<string> | null = null;
 let packagesCache: PackagesFile | null = null;
 let lastPlanItems: PlanItem[] | null = null;
+let lastInventoryLookup: InventoryLookup | null = null;
 
 async function loadData(): Promise<{
   codex: CodexFile;
@@ -125,6 +126,7 @@ export async function calculateRequirements(
   options: CalculateOptions = {}
 ): Promise<PlannerResults> {
   const inventoryLookup = await fetchInventoryLookup(claimId);
+  lastInventoryLookup = inventoryLookup;
   return runCalculation(inventoryLookup, targetTier, options);
 }
 
@@ -145,6 +147,10 @@ export function getTierRequirements(): TierRequirements {
 
 export function getLastPlanItems(): PlanItem[] | null {
   return lastPlanItems;
+}
+
+export function getLastInventoryLookup(): InventoryLookup | null {
+  return lastInventoryLookup;
 }
 
 // ── UI Rendering ──────────────────────────────────────────────────
