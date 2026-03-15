@@ -177,7 +177,7 @@ function renderItem(item: PlanItem, compactNames: boolean, maxDeficit: number): 
     <div class="dash-row ${status}" ${tooltip}>
       <span class="dash-row-bar" style="width: ${barPct}%"></span>
       <span class="dash-row-name">${displayName}</span>
-      <span class="dash-row-tier">T${item.tier}</span>
+      <span class="dash-row-tier tier-badge tier-${item.tier}">T${item.tier}</span>
       <span class="dash-row-deficit">${item.deficit > 0 ? `-${formatCompact(item.deficit)}` : '✓'}</span>
     </div>`;
 }
