@@ -113,6 +113,33 @@ function makeTwoResearchConfig(onTierChange: PlannerViewConfig['onTierChange']):
     onPlayerChange: () => {
       return null;
     },
+    onRefresh: async () => ({
+      targetTier: 6,
+      codexTier: 5,
+      codexCount: 25,
+      codexName: 'Advanced Codex',
+      researches: [
+        makeResearch('Advanced Stone Research', [
+          makeNode({ name: 'Refined Brick', tier: 5, required: 100, have: 20, deficit: 80 }),
+          makeNode({ name: 'Simple Sand', tier: 2, required: 200, have: 50, deficit: 150 }),
+        ]),
+        makeResearch('Advanced Wood Research', [
+          makeNode({ name: 'Refined Plank', tier: 5, required: 100, have: 10, deficit: 90 }),
+          makeNode({ name: 'Oak Trunk', tier: 2, required: 300, have: 0, deficit: 300 }),
+        ]),
+      ],
+      studyJournals: makeNode({
+        name: 'Advanced Study Journal',
+        tier: 5,
+        mappingType: 'study_material',
+      }),
+      planItems: [
+        makePlanItem({ name: 'Refined Brick', tier: 5, deficit: 80 }),
+        makePlanItem({ name: 'Simple Sand', tier: 2, deficit: 150, activity: 'Mining' }),
+        makePlanItem({ name: 'Refined Plank', tier: 5, deficit: 90 }),
+        makePlanItem({ name: 'Oak Trunk', tier: 2, deficit: 300, activity: 'Logging' }),
+      ],
+    }),
   };
 }
 

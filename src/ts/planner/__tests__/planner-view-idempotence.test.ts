@@ -108,6 +108,39 @@ function makeTier5Config(onTierChange: PlannerViewConfig['onTierChange']): Plann
     onPlayerChange: () => {
       return null;
     },
+    onRefresh: async () => ({
+      targetTier: 6,
+      codexTier: 5,
+      codexCount: 25,
+      codexName: 'Advanced Codex',
+      researches: [
+        makeResearch('Advanced Stone Research', [makeNode({ name: 'Refined Brick', tier: 5 })]),
+        makeResearch('Advanced Wood Research', [makeNode({ name: 'Refined Plank', tier: 5 })]),
+      ],
+      studyJournals: makeNode({
+        name: 'Advanced Study Journal',
+        tier: 5,
+        mappingType: 'study_material',
+      }),
+      planItems: [
+        makePlanItem({
+          name: 'Refined Brick',
+          tier: 5,
+          required: 100,
+          have: 20,
+          deficit: 80,
+          pctComplete: 20,
+        }),
+        makePlanItem({
+          name: 'Refined Plank',
+          tier: 5,
+          required: 100,
+          have: 50,
+          deficit: 50,
+          pctComplete: 50,
+        }),
+      ],
+    }),
   };
 }
 
@@ -147,6 +180,32 @@ function makeTier3Config(onTierChange: PlannerViewConfig['onTierChange']): Plann
     onPlayerChange: () => {
       return null;
     },
+    onRefresh: async () => ({
+      targetTier: 4,
+      codexTier: 3,
+      codexCount: 15,
+      codexName: 'Essential Codex',
+      researches: [
+        makeResearch('Essential Stone Research', [makeNode({ name: 'Sturdy Brick', tier: 3 })]),
+        makeResearch('Essential Wood Research', [makeNode({ name: 'Sturdy Plank', tier: 3 })]),
+        makeResearch('Essential Metal Research', [makeNode({ name: 'Emarium Ingot', tier: 3 })]),
+      ],
+      studyJournals: makeNode({
+        name: 'Essential Study Journal',
+        tier: 3,
+        mappingType: 'study_material',
+      }),
+      planItems: [
+        makePlanItem({
+          name: 'Sturdy Brick',
+          tier: 3,
+          required: 60,
+          have: 0,
+          deficit: 60,
+          pctComplete: 0,
+        }),
+      ],
+    }),
   };
 }
 
