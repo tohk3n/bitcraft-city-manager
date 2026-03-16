@@ -29,7 +29,7 @@ import { initHotkeys } from './hotkeys.js';
 import { initWalkthrough } from './walkthrough.js';
 import { applyAll as applyPreferences } from './user-prefs.js';
 import { init as initTravelerTimer } from './traveler-timer.js';
-import * as LogParserView from './log-parser-view.js';
+import { logParserUI } from './log-parser-view.js';
 
 const log = createLogger('Main');
 
@@ -325,9 +325,9 @@ function setupTabs(): void {
       } else if (view === 'resourceCalculator') {
         const container = document.getElementById('resource-calculator-content');
         if (container) MaterialsView.render(container);
-      } else if (view === 'log') {
+      } else if (view === 'log' && claimData.claimId) {
         const container = document.getElementById('log-content');
-        if (container) LogParserView.render(container);
+        if (container) logParserUI.loadAndRender(claimData.claimId);
       }
     });
   });

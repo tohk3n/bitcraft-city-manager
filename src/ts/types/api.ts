@@ -76,6 +76,7 @@ export interface Building {
   buildingNickname?: string;
   inventory?: InventorySlot[];
   functions?: BuildingFunction[];
+  claimBuildingsId?: string;
 }
 
 export interface ClaimInventoriesResponse {
@@ -151,3 +152,38 @@ export interface ItemsResponse {
 }
 
 export type ItemResponse = ApiItem;
+
+// --- Log Endpoint ---
+
+export interface LogResponse {
+  logs: LogEntry[];
+  items: string[];
+  cargos: string[];
+}
+
+export interface LogEntry {
+  id: string;
+  objectEntityId: string;
+  subjectEntityId: string;
+  subjectName: string;
+  subjectType: string;
+  data: ActionData;
+  timestamp: string;
+  daysSinceEpoch: number;
+  regionId: number;
+  building: LogBuildingData;
+}
+
+export interface ActionData {
+  type: string;
+  item_id: number;
+  quantity: number;
+  item_type: string;
+}
+
+export interface LogBuildingData {
+  entityId: string;
+  buildingDescriptionId: number;
+  buildingName: string;
+  iconAssetName: string;
+}

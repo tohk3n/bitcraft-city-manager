@@ -12,6 +12,7 @@ import type {
   PlayerInventoriesResponse,
   PlayerVaultResponse,
   Building,
+  LogResponse,
 } from './types/index.js';
 
 const log = createLogger('API');
@@ -77,15 +78,15 @@ export const API = {
     return this.fetch<PlayerVaultResponse>(`/players/${playerId}/vault`);
   },
 
-  getPlayerContainerLogs(playerId: string){
+  getPlayerContainerLogs(playerId: string) {
     return this.fetch<LogResponse>(`/logs/storage?playerEntityId=${playerId}`);
   },
 
-  getPlayerContainerLogsSince(playerId: string, since: string){
+  getPlayerContainerLogsSince(playerId: string, since: string) {
     return this.fetch<LogResponse>(`/logs/storage?playerEntityId=${playerId}&since=${since}`);
   },
 
-  getContainerLogs(buildingId: string){
+  getContainerLogs(buildingId: string) {
     return this.fetch<LogResponse>(`/logs/storage?buildingEntityId=${buildingId}`);
   },
 };
