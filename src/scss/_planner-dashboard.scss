@@ -196,17 +196,111 @@
   }
 }
 
-/* ─── Item area — CSS columns for horizontal fill ───
-   Items flow top-to-bottom then into next column.
-   Column width is fixed so rows align predictably.
-   More items = more columns used = more horizontal space filled.
-   Fewer items = fewer columns = panel naturally shrinks vertically. */
+/* ── Tier-grouped concern columns ──
+  Each tier panel body is a flex row of concern columns.
+  Matches the monitor drill-down layout. */
 
 .dash-panel-items {
-  columns: 240px;
-  column-gap: 0;
-  padding: 2px 0;
+  display: flex;
+  gap: 0;
   background: var(--bg-primary);
+  overflow-x: auto;
+}
+
+.dash-col {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.dash-col-hdr {
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(42, 48, 80, 0.5);
+  border-left: 2px solid;
+  position: sticky;
+  top: 0;
+  background: var(--bg-tertiary);
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* Concern accent colors -- same vocabulary as monitor */
+
+.dash-col-gathered .dash-col-hdr {
+  color: var(--success);
+  border-left-color: var(--success);
+}
+
+.dash-col-intermediate .dash-col-hdr {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+.dash-col-crafted .dash-col-hdr {
+  color: var(--warning);
+  border-left-color: var(--warning);
+}
+
+.dash-col-refined .dash-col-hdr {
+  color: var(--accent4);
+  border-left-color: var(--accent4);
+}
+
+.dash-col-scholar .dash-col-hdr {
+  color: var(--accent2);
+  border-left-color: var(--accent2);
+}
+
+.dash-col-other .dash-col-hdr {
+  color: var(--text-muted);
+  border-left-color: var(--text-muted);
+}
+
+/* ── Progress bar ── */
+
+.dash-row .dash-row-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 0;
+  transition: width 0.2s;
+}
+
+.dash-row.missing .dash-row-bar {
+  background: rgba(247, 118, 142, 0.1);
+}
+.dash-row.partial .dash-row-bar {
+  background: rgba(224, 175, 104, 0.1);
+}
+.dash-row.complete .dash-row-bar {
+  background: rgba(158, 206, 106, 0.08);
+}
+
+/* ── Responsive: stack columns vertically on narrow screens ── */
+
+@media (max-width: 600px) {
+  .dash-panel-items {
+    flex-direction: column;
+  }
+
+  .dash-col {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
 }
 
 /* ─── Item rows ─── */
@@ -222,7 +316,7 @@
   overflow: hidden;
   min-height: 20px;
 
-  /* Prevent CSS columns from breaking a row across columns */
+  /* Prevent columns from breaking a row across columns */
   break-inside: avoid;
 
   &:hover {
@@ -303,6 +397,20 @@
   min-width: 36px;
   text-align: right;
   flex-shrink: 0;
+}
+
+.dash-concern-label {
+  padding: 4px 8px 2px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  break-inside: avoid;
+
+  &:first-child {
+    padding-top: 2px;
+  }
 }
 
 /* ─── Responsive ─── */

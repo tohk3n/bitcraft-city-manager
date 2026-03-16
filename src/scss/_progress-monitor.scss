@@ -1,6 +1,10 @@
+/* ═══ Progress Monitor — heatmap dashboard with drill-down ═══
+   Layer 1: Branch × tier heatmap grid.
+   Layer 2: Drill-down panel with concern columns. */
+
 @use 'variables';
 
-/* ═══ Progress Monitor — material × tier matrix with progress bars ═══ */
+/* ─── Outer shell ─── */
 
 .pm-wrap {
   display: flex;
@@ -21,295 +25,338 @@
   flex-shrink: 0;
 }
 
-.pm-pills {
-  display: flex;
-  gap: 4px;
-  flex-wrap: wrap;
-}
-
-.pm-pill {
+.pm-bar-l {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 1px 4px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  font-family: var(--font-mono);
-  font-size: 10px;
+  gap: 8px;
 }
 
-.pm-pill-push {
-  border-color: var(--accent);
-  .pm-pill-t {
+.pm-push-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+  font-size: 10px;
+
+  b {
     color: var(--accent);
   }
-  .pm-pill-p {
-    color: var(--text-primary);
-  }
-}
-.pm-pill-complete {
-  border-color: var(--status-complete);
-  .pm-pill-t {
-    color: var(--status-complete);
-  }
-  .pm-pill-p {
-    color: var(--status-complete);
-  }
-}
-.pm-pill-partial {
-  border-color: var(--status-partial);
-  .pm-pill-t {
-    color: var(--status-partial);
-  }
-  .pm-pill-p {
-    color: var(--text-primary);
-  }
-}
-.pm-pill-next {
-  border-color: var(--border-hi);
-  .pm-pill-t {
-    color: var(--text-secondary);
-  }
-  .pm-pill-p {
-    color: var(--text-secondary);
-  }
-}
-.pm-pill-distant {
-  border-color: var(--border);
-  .pm-pill-t {
-    color: var(--text-muted);
-  }
-  .pm-pill-p {
-    color: var(--text-muted);
-  }
-}
 
-.pm-pill-t {
-  font-weight: 600;
-}
-.pm-pill-p {
-  font-variant-numeric: tabular-nums;
+  span {
+    color: var(--text-primary);
+  }
 }
 
 .pm-meta {
   font-size: 10px;
   color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
 }
 
-/* ─── Table ─── */
+/* ─── Goalpost badges ─── */
 
-.pm-scroll {
-  flex: 1;
-  overflow: auto;
-  min-height: 0;
-}
-
-.pm-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-mono);
-  font-size: var(--user-font-size, 11px);
-  line-height: 1.15;
-  table-layout: fixed;
-
-  th,
-  td {
-    padding: 0;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-}
-
-.pm-h-group {
-  width: 22px;
-}
-.pm-h-name {
-  width: auto;
-}
-.pm-h-col {
-  width: 72px;
-}
-
-.pm-table thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background: var(--bg-tertiary);
-  color: var(--text-secondary);
-  font-weight: 600;
+.pm-goals {
+  display: flex;
+  gap: 6px;
+  align-items: center;
   font-size: 10px;
-  text-align: center;
-  border-bottom: 1px solid var(--border-hi);
-  padding: 3px 4px;
-
-  &.pm-h-name {
-    text-align: left;
-    padding-left: 6px;
-  }
-  &.pm-col-distant {
-    color: var(--text-muted);
-    opacity: 0.6;
-  }
 }
 
-/* ─── Vertical concern label ─── */
-
-.pm-label {
-  width: 22px;
-  min-width: 22px;
-  max-width: 22px;
-  vertical-align: middle;
-  text-align: center;
-  padding: 0;
-  border-right: 2px solid var(--border);
-}
-
-.pm-label-text {
-  display: block;
-  writing-mode: vertical-lr;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  margin: auto;
-  padding: 4px 0;
+.pm-goals-label {
   color: var(--text-muted);
 }
 
-.pm-label-refined {
-  border-right-color: var(--accent);
-  .pm-label-text {
-    color: var(--accent);
-  }
-}
-.pm-label-gathered {
-  border-right-color: var(--success);
-  .pm-label-text {
-    color: var(--success);
-  }
-}
-.pm-label-scholar {
-  border-right-color: var(--accent2);
-  .pm-label-text {
-    color: var(--accent2);
-  }
-}
-.pm-label-other {
-  border-right-color: var(--text-muted);
-  .pm-label-text {
-    color: var(--text-muted);
-  }
-}
-
-/* ─── Row styling ─── */
-
-.pm-concern-refined {
-  background: rgba(122, 162, 247, 0.03);
-}
-.pm-concern-gathered {
-  background: rgba(158, 206, 106, 0.03);
-}
-.pm-concern-scholar {
-  background: rgba(187, 154, 247, 0.03);
-}
-.pm-concern-other {
-  background: transparent;
-}
-
-.pm-row {
-  border-bottom: 1px solid var(--border);
-  &:hover {
-    background: var(--bg-secondary);
-  }
-}
-
-.pm-name {
-  text-align: left;
-  color: var(--text-primary);
-  text-overflow: ellipsis;
-  padding: 2px 4px 2px 6px;
-}
-
-/* ─── Cell structure ─── */
-
-.pm-cell {
-  vertical-align: bottom;
-  position: relative;
-  font-variant-numeric: tabular-nums;
-}
-
-/* Text area above the bar */
-.pm-cell-body {
-  text-align: right;
-  padding: 2px 5px 1px;
-}
-
-/* ─── Progress bar: 3px strip at the bottom of each cell ─── */
-
-// Full-width solid bar (complete or fully missing)
-.pm-bar-full {
-  height: 3px;
-  width: 100%;
-}
-
-.pm-bar-green {
-  background: var(--status-complete);
-}
-
-.pm-bar-red {
-  background: var(--status-missing);
-}
-
-// Gradient bar for partial progress
-// Uses CSS custom property --pm-pct set inline
-.pm-bar-grad {
-  height: 3px;
-  width: 100%;
-  background: linear-gradient(
-    to right,
-    var(--status-complete) 0%,
-    var(--status-complete) var(--pm-pct),
-    var(--status-partial) var(--pm-pct),
-    var(--status-partial) calc(var(--pm-pct) + 2%),
-    var(--status-missing) calc(var(--pm-pct) + 2%),
-    var(--status-missing) 100%
-  );
-}
-
-/* ─── Cell text variants ─── */
-
-.pm-complete {
-  .pm-cell-body {
-    color: var(--status-complete);
-    text-align: center;
-    opacity: 0.6;
-  }
-}
-
-.pm-deficit {
+.pm-goal {
+  padding: 1px 5px;
+  border-radius: var(--radius);
+  border: 1px dashed var(--border-hi);
   color: var(--status-missing);
+  font-size: 9px;
   font-weight: 600;
 }
 
-.pm-frac {
+.pm-goal-done {
+  color: var(--status-complete);
+  border-color: var(--status-complete);
+  border-style: solid;
+  opacity: 0.5;
+}
+
+/* ─── Heatmap area ─── */
+
+.pm-hm {
+  padding: 6px;
+}
+
+/* ─── Heatmap grid ─── */
+
+.pm-grid {
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.pm-corner {
+  background: var(--bg-tertiary);
+  padding: 4px 6px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.pm-th {
+  background: var(--bg-tertiary);
+  padding: 4px 2px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.pm-label {
+  background: var(--bg-secondary);
+  padding: 4px 6px;
+  font-size: 10px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--bg-tertiary);
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+  }
+}
+
+/* ─── Heatmap cells ─── */
+
+.pm-hcell {
+  padding: 5px 3px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.1s;
+  background: var(--bg-primary);
+
+  &:hover,
+  &:focus-visible {
+    filter: brightness(1.3);
+    outline: 1px solid var(--text-secondary);
+  }
+}
+
+.pm-hcell-empty {
+  background: var(--bg-primary);
+  cursor: default;
+
+  &:hover {
+    filter: none;
+    outline: none;
+  }
+}
+
+.pm-hcell-pct {
+  display: block;
+  font-size: 11px;
+}
+
+.pm-hcell-ratio {
+  display: block;
+  font-size: 9px;
+  opacity: 0.5;
+  margin-top: 1px;
+}
+
+/* ─── Legend ─── */
+
+.pm-legend {
+  display: flex;
+  gap: 10px;
+  padding: 3px 8px;
+  font-size: 9px;
+  color: var(--text-muted);
+  justify-content: space-between;
+}
+
+.pm-legend-l {
+  display: flex;
+  gap: 8px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+}
+
+.pm-swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 1px;
+  display: inline-block;
+}
+
+/* ─── Drill-down panel ─── */
+
+.pm-drill {
+  margin: 4px 6px 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  animation: pm-drill-in 0.12s ease;
+}
+
+@keyframes pm-drill-in {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pm-drill-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
+}
+
+.pm-drill-title {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.pm-drill-close {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  padding: 1px 5px;
+  border-radius: var(--radius);
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    color: var(--text-primary);
+    border-color: var(--border-hi);
+    outline: none;
+  }
+}
+
+.pm-drill-body {
+  display: flex;
+  gap: 0;
+  max-height: 280px;
+  overflow: auto;
+}
+
+/* ─── Concern columns ─── */
+
+.pm-dc {
+  flex: 1;
+  min-width: 0;
+  border-right: 1px solid var(--border);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.pm-dc-hdr {
+  padding: 3px 6px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(42, 48, 80, 0.5);
+  border-left: 2px solid;
+  position: sticky;
+  top: 0;
+  background: var(--bg-tertiary);
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ─── Drill-down item rows ─── */
+
+.pm-di {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px;
+  padding: 2px 6px;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    background: var(--bg-tertiary);
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.pm-di-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  opacity: 0.06;
+}
+
+.pm-di-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-secondary);
   font-size: 10px;
 }
 
-/* ─── Distant tier muting ─── */
+.pm-di-val {
+  text-align: right;
+  font-weight: 600;
+  font-size: 10px;
+  white-space: nowrap;
+}
 
-.pm-distant {
-  opacity: 0.35;
-  &:hover {
-    opacity: 0.7;
+.pm-di-frac {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* Item status variants */
+
+.pm-di-m .pm-di-val {
+  color: var(--status-missing);
+}
+
+.pm-di-p .pm-di-val {
+  color: var(--status-partial);
+}
+
+.pm-di-d {
+  opacity: 0.4;
+
+  .pm-di-val {
+    color: var(--status-complete);
   }
 }
 
-/* ─── Status ─── */
+/* ─── Status messages ─── */
 
 .pm-status {
   padding: 24px;
@@ -322,41 +369,23 @@
   color: var(--status-missing);
 }
 
-progress monitor scope · SCSS
-/* ── Tier scope filter ── */
+/* ─── Responsive ─── */
 
-.pm-scope {
-  display: flex;
-  gap: 2px;
-  margin-left: 8px;
-}
-
-.pm-scope-btn {
-  padding: 1px 6px;
-  font-family: var(--font-mono);
-  font-size: 10px;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  cursor: pointer;
-  transition:
-    color 0.1s,
-    border-color 0.1s;
-
-  &:hover {
-    color: var(--text-secondary);
+@media (max-width: 600px) {
+  .pm-goals {
+    display: none;
   }
 
-  &.active {
-    color: var(--text-primary);
-    border-color: var(--accent);
-  }
-}
+  .pm-drill-body {
+    flex-direction: column;
 
-/* Item tier badge inside monitor cells */
-.pm-item-tier {
-  font-size: 9px;
-  color: var(--text-muted);
-  margin-right: 2px;
+    .pm-dc {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
 }

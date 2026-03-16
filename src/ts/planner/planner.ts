@@ -28,6 +28,7 @@ import type {
 } from '../types/index.js';
 import type { RecipesFile, PackagesFile } from '../data/types.js';
 import type { FilterContext } from './player-filter.js';
+import type { PlannerViewConfig } from './planner-view.js';
 
 let codexCache: CodexFile | null = null;
 let recipesCache: RecipesFile | null = null;
@@ -164,7 +165,8 @@ export function renderPlannerView(
   citizens: { entityId: string; userName: string }[] | null,
   activePlayerId: string | null,
   onTierChange: (tier: number, count: number) => void,
-  onPlayerChange: (playerId: string | null) => void
+  onPlayerChange: (playerId: string | null) => void,
+  onRefresh: PlannerViewConfig['onRefresh']
 ): void {
   if (!results.planItems || results.planItems.length === 0) {
     container.innerHTML = '<div class="pv-empty">No data</div>';
@@ -192,8 +194,11 @@ export function renderPlannerView(
     citizens,
     activePlayerId,
     onPlayerChange,
+    onRefresh,
   });
 }
+
+export { stopPolling } from './planner-view.js';
 
 export function renderLoading(container: HTMLElement): void {
   PlannerView.renderLoading(container);

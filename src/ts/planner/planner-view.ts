@@ -20,6 +20,8 @@ import { applyTabA11y } from '../aria.js';
 import { generateTreeCSV } from './lib/tree-csv.js';
 import { renderFontSizeControl, wireFontSizeControl } from '../font-size-control.js';
 import type { FilterContext } from './player-filter.js';
+import { createPollTimer } from '../lib/poll-timer.js';
+import type { PollTimerHandle } from '../lib/poll-timer.js';
 
 // ── Types ─────────────────────────────────────────────────────────
 
@@ -42,6 +44,11 @@ export interface PlannerViewConfig {
   citizens: { entityId: string; userName: string }[] | null;
   activePlayerId: string | null;
   onPlayerChange: (playerId: string | null) => void;
+  onRefresh: () => Promise<{
+    planItems: PlanItem[];
+    researches: ProcessedNode[];
+    studyJournals: ProcessedNode | null;
+  }>;
 }
 
 // ── Module state ──────────────────────────────────────────────────
@@ -61,6 +68,9 @@ let cachedStudyJournals: ProcessedNode | null = null;
 let cachedOnTierChange: ((tier: number, count: number) => void) | null = null;
 let cachedOnPlayerChange: ((playerId: string | null) => void) | null = null;
 
+// Poller for tasks/flowchart live refresh
+let viewPoller: PollTimerHandle | null = null;
+
 // ── Public API ────────────────────────────────────────────────────
 
 /**
@@ -78,6 +88,7 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
   cachedStudyJournals = config.studyJournals;
   cachedOnTierChange = config.onTierChange;
   cachedOnPlayerChange = config.onPlayerChange;
+  initPoller(config.onRefresh);
 
   if (!config.researches || config.researches.length === 0) {
     ProgressMonitor.stop();
@@ -139,6 +150,7 @@ export function render(container: HTMLElement, config: PlannerViewConfig): void 
   wireEvents(container, contentEl);
   renderResearchTabs(container);
   renderContent(contentEl);
+  syncPoller();
 }
 
 export function renderLoading(container: HTMLElement): void {
@@ -234,11 +246,13 @@ function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
 
         // Stop monitor when leaving monitor tab
         if (currentView === 'monitor') ProgressMonitor.stop();
+        viewPoller?.stop();
 
         currentView = view;
         container.querySelectorAll('.pv-tab').forEach((t) => t.classList.remove('active'));
         tab.classList.add('active');
         renderContent(contentEl);
+        syncPoller();
       },
       { signal }
     );
@@ -328,10 +342,11 @@ function renderContent(container: HTMLElement): void {
     researchBar.classList.toggle('hidden', currentView !== 'flowchart');
   }
 
+  document.body.classList.toggle('fc-expanded', currentView === 'flowchart');
+
   if (currentView === 'dashboard') {
-    PlannerDashboard.render(container, cachedPlanItems, cachedTargetTier);
+    PlannerDashboard.render(container, cachedResearches, cachedStudyJournals, cachedTargetTier);
   } else if (currentView === 'monitor') {
-    // Monitor manages its own rendering via polling
     ProgressMonitor.start(container, cachedClaimId, cachedCityTier, cachedTargetTier);
   } else {
     Flowchart.render(container, {
@@ -370,6 +385,54 @@ function renderResearchTabs(container: HTMLElement): void {
 
   const tabContainer = container.querySelector<HTMLElement>('.pv-research-tabs');
   if (tabContainer) applyTabA11y(tabContainer, '.pv-rtab');
+}
+
+// ── Polling ───────────────────────────────────────────────────────
+
+function initPoller(onRefresh: PlannerViewConfig['onRefresh']): void {
+  viewPoller?.stop();
+
+  viewPoller = createPollTimer({
+    intervalMs: 60_000,
+    jitterMs: 10_000,
+    minMs: 15_000,
+    staleAfterMs: 30_000,
+    onPoll: async () => {
+      const updated = await onRefresh();
+
+      cachedPlanItems = updated.planItems;
+      cachedResearches = updated.researches;
+      cachedStudyJournals = updated.studyJournals;
+
+      patchProgress();
+
+      const contentEl = document.getElementById('pv-content');
+      if (contentEl) renderContent(contentEl);
+    },
+  });
+}
+
+function syncPoller(): void {
+  if (currentView === 'dashboard' || currentView === 'flowchart') {
+    viewPoller?.start();
+  } else {
+    viewPoller?.stop();
+  }
+}
+
+function patchProgress(): void {
+  const progress = calculatePlanProgress(cachedPlanItems);
+  const pctEl = document.querySelector('.pv-pct');
+  const fillEl = document.querySelector<HTMLElement>('.pv-progress-fill-mini');
+  const statsEl = document.querySelector('.pv-stats-mini');
+  if (pctEl) pctEl.textContent = `${progress.percent}%`;
+  if (fillEl) fillEl.style.width = `${progress.percent}%`;
+  if (statsEl) statsEl.textContent = `${progress.completeCount}/${progress.totalItems}`;
+}
+
+export function stopPolling(): void {
+  viewPoller?.stop();
+  ProgressMonitor.stop();
 }
 
 // ── Helpers ───────────────────────────────────────────────────────

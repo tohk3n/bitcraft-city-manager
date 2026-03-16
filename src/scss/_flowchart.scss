@@ -338,8 +338,8 @@
 }
 
 /* ═══ CONNECTORS — the lines between nodes ═══
-   stroke-width: 2 is the original. Don't reduce or they vanish
-   on zoomed-out views. */
+  stroke-width: 2 is the original. Don't reduce or they vanish
+  on zoomed-out views. */
 
 .fc-connector {
   fill: none;
@@ -416,4 +416,27 @@
   padding: 32px;
   color: var(--text-secondary);
   font-size: 11px;
+}
+
+/* ── Viewport breakout -- full-width flowchart ── */
+
+.pv-container.fc-expanded {
+  width: calc(100vw - (var(--gap) * 2));
+  margin-left: calc(-1 * (100vw - (var(--gap) * 2) - 100%) / 2);
+  transition:
+    width 0.2s ease-out,
+    margin-left 0.2s ease-out;
+}
+
+.pv-container:not(.fc-expanded) {
+  transition: none;
+}
+
+body.fc-expanded .wm-main {
+  max-width: none;
+  transition: max-width 0.2s ease-out;
+}
+
+body:not(.fc-expanded) .wm-main {
+  transition: none;
 }

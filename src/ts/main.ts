@@ -244,6 +244,24 @@ async function loadPlanner(): Promise<void> {
         claimData.playerFilter = null;
         if (playerId) await loadPlayerFilter();
         await loadPlanner();
+      },
+      // Poll refresh, re-fetch inventory and recalculate for current tier
+      async () => {
+        if (!claimData.claimId) throw new Error('No claim loaded');
+        const options: CalculateOptions = plannerState.codexCount
+          ? { customCount: plannerState.codexCount }
+          : {};
+        const results = await Planner.calculateRequirements(
+          claimData.claimId,
+          plannerState.targetTier,
+          options
+        );
+        plannerState.results = results;
+        return {
+          planItems: results.planItems,
+          researches: results.researches,
+          studyJournals: results.studyJournals,
+        };
       }
     );
   } catch (err) {
@@ -308,6 +326,10 @@ function setupTabs(): void {
       document.querySelectorAll('.view-section').forEach((s) => s.classList.add('hidden'));
       const viewEl = document.getElementById(`view-${view}`);
       viewEl?.classList.remove('hidden');
+
+      if (view !== 'planner') {
+        Planner.stopPolling();
+      }
 
       if (view === 'citizens' && claimData.claimId) {
         loadCitizens();
