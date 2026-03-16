@@ -54,8 +54,6 @@ function handleKeydown(e: KeyboardEvent): void {
       e.preventDefault();
       return;
     }
-    // Future: close walkthrough modal here
-    document.getElementById('guide-btn')?.click();
     return;
   }
 
