@@ -288,22 +288,103 @@
 .fc-need {
   color: var(--text-muted);
 }
+
+.fc-total {
+  color: var(--text-muted);
+  opacity: 0.6;
+  font-size: 8px;
+  margin-left: 2px;
+}
+
 .fc-node-check {
   color: var(--status-complete);
   font-weight: 600;
 }
 
-.fc-node-progress {
-  height: 3px;
-  background: var(--bg-tertiary);
-  border-radius: 1px;
+/* ═══ SEGMENTED PROGRESS BAR ═══
+   Three segments: done (green), ready (yellow), need (empty). */
+
+.fc-seg-bar {
+  height: 5px;
+  border-radius: 2px;
   overflow: hidden;
+  display: flex;
+  background: var(--bg-tertiary);
 }
 
-.fc-node-progress-fill {
+.fc-seg-done {
+  background: var(--status-complete);
   height: 100%;
-  border-radius: 1px;
-  transition: width 0.3s ease;
+}
+
+.fc-seg-ready {
+  background: var(--status-partial);
+  height: 100%;
+}
+
+.fc-seg-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  margin-top: 3px;
+  font-size: 7px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.fc-seg-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.fc-seg-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.done {
+    background: var(--status-complete);
+  }
+  &.ready {
+    background: var(--status-partial);
+  }
+  &.need {
+    background: var(--bg-tertiary);
+    border: 0.5px solid var(--text-muted);
+  }
+}
+
+.fc-seg-spacer {
+  flex: 1;
+  max-width: 8px;
+}
+
+/* status-specific bar overrides for focused state */
+.fc-node.is-focused {
+  .fc-seg-bar {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .fc-seg-legend {
+    .fc-seg-item {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    .fc-seg-dot.need {
+      background: rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+  }
+}
+
+/* complete nodes — full green bar, no legend segments needed */
+.fc-node.complete .fc-seg-bar {
+  .fc-seg-done {
+    width: 100% !important;
+  }
 }
 
 .fc-node-deficit {
