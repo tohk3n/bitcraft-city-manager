@@ -34,7 +34,7 @@ function walkNode(
   depth: number,
   lines: string[]
 ): void {
-  const deficit = Math.max(0, node.required - node.have);
+  const deficit = node.deficit;
 
   lines.push(
     [

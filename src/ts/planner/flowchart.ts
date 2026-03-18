@@ -174,8 +174,82 @@ export function render(container: HTMLElement, options: FlowchartRenderOptions):
   window.addEventListener('resize', () => drawConnections(container));
 }
 
+// ─── Segmented progress bar helper ────────────────────────────────
+// Computes the three segments: done (parent output), ready (on hand), need (remaining)
+// and renders both the bar and a compact self-documenting legend.
+
+interface SegmentedBar {
+  done: number; // parent's completed output (idealQty - required)
+  ready: number; // this node's on-hand stock (have), clamped to remaining need
+  need: number; // remaining effort (required - have, floored at 0)
+  total: number; // idealQty — full recipe requirement
+  isComplete: boolean;
+}
+
+function computeSegments(node: ProcessedNode): SegmentedBar {
+  const total = node.idealQty;
+  const done = Math.max(0, node.idealQty - node.required);
+  const remaining = Math.max(0, node.required - node.have);
+  const ready = Math.min(node.have, node.required);
+
+  return {
+    done,
+    ready,
+    need: remaining,
+    total,
+    isComplete: remaining === 0,
+  };
+}
+
+function renderSegmentedBar(seg: SegmentedBar): string {
+  if (seg.total === 0) return '';
+
+  const donePct = (seg.done / seg.total) * 100;
+  const readyPct = (seg.ready / seg.total) * 100;
+
+  // bar segments
+  const bar = `
+    <div class="fc-seg-bar">
+      ${donePct > 0 ? `<div class="fc-seg-done" style="width: ${donePct}%"></div>` : ''}
+      ${readyPct > 0 ? `<div class="fc-seg-ready" style="width: ${readyPct}%"></div>` : ''}
+    </div>`;
+
+  // legend adapts to context
+  if (seg.isComplete) {
+    return `${bar}
+      <div class="fc-seg-legend">
+        <span class="fc-seg-item"><span class="fc-seg-dot done"></span>complete</span>
+      </div>`;
+  }
+
+  const hasPipeline = seg.done > 0;
+  const parts: string[] = [];
+
+  if (hasPipeline) {
+    parts.push(
+      `<span class="fc-seg-item"><span class="fc-seg-dot done"></span>${formatCompact(seg.done)} done</span>`
+    );
+  }
+
+  if (seg.ready > 0) {
+    const readyLabel = hasPipeline ? 'ready' : 'have';
+    parts.push(
+      `<span class="fc-seg-item"><span class="fc-seg-dot ready"></span>${formatCompact(seg.ready)} ${readyLabel}</span>`
+    );
+  }
+
+  parts.push(
+    `<span class="fc-seg-item"><span class="fc-seg-dot need"></span>${formatCompact(seg.need)} need</span>`
+  );
+
+  return `${bar}
+    <div class="fc-seg-legend">${parts.join('<span class="fc-seg-spacer"></span>')}</div>`;
+}
+
 /**
  * Render a node recursively.
+ * Uses idealQty as the denominator, segmented progress bar with self-labeling legend.
+ * Badge deficit = required - have (remaining effort accounting for parent inventory).
  */
 function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): string {
   const nodeKey = `${node.name}:${node.tier}`;
@@ -194,11 +268,8 @@ function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): 
     `;
   }
 
-  const pct =
-    node.required > 0
-      ? Math.round((Math.min(node.have, node.required) / node.required) * 100)
-      : 100;
   const deficit = Math.max(0, node.required - node.have);
+  const seg = computeSegments(node);
 
   const isCollapsed = hasChildren && collapsedNodes.has(nodeKey);
 
@@ -228,12 +299,10 @@ function renderNode(node: ProcessedNode, isRoot = false, hideComplete = false): 
         <span class="fc-node-qty">
           <span class="fc-have">${formatCompact(node.have)}</span>
           <span class="fc-sep">/</span>
-          <span class="fc-need">${formatCompact(node.required)}</span>
+          <span class="fc-need">${formatCompact(node.idealQty)}</span>
         </span>
       </div>
-      <div class="fc-node-progress">
-        <div class="fc-node-progress-fill" style="width: ${pct}%"></div>
-      </div>
+      ${renderSegmentedBar(seg)}
     </div>
   `;
 
