@@ -68,8 +68,14 @@ function wireSearch(el: HTMLElement, viewState: ViewState, paint: PaintFn): void
   const search = el.querySelector<HTMLInputElement>('#cz-search');
   if (!search) return;
   search.addEventListener('input', () => {
+    const pos = search.selectionStart;
     viewState.search = search.value;
     paint();
+    const restored = el.querySelector<HTMLInputElement>('#cz-search');
+    if (restored && pos !== null) {
+      restored.focus();
+      restored.setSelectionRange(pos, pos);
+    }
   });
   search.focus();
 }
