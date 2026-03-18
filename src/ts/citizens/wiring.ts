@@ -72,6 +72,7 @@ function wireSearch(el: HTMLElement, viewState: ViewState, paint: PaintFn): void
     paint();
   });
   search.focus();
+  search.setSelectionRange(search.value.length, search.value.length);
 }
 
 function wireFilters(el: HTMLElement, viewState: ViewState, paint: PaintFn): void {
