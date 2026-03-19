@@ -1,0 +1,324 @@
+// overview -- newspaper-meets-terminal front page layout
+// three-column grid with masthead, headline stats, station chips.
+// the sidebars collapse on narrower viewports.
+
+// -- masthead --
+
+.ov-masthead {
+  text-align: center;
+  padding: 10px 0 6px;
+  border-bottom: 2px solid var(--accent);
+  position: relative;
+
+  // double-rule newspaper effect
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: var(--border);
+  }
+}
+
+.ov-masthead-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+}
+
+.ov-masthead-sub {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ov-masthead-rule {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+}
+
+// -- headline stats --
+
+.ov-headlines {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.ov-hl {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border-right: 1px solid var(--border);
+  gap: 2px;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.ov-hl-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.ov-hl-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.ov-hl-sub {
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 900px) {
+  .ov-hl-value {
+    font-size: 14px;
+  }
+  .ov-hl {
+    padding: 6px 8px;
+  }
+}
+
+// -- station chip bar --
+
+.ov-stations {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow-x: auto;
+  flex-wrap: wrap;
+}
+
+.sc-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.sc-label {
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.sc-sep {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.station-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 6px;
+  font-size: 10px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.sc-total {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sc-tiers {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+// -- newspaper grid --
+
+.ov-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: var(--gap);
+  flex: 1;
+  min-height: 0;
+}
+
+.ov-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.ov-center {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+// sidebars drop off as viewport shrinks
+@media (max-width: 1100px) {
+  .ov-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+  .ov-side:last-child {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .ov-grid {
+    grid-template-columns: 1fr;
+  }
+  .ov-side {
+    display: none;
+  }
+}
+
+// -- active crafts --
+
+.ac-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: 3px 6px;
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    position: sticky;
+    top: 0;
+    background: var(--bg-secondary);
+
+    &.r {
+      text-align: right;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42, 48, 80, 0.3);
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: rgba(122, 162, 247, 0.04);
+    }
+  }
+
+  td {
+    padding: 3px 6px;
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+}
+
+.ac-output {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.ac-worker {
+  color: var(--text-muted);
+}
+
+.ac-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent3);
+  font-weight: 600;
+
+  &.done {
+    color: var(--status-complete);
+  }
+}
+
+.ac-loading,
+.ac-empty,
+.ac-error {
+  padding: 12px;
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.ac-error {
+  color: var(--status-missing);
+}
+
+// -- sidebar widgets --
+
+.ov-sidebar-section {
+  padding: 6px 8px;
+}
+
+.ov-mat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 10px;
+}
+
+.ov-mat-name {
+  flex: 1;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.ov-mat-qty {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 40px;
+  text-align: right;
+}
+
+.ov-mat-bar {
+  width: 50px;
+  height: 3px;
+  background: var(--bg-primary);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.ov-mat-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s;
+}

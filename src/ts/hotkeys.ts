@@ -5,6 +5,7 @@
 // ── Global tab hotkeys ──────────────────────────────────────────
 
 const TAB_HOTKEYS: Record<string, string> = {
+  h: 'overview',
   i: 'inventory',
   p: 'planner',
   c: 'citizens',

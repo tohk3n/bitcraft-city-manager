@@ -1,9 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Bitcraft City Manager
-  Terminal rice UI — tiling WM aesthetic (Ocean Night)
-  All element IDs preserved — JS modules wire up unchanged
--->
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -14,12 +9,13 @@
 <body>
 
 <div class="wm-root">
-  <!-- ═══ TOP BAR ═══ -->
+
+  <!-- top bar -->
   <header class="bar-top" role="toolbar" aria-label="App bar">
     <div class="bar-top-inner">
       <div class="bar-left">
         <span class="app-title">bcm</span>
-        <span class="sep">│</span>
+        <span class="sep">|</span>
         <section id="claim-input" role="search" aria-label="Load a settlement">
           <div class="claim-input-wrapper">
             <input type="text" id="claim-input-field"
@@ -43,23 +39,23 @@
     </div>
   </header>
 
-  <!-- ═══ ERROR ═══ -->
+  <!-- error -->
   <section id="error" class="hidden" role="alert">
     <p id="error-message"></p>
   </section>
 
-  <!-- ═══ CLAIM HEADER ═══ -->
+  <!-- claim header -->
   <section id="claim-header" class="hidden"></section>
 
-  <!-- Legacy element — some JS paths reference this -->
+  <!-- legacy element -- some JS paths still reference this -->
   <section id="claim-info" class="hidden">
     <h2 id="claim-name">-</h2>
   </section>
 
-  <!-- ═══ [ TAB BAR ] ═══
-       .hk wraps the hotkey letter for underline hint -->
+  <!-- tab bar -->
   <nav id="view-tabs" class="hidden" role="tablist" aria-label="View tabs">
-    <button class="tab-btn active" data-view="inventory" role="tab" aria-selected="true"><span class="hk">I</span>nventory</button>
+    <button class="tab-btn active" data-view="overview" role="tab" aria-selected="true"><span class="hk">H</span>ome</button>
+    <button class="tab-btn" data-view="inventory" role="tab"><span class="hk">I</span>nventory</button>
     <button class="tab-btn" data-view="planner" role="tab"><span class="hk">P</span>lanner</button>
     <button class="tab-btn" data-view="citizens" role="tab"><span class="hk">C</span>itizens</button>
     <button class="tab-btn" data-view="ids" role="tab">I<span class="hk">D</span>s</button>
@@ -68,11 +64,158 @@
     <button class="tab-btn" data-view="resourceCalculator" role="tab"><span class="hk">R</span>esources</button>
   </nav>
 
-  <!-- ═══ MAIN CONTENT ═══ -->
+  <!-- main content -->
   <main class="wm-main">
 
-    <!-- ── Inventory View ── -->
-    <section id="view-inventory" class="view-section" role="tabpanel">
+    <!-- overview (home) -->
+    <section id="view-overview" class="view-section" role="tabpanel">
+      <div id="overview-content">
+
+        <div class="ov-masthead">
+          <div class="ov-masthead-title" id="ov-city-name">&mdash;</div>
+          <div class="ov-masthead-sub">
+            <span class="ov-masthead-rule"></span>
+            <span id="ov-faction">&mdash;</span>
+            <span class="sep">&middot;</span>
+            <span id="ov-region">&mdash;</span>
+            <span class="sep">&middot;</span>
+            <span id="ov-date">&mdash;</span>
+            <span class="ov-masthead-rule"></span>
+          </div>
+        </div>
+
+        <div class="ov-headlines" id="ov-headlines">
+          <div class="ov-hl">
+            <span class="ov-hl-label">Food</span>
+            <span class="ov-hl-value" id="ov-hl-food">&mdash;</span>
+            <span class="ov-hl-sub" id="ov-hl-food-sub"></span>
+          </div>
+          <div class="ov-hl">
+            <span class="ov-hl-label">Supplies</span>
+            <span class="ov-hl-value" id="ov-hl-supplies">&mdash;</span>
+            <span class="ov-hl-sub" id="ov-hl-supplies-sub"></span>
+          </div>
+          <div class="ov-hl">
+            <span class="ov-hl-label">Active Crafts</span>
+            <span class="ov-hl-value" id="ov-hl-crafts">&mdash;</span>
+            <span class="ov-hl-sub" id="ov-hl-crafts-sub"></span>
+          </div>
+          <div class="ov-hl">
+            <span class="ov-hl-label">Citizens</span>
+            <span class="ov-hl-value" id="ov-hl-citizens">&mdash;</span>
+            <span class="ov-hl-sub" id="ov-hl-citizens-sub"></span>
+          </div>
+        </div>
+
+        <div class="ov-stations" id="ov-stations">
+          <span class="sc-label">loading stations...</span>
+        </div>
+
+        <div class="ov-grid">
+
+          <!-- left sidebar -->
+          <div class="ov-side" id="ov-sidebar-left">
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">Material Health</span>
+              </div>
+              <div class="panel-body">
+                <div class="ov-sidebar-section" id="ov-material-health">
+                  <div class="ac-loading">waiting for data...</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">Research</span>
+                <span class="panel-stat" id="ov-research-pct"></span>
+              </div>
+              <div class="panel-body">
+                <div class="ov-sidebar-section" id="ov-research">
+                  <div class="ac-loading">load planner for progress</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- center column -->
+          <div class="ov-center">
+
+            <div class="panel" id="ov-food-panel">
+              <div class="panel-header">
+                <span class="panel-title">Food</span>
+                <div class="filter-pills" id="ov-food-filters">
+                  <button class="pill active" data-filter="all">all</button>
+                  <button class="pill" data-filter="pinned">pinned</button>
+                  <button class="pill" data-filter="stock">in stock</button>
+                </div>
+              </div>
+              <div class="panel-body">
+                <table class="item-table">
+                  <thead><tr>
+                    <th style="width:20px"></th>
+                    <th style="width:26px"></th>
+                    <th>Item</th>
+                    <th class="r">Have</th>
+                    <th class="r">Can Make</th>
+                    <th>Bottleneck</th>
+                  </tr></thead>
+                  <tbody id="ov-food-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel" id="ov-supply-panel">
+              <div class="panel-header">
+                <span class="panel-title">Supply Cargo</span>
+                <span class="panel-stat" id="ov-supply-stat">&mdash;</span>
+              </div>
+              <div class="panel-body">
+                <table class="item-table">
+                  <thead><tr>
+                    <th style="width:26px"></th>
+                    <th>Cargo</th>
+                    <th class="r">Have</th>
+                    <th class="r">Can Make</th>
+                    <th>Bottleneck</th>
+                  </tr></thead>
+                  <tbody id="ov-supply-body"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel" style="flex:1;min-height:0;">
+              <div class="panel-header">
+                <span class="panel-title">Active Crafts</span>
+                <span class="panel-stat" id="ov-crafts-stat">&mdash;</span>
+              </div>
+              <div class="panel-body" id="ov-active-crafts">
+                <div class="ac-loading">waiting for data...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- right sidebar -- needs live data, placeholder for now -->
+          <div class="ov-side" id="ov-sidebar-right">
+            <div class="panel" style="flex:1;min-height:0;">
+              <div class="panel-header">
+                <span class="panel-title">Activity</span>
+              </div>
+              <div class="panel-body">
+                <div class="ov-sidebar-section">
+                  <div class="ac-loading">coming soon -- needs live data</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- inventory -->
+    <section id="view-inventory" class="view-section hidden" role="tabpanel">
       <div id="dashboard" class="hidden">
         <div id="sub-views">
           <button class="sub-btn active" data-view="overview">overview</button>
@@ -98,42 +241,31 @@
             <div id="inventory-grid"></div>
           </div>
         </div>
-        <div id ="farming-view" class="dash-view hidden">
-        </div>
-        <div id ="tailor-view" class="dash-view hidden">
-        </div>
-        <div id ="woodworking-view" class="dash-view hidden">
-        </div>
-        <div id="leatherworking-view" class="dash-view hidden">
-        </div>
-        <div id="mining-view" class="dash-view hidden">
-        </div>
-        <div id="masonry-view" class="dash-view hidden">
-        </div>
-        <div id="jewelry-view" class="dash-view hidden">
-        </div>
-        <div id="smithing-view" class="dash-view hidden">
-        </div>
-        <div id="fishing-view" class="dash-view hidden">
-        </div>
-        <div id="scholar-view" class="dash-view hidden">
-        </div>
-        <div id="cooking-view" class="dash-view hidden">
-        </div>
+        <div id="farming-view" class="dash-view hidden"></div>
+        <div id="tailor-view" class="dash-view hidden"></div>
+        <div id="woodworking-view" class="dash-view hidden"></div>
+        <div id="leatherworking-view" class="dash-view hidden"></div>
+        <div id="mining-view" class="dash-view hidden"></div>
+        <div id="masonry-view" class="dash-view hidden"></div>
+        <div id="jewelry-view" class="dash-view hidden"></div>
+        <div id="smithing-view" class="dash-view hidden"></div>
+        <div id="fishing-view" class="dash-view hidden"></div>
+        <div id="scholar-view" class="dash-view hidden"></div>
+        <div id="cooking-view" class="dash-view hidden"></div>
       </div>
     </section>
 
-    <!-- ── Planner View ── -->
+    <!-- planner -->
     <section id="view-planner" class="view-section hidden" role="tabpanel">
       <div id="planner-content" aria-live="polite"></div>
     </section>
 
-    <!-- ── Citizens View ── -->
+    <!-- citizens -->
     <section id="view-citizens" class="view-section hidden" role="tabpanel">
       <div id="citizens-grid" aria-live="polite"></div>
     </section>
 
-    <!-- ── ID Lookup View ── -->
+    <!-- id lookup -->
     <section id="view-ids" class="view-section hidden" role="tabpanel">
       <div id="ids-search">
         <input type="text" id="ids-filter" class="term-input"
@@ -146,7 +278,7 @@
       <div id="ids-list"></div>
     </section>
 
-    <!-- ── Map Link Composer View ── -->
+    <!-- map link composer -->
     <section id="view-mapLinkComposer" class="view-section hidden" role="tabpanel">
       <div id="mlc-container">
         <div id="checkbox-row"></div>
@@ -174,20 +306,22 @@
       </div>
     </section>
 
-    <!-- ── Calculator View ── -->
+    <!-- calculator -->
     <section id="view-calculator" class="view-section hidden" role="tabpanel">
       <div id="calculator-content" aria-live="polite"></div>
     </section>
 
+    <!-- resource calculator -->
     <section id="view-resourceCalculator" class="view-section hidden" role="tabpanel">
       <div id="resource-calculator-content" aria-live="polite"></div>
     </section>
+
   </main>
 
-  <!-- ═══ BOTTOM BAR ═══ -->
+  <!-- bottom bar -->
   <footer class="bar-bottom" role="status" aria-label="Status bar" aria-live="polite">
     <div class="bar-bottom-inner">
-      <span id="status-view" class="status-mode">INVENTORY</span>
+      <span id="status-view" class="status-mode">HOME</span>
       <div class="status-seg">
         <span id="status-claim">no claim loaded</span>
       </div>
@@ -197,8 +331,8 @@
           <kbd>?</kbd> keys
         </button>
       </div>
-      <div id="traveler-timer" class="tt-widget" title="Announce OFF — click to enable">
-        <span class="tt-icon">🔔</span>
+      <div id="traveler-timer" class="tt-widget" title="Announce OFF -- click to enable">
+        <span class="tt-icon">&#x1F514;</span>
         <span class="tt-time">--:--:--</span>
       </div>
       <div class="status-seg">
@@ -206,10 +340,12 @@
       </div>
     </div>
   </footer>
+
 </div>
 
 <script type="module" src="/js/main.js"></script>
 
+<!-- walkthrough overlay -->
 <div id="wt-overlay" class="wt-overlay" style="display:none;">
   <div class="wt-modal" role="dialog" aria-label="Getting started guide">
     <div class="wt-header">
@@ -219,12 +355,11 @@
     <div class="wt-progress" id="wt-progress"></div>
     <div class="wt-body" id="wt-body">
 
-      <!-- PAGE 0: Welcome -->
       <div class="wt-page" data-page="0">
         <div class="wt-page-title">welcome to bcm</div>
         <p class="wt-text">
           The <strong>Bitcraft City Manager</strong> helps settlement leaders track
-          inventory, plan tier upgrades, manage citizens, and look up game data —
+          inventory, plan tier upgrades, manage citizens, and look up game data --
           all from one place.
         </p>
         <p class="wt-text">
@@ -233,7 +368,7 @@
           the tabs across the top unlock your settlement data.
         </p>
         <p class="wt-text">
-          BCM is keyboard-first. Every tab has a hotkey — the
+          BCM is keyboard-first. Every tab has a hotkey -- the
           <strong>underlined letter</strong> in each tab label. Press it from
           anywhere to jump there instantly.
         </p>
@@ -243,40 +378,39 @@
         </div>
       </div>
 
-      <!-- PAGE 1: The Tabs -->
       <div class="wt-page" data-page="1">
         <div class="wt-page-title">the tabs</div>
         <dl class="wt-kv">
-          <dt><kbd>i</kbd></dt><dd><strong>Inventory</strong> — dashboard with food, supplies, crafting stations, and per-profession breakdowns</dd>
-          <dt><kbd>p</kbd></dt><dd><strong>Planner</strong> — calculate what you need for your next tier upgrade</dd>
-          <dt><kbd>c</kbd></dt><dd><strong>Citizens</strong> — member roster with skills, gear, activity, and search</dd>
-          <dt><kbd>d</kbd></dt><dd><strong>IDs</strong> — look up citizen and item entity IDs for game commands</dd>
-          <dt><kbd>m</kbd></dt><dd><strong>Map</strong> — compose bitcraftmap.com links with resource/enemy/player filters</dd>
-          <dt><kbd>a</kbd></dt><dd><strong>Calc</strong> — craft time estimator with stamina and food modelling</dd>
-          <dt><kbd>r</kbd></dt><dd><strong>Resources</strong> — resource calculator for gathering planning</dd>
+          <dt><kbd>h</kbd></dt><dd><strong>Home</strong> -- city overview dashboard with headline stats, active crafts, and material health</dd>
+          <dt><kbd>i</kbd></dt><dd><strong>Inventory</strong> -- food, supplies, crafting stations, and per-profession breakdowns</dd>
+          <dt><kbd>p</kbd></dt><dd><strong>Planner</strong> -- calculate what you need for your next tier upgrade</dd>
+          <dt><kbd>c</kbd></dt><dd><strong>Citizens</strong> -- member roster with skills, gear, activity, and search</dd>
+          <dt><kbd>d</kbd></dt><dd><strong>IDs</strong> -- look up citizen and item entity IDs for game commands</dd>
+          <dt><kbd>m</kbd></dt><dd><strong>Map</strong> -- compose bitcraftmap.com links with resource/enemy/player filters</dd>
+          <dt><kbd>a</kbd></dt><dd><strong>Calc</strong> -- craft time estimator with stamina and food modelling</dd>
+          <dt><kbd>r</kbd></dt><dd><strong>Resources</strong> -- resource calculator for gathering planning</dd>
         </dl>
         <p class="wt-text">
-          Some tabs have their own search — <strong>Citizens</strong>,
+          Some tabs have their own search -- <strong>Citizens</strong>,
           <strong>IDs</strong>, and <strong>Calc</strong> all have filter inputs.
           Press <kbd>/</kbd> to focus the search for the current tab.
         </p>
       </div>
 
-      <!-- PAGE 2: The Planner -->
       <div class="wt-page" data-page="2">
         <div class="wt-page-title">the planner</div>
         <p class="wt-text">
           The planner calculates everything you need to complete a tier upgrade.
-          Select a <strong>target tier</strong> from the dropdown — it shows what
+          Select a <strong>target tier</strong> from the dropdown -- it shows what
           your settlement has and what's still missing across all five research branches.
         </p>
         <p class="wt-text">
-          Two views show the same data differently:
+          Three views show the same data differently:
         </p>
         <dl class="wt-kv">
-          <dt><kbd>t</kbd></dt><dd><strong>Tasks</strong> — grouped by profession, filterable, copyable to Discord</dd>
-          <dt><kbd>f</kbd></dt><dd><strong>Flowchart</strong> — visual dependency flowchart per research branch</dd>
-          <dt><kbd>f</kbd></dt><dd><strong>Monitor</strong> — vertical table with polling to observe task progress</dd>
+          <dt><kbd>t</kbd></dt><dd><strong>Tasks</strong> -- grouped by profession, filterable, copyable to Discord</dd>
+          <dt><kbd>f</kbd></dt><dd><strong>Flowchart</strong> -- visual dependency flowchart per research branch</dd>
+          <dt><kbd>o</kbd></dt><dd><strong>Monitor</strong> -- vertical table with polling to observe task progress</dd>
         </dl>
         <p class="wt-text">
           In Tree view, the <strong>research tabs</strong> along the bottom switch between
@@ -289,11 +423,11 @@
         </div>
       </div>
 
-      <!-- PAGE 3: Quick Reference -->
       <div class="wt-page" data-page="3">
         <div class="wt-page-title">quick reference</div>
         <p class="wt-text" style="margin-bottom:4px;">All keyboard shortcuts:</p>
         <dl class="wt-kv" style="margin-bottom:6px;">
+          <dt><kbd>h</kbd></dt><dd>Home</dd>
           <dt><kbd>i</kbd></dt><dd>Inventory</dd>
           <dt><kbd>p</kbd></dt><dd>Planner</dd>
           <dt><kbd>c</kbd></dt><dd>Citizens</dd>
@@ -303,9 +437,9 @@
           <dt><kbd>r</kbd></dt><dd>Resources</dd>
         </dl>
         <dl class="wt-kv" style="margin-bottom:6px;">
-          <dt><kbd>t</kbd></dt><dd>Planner → Tasks</dd>
-          <dt><kbd>f</kbd></dt><dd>Planner → Flowchart</dd>
-          <dt><kbd>o</kbd></dt><dd>Planner → Monitor</dd>
+          <dt><kbd>t</kbd></dt><dd>Planner -- Tasks</dd>
+          <dt><kbd>f</kbd></dt><dd>Planner -- Flowchart</dd>
+          <dt><kbd>o</kbd></dt><dd>Planner -- Monitor</dd>
         </dl>
         <dl class="wt-kv">
           <dt><kbd>/</kbd></dt><dd>focus search</dd>
@@ -324,5 +458,6 @@
     </div>
   </div>
 </div>
+
 </body>
 </html>

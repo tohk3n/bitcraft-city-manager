@@ -134,11 +134,11 @@ const BaseUI = {
 
   showTabs(): void {
     this.show('view-tabs');
-    // Reset to inventory view
+    // default to overview (home) tab
     document.querySelectorAll('#view-tabs .tab-btn').forEach((t) => t.classList.remove('active'));
-    document.querySelector('#view-tabs .tab-btn[data-view="inventory"]')?.classList.add('active');
+    document.querySelector('#view-tabs .tab-btn[data-view="overview"]')?.classList.add('active');
     document.querySelectorAll('.view-section').forEach((s) => s.classList.add('hidden'));
-    document.getElementById('view-inventory')?.classList.remove('hidden');
+    document.getElementById('view-overview')?.classList.remove('hidden');
   },
 
   showCitizensLoading(show: boolean): void {
