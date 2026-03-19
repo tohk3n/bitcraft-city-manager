@@ -190,6 +190,7 @@ function aggregateJournalNode(node: ProcessedNode, multiplier: number): Processe
   return {
     ...node,
     required,
+    idealQty: node.idealQty * multiplier,
     deficit: node.deficit * multiplier,
     contribution,
     pctComplete: required > 0 ? Math.round((contribution / required) * 100) : 100,
