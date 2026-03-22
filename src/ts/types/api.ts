@@ -76,7 +76,7 @@ export interface Building {
   buildingNickname?: string;
   inventory?: InventorySlot[];
   functions?: BuildingFunction[];
-  claimBuildingsId?: string;
+  entityId?: string;
 }
 
 export interface ClaimInventoriesResponse {
