@@ -325,9 +325,18 @@ function setupTabs(): void {
       } else if (view === 'resourceCalculator') {
         const container = document.getElementById('resource-calculator-content');
         if (container) MaterialsView.render(container);
-      } else if (view === 'log' && claimData.claimId) {
+      } else if (view === 'logs' && claimData.claimId) {
         const container = document.getElementById('log-content');
-        if (container) logParserUI.loadAndRender(claimData.claimId);
+        if (!claimData.citizens || !claimData.inventories) {
+          if (container) logParserUI.loadAndRender(claimData.claimId);
+        } else {
+          if (container)
+            logParserUI.prepareAndRender(
+              claimData.inventories.buildings,
+              claimData.citizens.citizens,
+              container
+            );
+        }
       }
     });
   });

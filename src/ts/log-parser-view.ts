@@ -30,9 +30,9 @@ export const logParserUI = {
     let content = '';
     for (let i = 0; i < maxLength; i++) {
       content += `<tr>
-        <td>${citizen[i]?.userName}</td>
-        <td>${buildings[i]?.buildingName}</td>
-        <td>${buildings[i]?.buildingNickname}</td>
+        <td>${citizen[i]?.userName ?? ''}</td>
+        <td>${buildings[i]?.buildingName ?? ''}</td>
+        <td>${buildings[i]?.buildingNickname ?? ''}</td>
       </tr>`;
     }
     html += header;
@@ -41,25 +41,30 @@ export const logParserUI = {
 
     el.innerHTML = html;
   },
+  prepareAndRender(buildings: Building[], citizen: Citizen[], el: HTMLElement): void {
+    const containerData = this.buildSourceContainer(buildings, citizen);
+    this.render(containerData, el);
+  },
   async load(claimId: string) {
-    let buildingsData;
-    let citizenData;
+    let buildings;
+    let citizen;
     try {
       const citizenResponse = await API.getClaimCitizens(claimId);
-      citizenData = citizenResponse.citizens;
+      citizen = citizenResponse.citizens;
     } catch (err) {
       const error = err as Error;
-      log.error('Failed to load citizens:', error.message);
+      log.info('Failed to load citizens:', error.message);
       return false;
     }
     try {
-      buildingsData = await API.getClaimBuildings(claimId);
+      const buildingsData = await API.getClaimInventories(claimId);
+      buildings = buildingsData.buildings;
     } catch (err) {
       const error = err as Error;
-      log.error('Failed to load buildings:', error.message);
+      log.info('Failed to load buildings:', error.message);
       return false;
     }
-    logContainerData = logParserUI.buildSourceContainer(buildingsData, citizenData);
+    logContainerData = logParserUI.buildSourceContainer(buildings, citizen);
     return true;
   },
 
@@ -68,11 +73,17 @@ export const logParserUI = {
       entityId: record.entityId,
       userName: record.userName,
     }));
-    const logBuildings: LogBuildings[] = buildings.map((record) => ({
-      buildingName: record.buildingNickname,
-      buildingNickname: record.buildingNickname,
-      entityId: record.entityId,
-    }));
+    const logBuildings: LogBuildings[] = buildings
+      .filter((record) =>
+        ['Stall', 'Chest', 'Stockpile', 'Storage'].some((word) =>
+          record.buildingName.includes(word)
+        )
+      )
+      .map((record) => ({
+        buildingName: record.buildingName,
+        buildingNickname: record.buildingNickname,
+        entityId: record.entityId,
+      }));
     return {
       buildings: logBuildings,
       citizen: logCitizens,

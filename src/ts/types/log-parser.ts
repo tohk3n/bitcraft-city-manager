@@ -3,11 +3,11 @@ export interface SourceContainer {
   citizen: LogCitizen[];
 }
 export interface LogCitizen {
-  entityId?: string;
-  userName?: string;
+  entityId: string | undefined;
+  userName: string | undefined;
 }
 export interface LogBuildings {
-  buildingName?: string;
+  buildingName: string;
   buildingNickname?: string | undefined;
-  entityId?: string | undefined;
+  entityId: string | undefined;
 }
