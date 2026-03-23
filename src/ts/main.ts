@@ -1,4 +1,3 @@
-// Main entry point — wires up modules, manages tab switching and data loading
 import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
@@ -29,19 +28,21 @@ import { initHotkeys } from './hotkeys.js';
 import { initWalkthrough } from './walkthrough.js';
 import { applyAll as applyPreferences } from './user-prefs.js';
 import { init as initTravelerTimer } from './traveler-timer.js';
+import * as Overview from './overview.js';
+import * as ActiveCrafts from './active-crafts.js';
 import { initAeolith } from './aeolith.js';
 
 const log = createLogger('Main');
 
 const loadBtn = document.getElementById('load-btn');
 
-// ── URL Params ────────────────────────────────────────────────────
+// -- url params --
 
 const params = new URLSearchParams(window.location.search);
 const claimParam: string | null = params.get('claim');
 let activePlayerId: string | null = params.get('playerId');
 
-// ── App State ─────────────────────────────────────────────────────
+// -- app state --
 
 interface AppData {
   claimId: string | null;
@@ -71,7 +72,95 @@ const plannerState: PlannerState = {
   results: null,
 };
 
-// ── Claim Loading ─────────────────────────────────────────────────
+// -- overview polling --
+// slower cadence refresh so the home tab stays current without manual reload.
+// re-fetches inventory (which re-triggers craftability) and planner.
+
+const OV_POLL_MS = 120_000; // 2 minutes
+const OV_JITTER_MS = 30_000;
+const OV_MIN_MS = 60_000;
+let ovTimer: ReturnType<typeof setTimeout> | null = null;
+let ovPolling = false;
+
+function startOverviewPoll(claimId: string): void {
+  stopOverviewPoll();
+  ovPolling = true;
+  scheduleOverviewPoll(claimId);
+  document.addEventListener('visibilitychange', () => onOvVisibility(claimId));
+}
+
+function stopOverviewPoll(): void {
+  ovPolling = false;
+  if (ovTimer !== null) {
+    clearTimeout(ovTimer);
+    ovTimer = null;
+  }
+}
+
+function scheduleOverviewPoll(claimId: string): void {
+  if (!ovPolling) return;
+  const jitter = Math.round((Math.random() - 0.5) * 2 * OV_JITTER_MS);
+  const delay = Math.max(OV_MIN_MS, OV_POLL_MS + jitter);
+  ovTimer = setTimeout(() => ovPoll(claimId), delay);
+}
+
+async function ovPoll(claimId: string): Promise<void> {
+  if (!ovPolling || claimData.claimId !== claimId) return;
+  if (ovTimer !== null) {
+    clearTimeout(ovTimer);
+    ovTimer = null;
+  }
+
+  try {
+    // re-fetch inventory, this triggers renderDashboard which triggers
+    // loadCraftability which calls Overview.updateCraftability
+    const data = await API.getClaimInventories(claimId);
+    claimData.inventories = data;
+    const result = InventoryProcessor.processInventory(data);
+    UI.renderDashboard(result, claimData.claimInfo ?? undefined);
+
+    if (claimData.claimInfo) {
+      Overview.render({
+        claimInfo: claimData.claimInfo,
+        inventory: result,
+        foodItems: result.foodItems,
+      });
+    }
+
+    // re-run planner if it was loaded
+    if (plannerState.results) {
+      const options: CalculateOptions = plannerState.codexCount
+        ? { customCount: plannerState.codexCount }
+        : {};
+      const results = await Planner.calculateRequirements(
+        claimId,
+        plannerState.targetTier,
+        options
+      );
+      plannerState.results = results;
+      Overview.updateResearch(results);
+    }
+  } catch (err) {
+    // silent catch because the overview poll failures shouldn't disrupt the user
+    const error = err as Error;
+    log.debug('Overview poll failed:', error.message);
+  }
+
+  scheduleOverviewPoll(claimId);
+}
+
+function onOvVisibility(claimId: string): void {
+  if (document.hidden) {
+    if (ovTimer !== null) {
+      clearTimeout(ovTimer);
+      ovTimer = null;
+    }
+  } else if (ovPolling) {
+    scheduleOverviewPoll(claimId);
+  }
+}
+
+// -- claim loading --
 
 async function loadClaim(claimId: string): Promise<void> {
   if (!claimId || !/^\d+$/.test(claimId)) {
@@ -79,6 +168,7 @@ async function loadClaim(claimId: string): Promise<void> {
     return;
   }
 
+  stopOverviewPoll();
   UI.clearError();
   UI.setLoading(true);
 
@@ -90,7 +180,7 @@ async function loadClaim(claimId: string): Promise<void> {
     claimData.inventories = data;
     claimData.playerFilter = null;
 
-    // Claim header
+    // claim header
     let claimName = `Claim ${claimId}`;
     let hasClaimHeader = false;
     try {
@@ -113,29 +203,51 @@ async function loadClaim(claimId: string): Promise<void> {
 
     const statusEl = document.getElementById('status-claim');
     if (statusEl) statusEl.textContent = claimName;
+
     const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
     UI.renderDashboard(result, claimData.claimInfo ?? undefined);
 
-    // Buildings (needed for crafting stations display AND player filter)
+    // overview gets the processed result, not the raw API response
+    if (claimData.claimInfo) {
+      Overview.render({
+        claimInfo: claimData.claimInfo,
+        inventory: result,
+        foodItems: result.foodItems,
+      });
+    }
+
+    // buildings, needed for station display and player filter
     try {
       const buildings: Building[] = await API.getClaimBuildings(claimId);
       claimData.buildings = { buildings };
+      UI.updateHeaderBuildings(buildings.length);
       const stations: CraftingStationsResult = processCraftingStations(buildings);
       UI.renderCraftingStations(stations);
+      Overview.renderStations(stations);
+
+      // start active crafts polling, stop() first for idempotence
+      ActiveCrafts.stop();
+      const craftsEl = document.getElementById('ov-active-crafts');
+      if (craftsEl) ActiveCrafts.start(craftsEl, claimId);
     } catch (e) {
       const error = e as Error;
       log.debug('Could not fetch buildings:', error.message);
     }
 
     initPlanner();
+    loadCitizens();
+    loadPlanner();
 
-    // Default planner target to next tier upgrade
+    // start overview poll. refresh inventory + planner every ~2 min
+    startOverviewPoll(claimId);
+
+    // default planner target to next tier upgrade
     const cityTier = claimData.claimInfo?.claim?.tier ?? 0;
     if (cityTier >= 1 && cityTier < 10) {
       plannerState.targetTier = cityTier + 1;
     }
 
-    // Preserve playerId in URL if present
+    // preserve playerId in URL if present
     const urlParams = new URLSearchParams({ claim: claimId });
     if (activePlayerId) urlParams.set('playerId', activePlayerId);
     history.replaceState(null, '', `?${urlParams.toString()}`);
@@ -148,12 +260,10 @@ async function loadClaim(claimId: string): Promise<void> {
   }
 }
 
-// ── Player Filter ─────────────────────────────────────────────────
+// -- player filter --
+// requires citizens data (for skills) and buildings (for station tiers).
+// loads citizens if not cached.
 
-/**
- * Build the player filter context. Requires citizens data (for skills)
- * and buildings (for station tiers). Loads citizens if not cached.
- */
 async function loadPlayerFilter(): Promise<void> {
   if (!claimData.claimId || !activePlayerId) return;
 
@@ -176,12 +286,11 @@ async function loadPlayerFilter(): Promise<void> {
   }
 }
 
-// ── Planner ───────────────────────────────────────────────────────
+// -- planner --
 
 function initPlanner(): void {
   const plannerContainer = document.getElementById('planner-content');
   if (!plannerContainer) return;
-
   Planner.renderEmpty(plannerContainer);
 }
 
@@ -193,7 +302,7 @@ async function loadPlanner(): Promise<void> {
 
   Planner.renderLoading(plannerContainer);
 
-  // Build player filter on first planner load if playerId present
+  // build player filter on first planner load if playerId present
   if (activePlayerId && !claimData.playerFilter) {
     await loadPlayerFilter();
   }
@@ -209,7 +318,8 @@ async function loadPlanner(): Promise<void> {
     );
     plannerState.results = results;
 
-    // Build citizens list for the picker dropdown
+    Overview.updateResearch(results);
+
     const citizensList =
       claimData.citizensData?.records.map((r) => ({
         entityId: r.entityId,
@@ -230,7 +340,6 @@ async function loadPlanner(): Promise<void> {
         loadPlanner();
       },
       async (playerId: string | null) => {
-        // Update URL to reflect citizen selection
         const urlParams = new URLSearchParams(window.location.search);
         if (playerId) {
           urlParams.set('playerId', playerId);
@@ -239,13 +348,12 @@ async function loadPlanner(): Promise<void> {
         }
         history.replaceState(null, '', `?${urlParams.toString()}`);
 
-        // Rebuild filter context and re-run planner
         activePlayerId = playerId;
         claimData.playerFilter = null;
         if (playerId) await loadPlayerFilter();
         await loadPlanner();
       },
-      // Poll refresh, re-fetch inventory and recalculate for current tier
+      // poll refresh, re-fetch inventory and recalculate for current tier
       async () => {
         if (!claimData.claimId) throw new Error('No claim loaded');
         const options: CalculateOptions = plannerState.codexCount
@@ -257,6 +365,7 @@ async function loadPlanner(): Promise<void> {
           options
         );
         plannerState.results = results;
+        Overview.updateResearch(results);
         return {
           planItems: results.planItems,
           researches: results.researches,
@@ -275,7 +384,7 @@ async function loadPlanner(): Promise<void> {
   }
 }
 
-// ── Citizens ──────────────────────────────────────────────────────
+// -- citizens --
 
 async function loadCitizens(): Promise<void> {
   if (!claimData.claimId) return;
@@ -285,10 +394,20 @@ async function loadCitizens(): Promise<void> {
     claimData.citizensData ?? undefined
   );
 
-  if (result) claimData.citizensData = result;
+  if (result) {
+    claimData.citizensData = result;
+    Overview.updateCitizenCount(result.records.length);
+    UI.updateHeaderCitizens(result.records.length);
+    Overview.updateCitizens(
+      result.records.map((r) => ({
+        userName: r.userName,
+        lastLogin: r.lastLogin,
+      }))
+    );
+  }
 }
 
-// ── Items ─────────────────────────────────────────────────────────
+// -- items --
 
 async function loadItems(): Promise<void> {
   if (claimData.items) {
@@ -306,7 +425,7 @@ async function loadItems(): Promise<void> {
   }
 }
 
-// ── Tab Switching ─────────────────────────────────────────────────
+// -- tab switching --
 
 function setupTabs(): void {
   const tabContainer = document.getElementById('view-tabs');
@@ -331,7 +450,17 @@ function setupTabs(): void {
         Planner.stopPolling();
       }
 
-      if (view === 'citizens' && claimData.claimId) {
+      if (view === 'overview') {
+        // re-render from cached data -- no extra API calls
+        if (claimData.claimInfo && claimData.inventories) {
+          const processed = InventoryProcessor.processInventory(claimData.inventories);
+          Overview.render({
+            claimInfo: claimData.claimInfo,
+            inventory: processed,
+            foodItems: processed.foodItems,
+          });
+        }
+      } else if (view === 'citizens' && claimData.claimId) {
         loadCitizens();
       } else if (view === 'ids') {
         UI.renderIdList('citizens', claimData.items, claimData.citizens);
@@ -373,7 +502,7 @@ function setupTabs(): void {
   });
 }
 
-// ── Init ──────────────────────────────────────────────────────────
+// -- init --
 
 ClaimSearch.init({
   onSelect: (claimId) => loadClaim(claimId),

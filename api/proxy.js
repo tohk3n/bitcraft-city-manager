@@ -1,4 +1,4 @@
-// Proxy to bitjita.com API - whitelisted endpoints only
+// proxy to bitjita.com API -- whitelisted endpoints only
 const ALLOWED_PATHS = [
   /^\/claims(\?.*)?$/,
   /^\/claims\/\d+$/,
@@ -9,7 +9,8 @@ const ALLOWED_PATHS = [
   /^\/players\/\d+\/equipment$/,
   /^\/players\/\d+\/inventories$/,
   /^\/players\/\d+\/vault$/,
-  /^\/crafts$/,
+  /^\/crafts(\?.*)?$/,
+  /^\/crafts\/\d+$/,
   /^\/items$/,
   /^\/items\/\d+$/,
   /^\/buildings$/,
@@ -33,7 +34,6 @@ export default async function handler(req, res) {
   try {
     const response = await fetch(url);
     const data = await response.json();
-
     res.setHeader('Cache-Control', 's-maxage=60');
     res.status(response.status).json(data);
   } catch (error) {

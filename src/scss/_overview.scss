@@ -1,0 +1,651 @@
+// overview - an indigo newspaper front page
+//
+// editorial aesthetic: column rules, double-rule masthead, small-cap section
+// headers, dot leaders, paper texture overlay. all within the ocean night
+// palette, think cyanotype broadsheet or blueprint gazette.
+//
+// panels scroll internally. body does not scroll.
+
+// -- paper texture --
+// using a real paper scan, compressed and tiled. overlaid at low opacity
+// via pseudo-element so it doesn't interfere with pointer events.
+// the grayscale texture picks up the indigo tones through overlay blending.
+
+$paper-texture: url('/img/paper-texture.jpg');
+
+// -- content wrapper --
+
+#overview-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  flex: 1;
+  min-height: 0;
+}
+
+#view-overview {
+  overflow: hidden;
+  position: relative;
+
+  // paper grain overlay
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: $paper-texture;
+    background-repeat: repeat;
+    background-size: 600px auto;
+    opacity: 0.03;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // content sits above the grain
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+// -- masthead --
+// newspaper nameplate: double rules top and bottom, wider letter-spacing.
+
+.ov-masthead {
+  text-align: center;
+  padding: 6px 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  position: relative;
+}
+
+.ov-masthead-rule-double {
+  height: 0;
+  border-top: 2px solid var(--border-hi);
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 4px;
+  padding-bottom: 2px;
+
+  .ov-masthead > &:last-child {
+    margin: 4px 0 0;
+    padding-bottom: 0;
+  }
+}
+
+.ov-masthead-title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.ov-masthead-sub {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.ov-masthead-rule {
+  width: 40px;
+  height: 1px;
+  background: var(--border);
+}
+
+// -- headline stats --
+// ticker strip below masthead. thin top border as a column rule.
+
+.ov-headlines {
+  display: flex;
+  align-items: stretch;
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.ov-hl {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  border-right: 1px solid var(--border);
+  gap: 1px;
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.ov-hl-label {
+  font-size: 8px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-secondary);
+}
+
+.ov-hl-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text-primary);
+}
+
+.ov-hl-sub {
+  font-size: 8px;
+  color: var(--text-muted);
+  min-height: 12px; // stabilize layout when some stats lack sub-text
+}
+
+.ov-hl-value.food {
+  color: var(--status-complete);
+}
+.ov-hl-value.supplies {
+  color: var(--status-complete);
+}
+.ov-hl-value.crafts {
+  color: var(--accent3);
+}
+.ov-hl-value.citizens {
+  color: var(--accent);
+}
+
+@media (max-width: 900px) {
+  .ov-hl-value {
+    font-size: 14px;
+  }
+  .ov-hl {
+    padding: 4px 6px;
+  }
+}
+
+// -- station chip bar --
+// flex-wrap so chips size to their content. tried grid, names are too variable.
+// busy chips get a brighter border from active crafts.
+
+.ov-stations {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 4px 8px;
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+}
+
+.sc-group {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  // thin rule between crafting and passive groups
+  & + .sc-group {
+    padding-top: 3px;
+    border-top: 1px solid var(--border);
+  }
+}
+
+// drop the grid wrapper -- just let chips flow
+.sc-grid {
+  display: contents;
+}
+
+.sc-label {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.station-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 1px 5px;
+  font-size: 9px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: border-color 0.2s;
+
+  &.sc-busy {
+    border-color: var(--accent);
+  }
+}
+
+.sc-total {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.sc-tiers {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+// -- newspaper grid --
+// three-column broadsheet. column rules between via border.
+
+.ov-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+}
+
+.ov-side,
+.ov-center {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 6px;
+}
+
+// column rules
+.ov-center {
+  border-left: 1px solid var(--border);
+  border-right: 1px solid var(--border);
+}
+
+@media (max-width: 1100px) {
+  .ov-grid {
+    grid-template-columns: 1fr 2fr;
+  }
+  .ov-side:last-child {
+    display: none;
+  }
+  .ov-center {
+    border-right: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .ov-grid {
+    grid-template-columns: 1fr;
+  }
+  .ov-side {
+    display: none;
+  }
+  .ov-center {
+    border-left: none;
+    border-right: none;
+  }
+}
+
+// -- panels --
+// newspaper sections: no box borders. section header is a small-caps label
+// with a thin rule underneath. transparent backgrounds let the paper texture
+// show through.
+
+.ov-grid .panel {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+
+  // breathing room between stacked panels in the same column.
+  // the rule provides the visual break, padding provides the pause.
+  & + .panel {
+    border-top: 1px solid var(--border);
+    padding-top: 4px;
+  }
+}
+
+// food gets more room than supply cargo
+.ov-center > #ov-food-panel {
+  flex: 3;
+  min-height: 0;
+}
+
+.ov-center > #ov-supply-panel {
+  flex: 2;
+  min-height: 0;
+}
+
+// -- section headers --
+// newspaper section labels: larger than body text, secondary color.
+// intent: establish a clear typographic level between KPI numbers (18px)
+// and body text (9-10px). think of this as the "subhead".
+
+.ov-grid .panel-header {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 5px 8px 4px;
+
+  .panel-title {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-secondary);
+  }
+
+  .panel-stat {
+    font-size: 9px;
+    color: var(--text-muted);
+  }
+}
+
+.ov-grid .panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 2px;
+}
+
+// sticky headers, semi-transparent to let texture bleed
+.ov-grid .item-table thead th {
+  background: var(--bg-secondary);
+}
+
+.ov-grid .ac-table thead th {
+  background: var(--bg-secondary);
+}
+
+// -- active crafts --
+
+.ac-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: 3px 6px;
+    font-size: 7px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    &.r {
+      text-align: right;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(42, 48, 80, 0.2);
+    &:last-child {
+      border-bottom: none;
+    }
+    &:hover {
+      background: rgba(122, 162, 247, 0.03);
+    }
+  }
+
+  td {
+    padding: 3px 5px;
+    font-size: 9px;
+    color: var(--text-secondary);
+  }
+}
+
+.ac-output {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.ac-qty {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.ac-station {
+  color: var(--text-secondary);
+  font-size: 8px;
+}
+
+.ac-worker {
+  color: var(--text-muted);
+  font-size: 8px;
+}
+
+.ac-time {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent3);
+  font-weight: 600;
+  font-size: 8px;
+
+  &.done {
+    color: var(--status-complete);
+  }
+  &.idle {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+}
+
+// vertical progress bar in leftmost column
+.ac-vbar-cell {
+  width: 6px;
+  padding: 2px 0 2px 4px;
+}
+
+.ac-vbar {
+  width: 3px;
+  height: 16px;
+  background: var(--bg-primary);
+  border-radius: 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.ac-vbar-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 1px;
+  background: var(--accent);
+  transition: height 0.3s;
+
+  &.almost {
+    background: var(--status-partial);
+  }
+  &.complete {
+    background: var(--status-complete);
+  }
+}
+
+.ac-loading,
+.ac-empty,
+.ac-error {
+  padding: 12px;
+  text-align: center;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.ac-error {
+  color: var(--status-missing);
+}
+
+// -- sidebar sections --
+// looks better with consistent inner padding across all sidebar panels.
+
+.ov-sidebar-section {
+  padding: 6px 8px;
+}
+
+// -- research / material rows --
+// dot leaders between name and value via a dotted bottom border on the row.
+// the row has a bottom border; children get a negative margin to sit on it.
+
+.ov-mat-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 0;
+  font-size: 10px;
+  border-bottom: 1px dotted var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.ov-mat-name {
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  // solid background behind the text to mask the dotted border
+  background: var(--bg-secondary);
+  padding-right: 2px;
+}
+
+.ov-mat-qty {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 32px;
+  text-align: right;
+  flex-shrink: 0;
+  margin-left: auto;
+  // solid background to mask the dotted border
+  background: var(--bg-secondary);
+  padding-left: 2px;
+}
+
+.ov-mat-bar {
+  width: 45px;
+  height: 2px;
+  background: var(--bg-primary);
+  border-radius: 1px;
+  overflow: hidden;
+  flex-shrink: 0;
+  // sits above the dotted border
+  background: var(--bg-secondary);
+  padding-left: 2px;
+}
+
+.ov-mat-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s;
+}
+
+// -- bottlenecks --
+
+.ov-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 3px 0;
+  font-size: 10px;
+  border-bottom: 1px dashed rgba(42, 48, 80, 0.4);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.ov-alert-icon {
+  flex-shrink: 0;
+  font-size: 10px;
+  margin-top: 1px;
+}
+
+.ov-alert-text {
+  color: var(--text-secondary);
+  line-height: 1.4;
+
+  strong {
+    color: var(--text-primary);
+  }
+}
+
+// -- citizens --
+// same dot-leader treatment as research rows.
+
+.ov-cz-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 1px 0;
+  font-size: 10px;
+  border-bottom: 1px dotted var(--border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.ov-cz-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  // nudge down since we're baseline-aligned
+  align-self: center;
+
+  &.cz-active {
+    background: var(--status-complete);
+  }
+  &.cz-stale {
+    background: var(--status-partial);
+  }
+  &.cz-inactive {
+    background: var(--text-muted);
+  }
+}
+
+.ov-cz-name {
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--bg-secondary);
+  padding-right: 2px;
+}
+
+.ov-cz-activity {
+  color: var(--text-muted);
+  font-size: 8px;
+  white-space: nowrap;
+  margin-left: auto;
+  background: var(--bg-secondary);
+  padding-left: 2px;
+}
+
+// -- inline heat bars --
+
+.it-heat {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: var(--bg-primary);
+  border-radius: 1px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.it-heat-fill {
+  display: block;
+  height: 100%;
+  border-radius: 1px;
+}
