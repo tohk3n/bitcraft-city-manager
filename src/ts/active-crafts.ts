@@ -151,6 +151,7 @@ async function poll(): Promise<void> {
 
     const soon = rows.filter((r) => r.lockExpiry - Date.now() < FINISHING_SOON_MS).length;
     Overview.updateCraftCount(rows.length, soon);
+    Overview.updateStationCrafts(rows.map((r) => r.building));
   } catch (err) {
     log.error('Poll failed:', (err as Error).message);
     if (container) {
@@ -222,6 +223,39 @@ function progressClass(pct: number): string {
   return '';
 }
 
+// specifier index -> tier number for buildings
+const SPECIFIER_TIER: Record<string, number> = {
+  rough: 1,
+  basic: 2,
+  simple: 3,
+  sturdy: 4,
+  fine: 5,
+  exquisite: 6,
+  peerless: 7,
+  ornate: 8,
+  pristine: 9,
+  flawless: 10,
+  magnificent: 11,
+};
+
+// "Fine Mining Station" -> "T5 Mining"
+function shortStation(name: string): string {
+  const words = name.split(/\s+/);
+  let tier = 0;
+  const kept: string[] = [];
+  for (const w of words) {
+    const t = SPECIFIER_TIER[w.toLowerCase()];
+    if (t) {
+      tier = t;
+      continue;
+    }
+    if (w.toLowerCase() === 'station') continue;
+    kept.push(w);
+  }
+  const prefix = tier > 0 ? `T${tier} ` : '';
+  return prefix + kept.join(' ');
+}
+
 function render(rows: CraftRow[]): void {
   if (!container) return;
 
@@ -232,22 +266,38 @@ function render(rows: CraftRow[]): void {
 
   const html = rows
     .map((r) => {
-      const remaining = formatRemaining(r.lockExpiry);
       const pct = Math.round(r.progress * 100);
       const cls = progressClass(r.progress);
-      const timeCls = remaining === 'done' ? 'ac-time done' : 'ac-time';
       const tierBit = r.tier > 0 ? `T${r.tier} ` : '';
+      const station = shortStation(r.building);
+
+      // distinguish truly done (progress >= 100%) from idle (lock expired)
+      let remaining: string;
+      let timeCls: string;
+      if (r.progress >= 1) {
+        remaining = 'done';
+        timeCls = 'ac-time done';
+      } else {
+        const diff = r.lockExpiry - Date.now();
+        if (diff <= 0) {
+          remaining = 'idle';
+          timeCls = 'ac-time idle';
+        } else {
+          remaining = formatRemaining(r.lockExpiry);
+          timeCls = 'ac-time';
+        }
+      }
 
       return `<tr>
-      <td class="ac-output">${tierBit}${r.outputName} x${r.craftCount}</td>
-      <td>${r.building}</td>
-      <td class="ac-worker">${r.worker}</td>
-      <td class="r ${timeCls}">${remaining}</td>
-      <td class="ac-progress-cell">
-        <div class="ac-progress">
-          <div class="ac-progress-fill ${cls}" style="width:${pct}%"></div>
+      <td class="ac-vbar-cell">
+        <div class="ac-vbar">
+          <div class="ac-vbar-fill ${cls}" style="height:${pct}%"></div>
         </div>
       </td>
+      <td class="ac-output">${tierBit}${r.outputName} <span class="ac-qty">x${r.craftCount}</span></td>
+      <td class="ac-station">${station}</td>
+      <td class="ac-worker">${r.worker || '\u2014'}</td>
+      <td class="r ${timeCls}">${remaining}</td>
     </tr>`;
     })
     .join('');
@@ -255,11 +305,11 @@ function render(rows: CraftRow[]): void {
   container.innerHTML = `
     <table class="ac-table">
       <thead><tr>
+        <th style="width:6px"></th>
         <th>Output</th>
         <th>Station</th>
         <th>Worker</th>
-        <th class="r">Remaining</th>
-        <th style="width:60px"></th>
+        <th class="r">Time</th>
       </tr></thead>
       <tbody>${html}</tbody>
     </table>`;

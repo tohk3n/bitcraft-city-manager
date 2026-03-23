@@ -72,6 +72,7 @@
       <div id="overview-content">
 
         <div class="ov-masthead">
+          <div class="ov-masthead-rule-double"></div>
           <div class="ov-masthead-title" id="ov-city-name">&mdash;</div>
           <div class="ov-masthead-sub">
             <span class="ov-masthead-rule"></span>
@@ -82,27 +83,28 @@
             <span id="ov-date">&mdash;</span>
             <span class="ov-masthead-rule"></span>
           </div>
+          <div class="ov-masthead-rule-double"></div>
         </div>
 
         <div class="ov-headlines" id="ov-headlines">
           <div class="ov-hl">
             <span class="ov-hl-label">Food</span>
-            <span class="ov-hl-value" id="ov-hl-food">&mdash;</span>
+            <span class="ov-hl-value food" id="ov-hl-food">&mdash;</span>
             <span class="ov-hl-sub" id="ov-hl-food-sub"></span>
           </div>
           <div class="ov-hl">
             <span class="ov-hl-label">Supplies</span>
-            <span class="ov-hl-value" id="ov-hl-supplies">&mdash;</span>
+            <span class="ov-hl-value supplies" id="ov-hl-supplies">&mdash;</span>
             <span class="ov-hl-sub" id="ov-hl-supplies-sub"></span>
           </div>
           <div class="ov-hl">
             <span class="ov-hl-label">Active Crafts</span>
-            <span class="ov-hl-value" id="ov-hl-crafts">&mdash;</span>
+            <span class="ov-hl-value crafts" id="ov-hl-crafts">&mdash;</span>
             <span class="ov-hl-sub" id="ov-hl-crafts-sub"></span>
           </div>
           <div class="ov-hl">
-            <span class="ov-hl-label">Citizens</span>
-            <span class="ov-hl-value" id="ov-hl-citizens">&mdash;</span>
+            <span class="ov-hl-label">Online</span>
+            <span class="ov-hl-value citizens" id="ov-hl-citizens">&mdash;</span>
             <span class="ov-hl-sub" id="ov-hl-citizens-sub"></span>
           </div>
         </div>
@@ -113,19 +115,8 @@
 
         <div class="ov-grid">
 
-          <!-- left sidebar -->
+          <!-- left sidebar: research + bottlenecks + citizens -->
           <div class="ov-side" id="ov-sidebar-left">
-            <div class="panel">
-              <div class="panel-header">
-                <span class="panel-title">Material Health</span>
-              </div>
-              <div class="panel-body">
-                <div class="ov-sidebar-section" id="ov-material-health">
-                  <div class="ac-loading">waiting for data...</div>
-                </div>
-              </div>
-            </div>
-
             <div class="panel">
               <div class="panel-header">
                 <span class="panel-title">Research</span>
@@ -134,6 +125,29 @@
               <div class="panel-body">
                 <div class="ov-sidebar-section" id="ov-research">
                   <div class="ac-loading">load planner for progress</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-header">
+                <span class="panel-title">Bottlenecks</span>
+              </div>
+              <div class="panel-body">
+                <div class="ov-sidebar-section" id="ov-bottlenecks">
+                  <div class="ac-loading">load planner for bottlenecks</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel" style="flex:1;min-height:0;">
+              <div class="panel-header">
+                <span class="panel-title">Citizens</span>
+                <span class="panel-stat" id="ov-cz-online"></span>
+              </div>
+              <div class="panel-body">
+                <div class="ov-sidebar-section" id="ov-citizens-list">
+                  <div class="ac-loading">waiting for data...</div>
                 </div>
               </div>
             </div>
@@ -184,7 +198,10 @@
                 </table>
               </div>
             </div>
+          </div>
 
+          <!-- right sidebar: active crafts -->
+          <div class="ov-side" id="ov-sidebar-right">
             <div class="panel" style="flex:1;min-height:0;">
               <div class="panel-header">
                 <span class="panel-title">Active Crafts</span>
@@ -192,20 +209,6 @@
               </div>
               <div class="panel-body" id="ov-active-crafts">
                 <div class="ac-loading">waiting for data...</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- right sidebar -- needs live data, placeholder for now -->
-          <div class="ov-side" id="ov-sidebar-right">
-            <div class="panel" style="flex:1;min-height:0;">
-              <div class="panel-header">
-                <span class="panel-title">Activity</span>
-              </div>
-              <div class="panel-body">
-                <div class="ov-sidebar-section">
-                  <div class="ac-loading">coming soon -- needs live data</div>
-                </div>
               </div>
             </div>
           </div>

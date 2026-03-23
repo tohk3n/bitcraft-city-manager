@@ -25,6 +25,7 @@ export interface ClaimDetails {
   name: string;
   tier: number;
   regionName?: string;
+  empireName?: string;
   supplies?: number;
   suppliesPurchaseThreshold?: number;
   suppliesRunOut?: string; // ISO date string

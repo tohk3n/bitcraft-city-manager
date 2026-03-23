@@ -116,6 +116,14 @@ const BaseUI = {
     <div class="stat-label">Upkeep</div>
     <div class="stat-value">${(c.upkeepCost || 0).toFixed(1)}/h</div>
     </div>
+    <div class="claim-stat">
+    <div class="stat-label">Citizens</div>
+    <div class="stat-value" id="ch-citizens">&mdash;</div>
+    </div>
+    <div class="claim-stat">
+    <div class="stat-label">Buildings</div>
+    <div class="stat-value" id="ch-buildings">&mdash;</div>
+    </div>
     </div>
     </div>
     `;
@@ -123,6 +131,16 @@ const BaseUI = {
     container.innerHTML = html;
     log.debug(html);
     this.show('claim-header');
+  },
+
+  updateHeaderCitizens(count: number): void {
+    const el = document.getElementById('ch-citizens');
+    if (el) el.textContent = count.toLocaleString();
+  },
+
+  updateHeaderBuildings(count: number): void {
+    const el = document.getElementById('ch-buildings');
+    if (el) el.textContent = count.toLocaleString();
   },
 
   setLoading(isLoading: boolean): void {

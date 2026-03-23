@@ -38,6 +38,7 @@ import type {
   MatrixRow,
 } from './components/data-matrix/data-matrix.js';
 import { createDataMatrix } from './components/data-matrix/data-matrix.js';
+import * as Overview from './overview.js';
 
 const log = createLogger('Dashboard');
 
@@ -74,6 +75,14 @@ let cachedClaimInfo: {
   upkeepCost?: number;
   suppliesRunOut?: string;
 } | null = null;
+
+export function getCraftabilityMap(): Map<string, CraftableResult> | null {
+  return craftabilityMap;
+}
+
+export function getSupplyRows(): SupplyRow[] | null {
+  return supplyRows;
+}
 
 // ═══ FOOD PANEL ═══
 
@@ -423,6 +432,10 @@ async function loadCraftability(data: InventoryProcessResult): Promise<void> {
         applyBottlenecks(config, results);
         subViewHandles.get(profession.id)?.update(config);
       }
+    }
+
+    if (lastFoodItems) {
+      Overview.updateCraftability(craftabilityMap, supplyRows);
     }
 
     log.debug(

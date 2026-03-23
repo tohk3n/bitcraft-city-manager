@@ -72,6 +72,94 @@ const plannerState: PlannerState = {
   results: null,
 };
 
+// -- overview polling --
+// slower cadence refresh so the home tab stays current without manual reload.
+// re-fetches inventory (which re-triggers craftability) and planner.
+
+const OV_POLL_MS = 120_000; // 2 minutes
+const OV_JITTER_MS = 30_000;
+const OV_MIN_MS = 60_000;
+let ovTimer: ReturnType<typeof setTimeout> | null = null;
+let ovPolling = false;
+
+function startOverviewPoll(claimId: string): void {
+  stopOverviewPoll();
+  ovPolling = true;
+  scheduleOverviewPoll(claimId);
+  document.addEventListener('visibilitychange', () => onOvVisibility(claimId));
+}
+
+function stopOverviewPoll(): void {
+  ovPolling = false;
+  if (ovTimer !== null) {
+    clearTimeout(ovTimer);
+    ovTimer = null;
+  }
+}
+
+function scheduleOverviewPoll(claimId: string): void {
+  if (!ovPolling) return;
+  const jitter = Math.round((Math.random() - 0.5) * 2 * OV_JITTER_MS);
+  const delay = Math.max(OV_MIN_MS, OV_POLL_MS + jitter);
+  ovTimer = setTimeout(() => ovPoll(claimId), delay);
+}
+
+async function ovPoll(claimId: string): Promise<void> {
+  if (!ovPolling || claimData.claimId !== claimId) return;
+  if (ovTimer !== null) {
+    clearTimeout(ovTimer);
+    ovTimer = null;
+  }
+
+  try {
+    // re-fetch inventory, this triggers renderDashboard which triggers
+    // loadCraftability which calls Overview.updateCraftability
+    const data = await API.getClaimInventories(claimId);
+    claimData.inventories = data;
+    const result = InventoryProcessor.processInventory(data);
+    UI.renderDashboard(result, claimData.claimInfo ?? undefined);
+
+    if (claimData.claimInfo) {
+      Overview.render({
+        claimInfo: claimData.claimInfo,
+        inventory: result,
+        foodItems: result.foodItems,
+      });
+    }
+
+    // re-run planner if it was loaded
+    if (plannerState.results) {
+      const options: CalculateOptions = plannerState.codexCount
+        ? { customCount: plannerState.codexCount }
+        : {};
+      const results = await Planner.calculateRequirements(
+        claimId,
+        plannerState.targetTier,
+        options
+      );
+      plannerState.results = results;
+      Overview.updateResearch(results);
+    }
+  } catch (err) {
+    // silent catch because the overview poll failures shouldn't disrupt the user
+    const error = err as Error;
+    log.debug('Overview poll failed:', error.message);
+  }
+
+  scheduleOverviewPoll(claimId);
+}
+
+function onOvVisibility(claimId: string): void {
+  if (document.hidden) {
+    if (ovTimer !== null) {
+      clearTimeout(ovTimer);
+      ovTimer = null;
+    }
+  } else if (ovPolling) {
+    scheduleOverviewPoll(claimId);
+  }
+}
+
 // -- claim loading --
 
 async function loadClaim(claimId: string): Promise<void> {
@@ -80,6 +168,7 @@ async function loadClaim(claimId: string): Promise<void> {
     return;
   }
 
+  stopOverviewPoll();
   UI.clearError();
   UI.setLoading(true);
 
@@ -131,11 +220,12 @@ async function loadClaim(claimId: string): Promise<void> {
     try {
       const buildings: Building[] = await API.getClaimBuildings(claimId);
       claimData.buildings = { buildings };
+      UI.updateHeaderBuildings(buildings.length);
       const stations: CraftingStationsResult = processCraftingStations(buildings);
       UI.renderCraftingStations(stations);
       Overview.renderStations(stations);
 
-      // start active crafts polling -- stop() first is idempotent
+      // start active crafts polling, stop() first for idempotence
       ActiveCrafts.stop();
       const craftsEl = document.getElementById('ov-active-crafts');
       if (craftsEl) ActiveCrafts.start(craftsEl, claimId);
@@ -145,6 +235,11 @@ async function loadClaim(claimId: string): Promise<void> {
     }
 
     initPlanner();
+    loadCitizens();
+    loadPlanner();
+
+    // start overview poll. refresh inventory + planner every ~2 min
+    startOverviewPoll(claimId);
 
     // default planner target to next tier upgrade
     const cityTier = claimData.claimInfo?.claim?.tier ?? 0;
@@ -223,6 +318,8 @@ async function loadPlanner(): Promise<void> {
     );
     plannerState.results = results;
 
+    Overview.updateResearch(results);
+
     const citizensList =
       claimData.citizensData?.records.map((r) => ({
         entityId: r.entityId,
@@ -268,6 +365,7 @@ async function loadPlanner(): Promise<void> {
           options
         );
         plannerState.results = results;
+        Overview.updateResearch(results);
         return {
           planItems: results.planItems,
           researches: results.researches,
@@ -299,6 +397,13 @@ async function loadCitizens(): Promise<void> {
   if (result) {
     claimData.citizensData = result;
     Overview.updateCitizenCount(result.records.length);
+    UI.updateHeaderCitizens(result.records.length);
+    Overview.updateCitizens(
+      result.records.map((r) => ({
+        userName: r.userName,
+        lastLogin: r.lastLogin,
+      }))
+    );
   }
 }
 
