@@ -1,3 +1,4 @@
+import { inject } from '@vercel/analytics';
 import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
@@ -31,6 +32,9 @@ import { init as initTravelerTimer } from './traveler-timer.js';
 import * as Overview from './overview.js';
 import * as ActiveCrafts from './active-crafts.js';
 import { initAeolith } from './aeolith.js';
+
+// Initialize Vercel Web Analytics
+inject();
 
 const log = createLogger('Main');
 
