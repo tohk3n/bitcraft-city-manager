@@ -13,20 +13,34 @@ import type {
   BottleneckSummary,
   ConsumableStatus,
 } from './sub-view.types.js';
+import { shadeBucket, rowMax } from '../../sub-view/shading.js';
 
 // Mount a sub-view into a container element.
-export function createSubView(container: HTMLElement, config: SubViewConfig): SubViewHandle {
+export interface SubViewOptions {
+  compact?: boolean; // tighter rows for the census
+  shaded?: boolean; // per-row heat shading
+  census?: boolean; // info-only: drop bottleneck signals (cells + status line)
+  shortNumbers?: boolean; // K-suffix matrix cells (>= 1000). exact by default.
+}
+
+// signature change: add the third param with a default
+export function createSubView(
+  container: HTMLElement,
+  config: SubViewConfig,
+  options: SubViewOptions = {}
+): SubViewHandle {
   let currentConfig = config;
   let tooltipEl: HTMLElement | null = null;
 
   function render(): void {
     container.innerHTML = '';
-    const tierCount = findMaxPopulatedTier(currentConfig);
-    container.appendChild(buildStatusBar(currentConfig));
+    const tierCount = findMaxPopulatedTier(currentConfig, options.census);
+    container.appendChild(buildStatusBar(currentConfig, options.census));
     if (currentConfig.cargo) {
       container.appendChild(buildCargo(currentConfig.cargo, tierCount));
     }
-    container.appendChild(buildMatrix(currentConfig.sections, tierCount));
+    // pass options through to the matrix
+    container.appendChild(buildMatrix(currentConfig.sections, tierCount, options));
     wireTooltips(container);
     wireCopyButton(container, currentConfig);
   }
@@ -87,7 +101,9 @@ export function createSubView(container: HTMLElement, config: SubViewConfig): Su
 
 // Scan all data to find the highest tier with any value.
 // Returns at least 1 -- even an empty profession shows T1.
-function findMaxPopulatedTier(config: SubViewConfig): number {
+// census mode ignores bottleneck tiers: the census reports stock, so an
+// empty high tier the city only "needs" is noise, not a column.
+function findMaxPopulatedTier(config: SubViewConfig, census?: boolean): number {
   let max = 0;
 
   const scan = (tiers: number[]): void => {
@@ -106,7 +122,7 @@ function findMaxPopulatedTier(config: SubViewConfig): number {
       scan(row.tiers);
       // Bottleneck-zero cells count too -- T4 showing "0 needed"
       // means T4 should be visible even if supply is zero
-      if (row.bottlenecks) {
+      if (!census && row.bottlenecks) {
         for (const tierIdx of Object.keys(row.bottlenecks).map(Number)) {
           if (tierIdx + 1 > max) max = tierIdx + 1;
         }
@@ -118,29 +134,33 @@ function findMaxPopulatedTier(config: SubViewConfig): number {
 }
 
 // -- Status bar: bottlenecks + consumables + copy button --
-
-function buildStatusBar(config: SubViewConfig): HTMLElement {
+// census mode drops the bottleneck segment (that's Monitor's question, not the
+// census's) but keeps consumables -- "metalsmelting flux: 0" is real stock info.
+function buildStatusBar(config: SubViewConfig, census?: boolean): HTMLElement {
   const bar = el('div', 'sv-status-bar');
 
-  const bnSeg = el('div', 'sv-status-segment');
-  bnSeg.appendChild(statusLabel('bottlenecks:'));
+  if (!census) {
+    const bnSeg = el('div', 'sv-status-segment');
+    bnSeg.appendChild(statusLabel('bottlenecks:'));
 
-  if (config.bottlenecks.length === 0) {
-    const clear = el('span', 'sv-bn-clear');
-    clear.textContent = 'none';
-    bnSeg.appendChild(clear);
-  } else {
-    config.bottlenecks.forEach((b, i) => {
-      bnSeg.appendChild(buildBottleneckChip(b));
-      if (i < config.bottlenecks.length - 1) {
-        bnSeg.appendChild(dot());
-      }
-    });
+    if (config.bottlenecks.length === 0) {
+      const clear = el('span', 'sv-bn-clear');
+      clear.textContent = 'none';
+      bnSeg.appendChild(clear);
+    } else {
+      config.bottlenecks.forEach((b, i) => {
+        bnSeg.appendChild(buildBottleneckChip(b));
+        if (i < config.bottlenecks.length - 1) {
+          bnSeg.appendChild(dot());
+        }
+      });
+    }
+    bar.appendChild(bnSeg);
   }
-  bar.appendChild(bnSeg);
 
   if (config.consumables.length > 0) {
-    bar.appendChild(separator());
+    // separator only makes sense after the bottleneck segment
+    if (!census) bar.appendChild(separator());
     const conSeg = el('div', 'sv-status-segment');
     config.consumables.forEach((c, i) => {
       conSeg.appendChild(buildConsumableChip(c));
@@ -236,9 +256,14 @@ function buildCargo(cargo: CargoData, tierCount: number): HTMLElement {
 
 // -- Matrix: the tier grid --
 
-function buildMatrix(sections: SubViewSection[], tierCount: number): HTMLTableElement {
+function buildMatrix(
+  sections: SubViewSection[],
+  tierCount: number,
+  options: SubViewOptions
+): HTMLTableElement {
   const table = document.createElement('table');
   table.classList.add('sv-matrix');
+  if (options.compact) table.classList.add('sv-matrix-compact');
 
   const cg = document.createElement('colgroup');
   const nameCol = document.createElement('col');
@@ -267,7 +292,7 @@ function buildMatrix(sections: SubViewSection[], tierCount: number): HTMLTableEl
     tbody.appendChild(labelRow);
 
     for (const row of section.rows) {
-      tbody.appendChild(buildDataRow(row, tierCount));
+      tbody.appendChild(buildDataRow(row, tierCount, options));
     }
     isFirst = false;
   }
@@ -289,7 +314,11 @@ function buildThead(tierCount: number): HTMLTableSectionElement {
   return thead;
 }
 
-function buildDataRow(row: SubViewRow, tierCount: number): HTMLTableRowElement {
+function buildDataRow(
+  row: SubViewRow,
+  tierCount: number,
+  options: SubViewOptions
+): HTMLTableRowElement {
   const tr = document.createElement('tr');
   if (row.cls === 'output') tr.classList.add('sv-row-output');
   if (row.cls === 'cross-domain') tr.classList.add('sv-row-xdomain');
@@ -298,22 +327,31 @@ function buildDataRow(row: SubViewRow, tierCount: number): HTMLTableRowElement {
   nameCell.textContent = row.label;
   tr.appendChild(nameCell);
 
+  // computed once per row, not per cell -- shading is a row-relative measure
+  const max = options.shaded ? rowMax(row.tiers) : 0;
+
   for (let i = 0; i < tierCount; i++) {
-    tr.appendChild(buildCell(row, i));
+    tr.appendChild(buildCell(row, i, options, max));
   }
 
   return tr;
 }
 
-// Four cell states:
+// Four cell states (non-census):
 // 1. Bottleneck with stock  -> amber, tooltip shows need/deficit
 // 2. Bottleneck with zero   -> red "0", tooltip shows need/deficit
 // 3. Has stock, no issue    -> normal highlight
 // 4. Empty                  -> blank (not a dash, not a zero)
-function buildCell(row: SubViewRow, tierIndex: number): HTMLTableCellElement {
+// census mode collapses to states 3 and 4: it reports stock, nothing else.
+function buildCell(
+  row: SubViewRow,
+  tierIndex: number,
+  options: SubViewOptions,
+  max: number
+): HTMLTableCellElement {
   const td = document.createElement('td');
   const val = row.tiers[tierIndex] || 0;
-  const bn = row.bottlenecks?.[tierIndex];
+  const bn = options.census ? undefined : row.bottlenecks?.[tierIndex];
 
   if (bn) {
     td.dataset.tt = `need ${bn.need} \u00b7 have ${val} \u00b7 short ${bn.deficit}`;
@@ -324,12 +362,27 @@ function buildCell(row: SubViewRow, tierIndex: number): HTMLTableCellElement {
       td.classList.add('sv-bottleneck-zero');
       td.textContent = '0';
     }
-  } else if (val > 0) {
+    return td;
+  }
+
+  if (val > 0) {
     td.classList.add('has');
-    td.textContent = val.toLocaleString();
+    td.textContent = options.shortNumbers ? formatShort(val) : val.toLocaleString();
+    if (options.shaded) {
+      const bucket = shadeBucket(val, max);
+      if (bucket >= 0) td.classList.add(`sv-heat-${bucket}`);
+    }
   }
 
   return td;
+}
+
+// K-suffix for >= 1000, matching the planner's number style. One decimal below
+// 10K (9.4K), none above (23K)
+function formatShort(n: number): string {
+  if (n < 1000) return String(n);
+  const k = n / 1000;
+  return k < 10 ? `${k.toFixed(1)}K` : `${Math.round(k)}K`;
 }
 
 // -- Tooltip formatting --

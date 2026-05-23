@@ -10,6 +10,94 @@
 //   green  = consumable names, "no bottlenecks"
 //   purple = cross-domain materials (from other professions)
 
+// -- Census layout --
+// Newspaper columns: professions distribute across N columns (N from city
+// tier), packed bottom-balanced so every profession is present -- completeness
+// is the census's whole job, so we take balanced columns + page scroll over
+// ragged-but-clipped. Region grouping is gone; order comes from JS, column
+// count from tier. Hairlines do the sectioning: column-rule between columns,
+// border-bottom between stacked tiles. Full width from the inventory container.
+
+.census-root {
+  // balance (not auto): no height bound, so the container grows to fit all
+  // content and the page scrolls. auto + a fixed height clipped everything
+  // past the first (columns x viewport) of tiles -- unacceptable for a census.
+  column-fill: balance;
+  column-gap: 40px;
+  column-rule: 1px solid var(--border); // the vertical broadsheet hairline
+}
+
+// tier -> column count. set on .census-root by censusColumnClass().
+.census-cols-4 {
+  column-count: 4;
+}
+.census-cols-3 {
+  column-count: 3;
+}
+.census-cols-2 {
+  column-count: 2;
+}
+
+.census-prof {
+  break-inside: avoid; // never split a profession matrix across a column
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border); // horizontal rule between stacked tiles
+}
+
+.census-prof-name {
+  // not sticky: a sticky name with an opaque background clipped the first data
+  // row of each matrix, and the hairlines + familiar profession names already
+  // carry orientation. it scrolls with its tile like any other heading.
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  padding-bottom: 3px;
+  margin-bottom: 3px;
+}
+
+// -- Compact matrix --
+.sv-matrix-compact {
+  font-size: 10px;
+
+  td {
+    padding: 1px 5px;
+  }
+
+  thead th {
+    padding: 1px 5px;
+  }
+
+  .sv-section-row td {
+    padding: 6px 0 2px 5px;
+  }
+}
+
+// -- Heat ramp --
+// Five buckets, neutral accent (the existing .has accent hue), opacity climbs.
+// Bottleneck cells are not shaded, amber/red shortage signals win.
+.sv-matrix td.sv-heat-0 {
+  background: rgba(122, 162, 247, 0.05);
+}
+.sv-matrix td.sv-heat-1 {
+  background: rgba(122, 162, 247, 0.1);
+}
+.sv-matrix td.sv-heat-2 {
+  background: rgba(122, 162, 247, 0.18);
+}
+.sv-matrix td.sv-heat-3 {
+  background: rgba(122, 162, 247, 0.28);
+}
+.sv-matrix td.sv-heat-4 {
+  background: rgba(122, 162, 247, 0.4);
+}
+
+// hover still reads over the heat
+.sv-matrix tbody tr:hover td[class*='sv-heat-'] {
+  background: rgba(122, 162, 247, 0.45);
+}
+
 // -- Status bar --
 
 .sv-status-bar {

@@ -360,6 +360,18 @@ export const JEWELRY: ProfessionDef = {
   packages: [],
 };
 
+export interface CensusRegion {
+  label: string;
+  professions: ProfessionDef[];
+}
+
+export const CENSUS_REGIONS: CensusRegion[] = [
+  { label: 'food', professions: [FARMING, FISHING, COOKING] },
+  { label: 'hard goods', professions: [SMITHING, MASONRY, JEWELRY] },
+  { label: 'soft goods', professions: [WOODWORKING, TAILORING, LEATHERWORKING] },
+  { label: 'scholar', professions: [SCHOLAR] },
+];
+
 // tab order
 export const ALL_PROFESSIONS: ProfessionDef[] = [
   FARMING,

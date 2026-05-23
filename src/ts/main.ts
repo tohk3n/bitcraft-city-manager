@@ -117,7 +117,7 @@ async function ovPoll(claimId: string): Promise<void> {
     const data = await API.getClaimInventories(claimId);
     claimData.inventories = data;
     const result = InventoryProcessor.processInventory(data);
-    UI.renderDashboard(result, claimData.claimInfo ?? undefined);
+    UI.renderCensus(result, claimData.claimInfo?.claim?.tier ?? 5);
 
     if (claimData.claimInfo) {
       Overview.render({
@@ -205,7 +205,7 @@ async function loadClaim(claimId: string): Promise<void> {
     if (statusEl) statusEl.textContent = claimName;
 
     const result: InventoryProcessResult = InventoryProcessor.processInventory(data);
-    UI.renderDashboard(result, claimData.claimInfo ?? undefined);
+    UI.renderCensus(result, claimData.claimInfo?.claim?.tier ?? 5);
 
     // overview gets the processed result, not the raw API response
     if (claimData.claimInfo) {

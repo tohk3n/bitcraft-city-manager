@@ -41,7 +41,8 @@ import type {
   MatrixRow,
 } from '../../components/data-matrix/data-matrix.js';
 import { createDataMatrix } from '../../components/data-matrix/data-matrix.js';
-import * as Overview from '../../feature/overview/overview.js';
+import * as Overview from '../overview/overview.js';
+import { CENSUS_REGIONS, type ProfessionDef } from '../../configuration/sub-view.js';
 
 const log = createLogger('Dashboard');
 
@@ -526,6 +527,39 @@ export const DashboardUI = {
     this.show('dashboard');
   },
 
+  // Census: the whole-city stock, one page. Professions flow as newspaper
+  // columns -- down one column, then over to the next. Region grouping is gone:
+  // CENSUS_REGIONS now supplies only the order. tier sizes the column count
+  // (it's the city's capacity ceiling, so the layout reserves width for the
+  // widest matrix the city could ever hold, not just what's stocked today).
+  renderCensus(data: InventoryProcessResult, tier: number): void {
+    const { inventory, packages } = data;
+
+    // stash for the async bottleneck re-render in loadCraftability
+    lastInventory = inventory;
+    lastPackages = packages;
+
+    const root = document.getElementById('census-root');
+    if (!root) return;
+    root.innerHTML = '';
+    subViewHandles.clear();
+
+    // column count is the only thing tier drives here -- see censusColumnClass
+    root.className = 'census-root';
+    root.classList.add(censusColumnClass(tier));
+
+    // flat flow: walk regions for order, emit one tile per profession
+    for (const region of CENSUS_REGIONS) {
+      for (const profession of region.professions) {
+        root.appendChild(buildProfessionTile(profession, inventory, packages));
+      }
+    }
+
+    // craftability (bottlenecks) loads async, then updates handles by id
+    loadCraftability(data);
+    this.show('dashboard');
+  },
+
   // Station panels are rendered separately because buildings come from a different API call
   renderCraftingStations(data: CraftingStationsResult): void {
     log.debug('Rendering station panels');
@@ -693,3 +727,40 @@ export const DashboardUI = {
     return { columns, rows, showRowTotals: false };
   },
 };
+
+// Map city tier to a column-count class. Tier is the capacity ceiling, so we
+// size for the widest matrix the city could hold: low tiers pack 4-up, the
+// T5/T6 majority sit at 3, high tiers drop to 2 so wide matrices don't collide.
+function censusColumnClass(tier: number): string {
+  if (tier >= 7) return 'census-cols-2';
+  if (tier >= 5) return 'census-cols-3';
+  return 'census-cols-4';
+}
+
+// Build one profession tile: name, then the compact+shaded sub-view. No region
+// wrapper, no region label -- the tile is a flow item in the census column
+// container, and the profession name is the only landmark (it's real game
+// info, unlike the invented region labels we dropped). Handle keyed by
+// profession.id so async bottleneck updates land.
+function buildProfessionTile(
+  profession: ProfessionDef,
+  inventory: ProcessedInventory,
+  packages: Package
+): HTMLElement {
+  const tile = document.createElement('div');
+  tile.classList.add('census-prof');
+
+  const name = document.createElement('div');
+  name.classList.add('census-prof-name');
+  name.textContent = profession.title.toLowerCase();
+  tile.appendChild(name);
+
+  const mount = document.createElement('div');
+  tile.appendChild(mount);
+
+  const config = buildSubViewConfig(inventory, packages, profession);
+  const handle = createSubView(mount, config, { compact: true, shaded: true, census: true });
+  subViewHandles.set(profession.id, handle);
+
+  return tile;
+}
