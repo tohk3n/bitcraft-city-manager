@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { breakdownMaterials } from '../material-calc.js';
+import { breakdownMaterials } from '../feature/calculator/material-calc.js';
 import type { RecipesFile } from '../data/types.js';
 
 // =============================================================================

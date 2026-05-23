@@ -1,0 +1,478 @@
+/**
+ * Planner View - All planner chrome in one place
+ *
+ * Owns: tier controls, view tabs, progress, copy buttons,
+ *       research tabs, hide-complete toggle, citizen picker.
+ * Delegates: dashboard rendering, flowchart viewport rendering.
+ */
+
+import {
+  calculatePlanProgress,
+  generatePlanExportText,
+  generateBranchExportText,
+} from '../../feature/planner/lib/progress-calc.js';
+import * as PlannerDashboard from './planner-dashboard.js';
+import * as Flowchart from './flowchart.js';
+import * as ProgressMonitor from '../../feature/planner/progress-monitor.js';
+import { TIER_REQUIREMENTS } from '../../configuration';
+import type { ProcessedNode, PlanItem } from '../../types';
+import { applyTabA11y } from '../../lib/aria.js';
+import { generateTreeCSV } from '../../feature/planner/lib/tree-csv.js';
+import { renderFontSizeControl, wireFontSizeControl } from '../../shell/font-size-control.js';
+import type { FilterContext } from '../../feature/planner/player-filter.js';
+import { createPollTimer } from '../../lib/poll-timer.js';
+import type { PollTimerHandle } from '../../lib/poll-timer.js';
+
+// ── Types ─────────────────────────────────────────────────────────
+
+type ViewMode = 'dashboard' | 'flowchart' | 'monitor';
+
+/** Everything planner-view needs from planner.ts to render. */
+export interface PlannerViewConfig {
+  claimId: string;
+  cityTier: number;
+  researches: ProcessedNode[];
+  planItems: PlanItem[];
+  targetTier: number;
+  studyJournals: ProcessedNode | null;
+  tierOptions: number[];
+  currentTier: number;
+  codexCount: number;
+  codexInfo: string;
+  playerFilter: FilterContext | null;
+  onTierChange: (tier: number, count: number) => void;
+  citizens: { entityId: string; userName: string }[] | null;
+  activePlayerId: string | null;
+  onPlayerChange: (playerId: string | null) => void;
+  onRefresh: () => Promise<{
+    planItems: PlanItem[];
+    researches: ProcessedNode[];
+    studyJournals: ProcessedNode | null;
+  }>;
+}
+
+// ── Module state ──────────────────────────────────────────────────
+
+let currentView: ViewMode = 'dashboard';
+let activeResearchIndex = 0;
+let hideComplete = false;
+let wireAbort: AbortController | null = null;
+
+// Cached from last render() call
+let cachedClaimId = '';
+let cachedCityTier = 0;
+let cachedResearches: ProcessedNode[] = [];
+let cachedPlanItems: PlanItem[] = [];
+let cachedTargetTier = 0;
+let cachedStudyJournals: ProcessedNode | null = null;
+let cachedOnTierChange: ((tier: number, count: number) => void) | null = null;
+let cachedOnPlayerChange: ((playerId: string | null) => void) | null = null;
+
+// Poller for tasks/flowchart live refresh
+let viewPoller: PollTimerHandle | null = null;
+
+// ── Public API ────────────────────────────────────────────────────
+
+/**
+ * Render the full planner view: toolbar, research bar, and content area.
+ */
+export function render(container: HTMLElement, config: PlannerViewConfig): void {
+  // fix 25-02-26: set 0 to reset tier-specific view state
+  activeResearchIndex = 0;
+  currentView = 'dashboard';
+  cachedClaimId = config.claimId;
+  cachedCityTier = config.cityTier;
+  cachedResearches = config.researches;
+  cachedPlanItems = config.planItems;
+  cachedTargetTier = config.targetTier;
+  cachedStudyJournals = config.studyJournals;
+  cachedOnTierChange = config.onTierChange;
+  cachedOnPlayerChange = config.onPlayerChange;
+  initPoller(config.onRefresh);
+
+  if (!config.researches || config.researches.length === 0) {
+    ProgressMonitor.stop();
+    container.innerHTML = '<div class="pv-empty">No data</div>';
+    return;
+  }
+
+  const progress = calculatePlanProgress(config.planItems);
+
+  container.innerHTML = `
+    <div class="pv-container">
+      <div class="pv-toolbar">
+        <div class="pv-toolbar-left">
+          <select id="pv-tier" class="pv-select">
+            ${config.tierOptions.map((t) => `<option value="${t}" ${t === config.currentTier ? 'selected' : ''}>T${t}</option>`).join('')}
+          </select>
+          <span class="pv-multiply">×</span>
+          <input type="number" id="pv-count" class="pv-count-input"
+                 value="${config.codexCount}" min="1" max="100">
+          <span class="pv-codex-info">${config.codexInfo}</span>
+          ${renderCitizenPicker(config)}
+        </div>
+        <div class="pv-toolbar-center">
+          <div class="pv-tabs">
+            <button class="pv-tab active" data-view="dashboard"><span class="hk">T</span>asks</button>
+            <button class="pv-tab" data-view="flowchart"><span class="hk">F</span>lowchart</button>
+            <button class="pv-tab" data-view="monitor">M<span class="hk">o</span>nitor</button>
+          </div>
+          <div class="pv-progress-inline">
+            <span class="pv-pct">${progress.percent}%</span>
+            <div class="pv-progress-bar-mini">
+              <div class="pv-progress-fill-mini" style="width: ${progress.percent}%"></div>
+            </div>
+            <span class="pv-stats-mini">${progress.completeCount}/${progress.totalItems}</span>
+          </div>
+        </div>
+        <div class="pv-toolbar-right">
+          ${renderFontSizeControl()}
+          <div class="pv-sep"></div>
+          <button class="pv-copy" id="pv-copy-view" title="Copy current view">&#128203;</button>
+          <button class="pv-copy" id="pv-copy-all" title="Copy all">All</button>
+          <button class="pv-copy" id="pv-export-csv" title="Export CSV">CSV</button>
+        </div>
+      </div>
+
+      <div class="pv-research-bar hidden" id="pv-research-bar">
+        <div class="pv-research-tabs" id="pv-research-tabs"></div>
+        <label class="pv-toggle">
+          <input type="checkbox" id="pv-hide-complete" ${hideComplete ? 'checked' : ''}>
+          <span>Hide done</span>
+        </label>
+      </div>
+
+      <div class="pv-content" id="pv-content"></div>
+    </div>
+  `;
+
+  const contentEl = container.querySelector('#pv-content') as HTMLElement;
+  wireEvents(container, contentEl);
+  renderResearchTabs(container);
+  renderContent(contentEl);
+  syncPoller();
+}
+
+export function renderLoading(container: HTMLElement): void {
+  container.innerHTML = '<div class="pv-loading">Calculating...</div>';
+}
+
+export function renderEmpty(container: HTMLElement): void {
+  container.innerHTML = '<div class="pv-empty">Select a target tier</div>';
+}
+
+// ── Citizen Picker ────────────────────────────────────────────────
+
+function renderCitizenPicker(config: PlannerViewConfig): string {
+  if (!config.citizens || config.citizens.length === 0) return '';
+
+  const sorted = [...config.citizens].sort((a, b) => a.userName.localeCompare(b.userName));
+  const options = sorted
+    .map(
+      (c) =>
+        `<option value="${c.entityId}" ${c.entityId === config.activePlayerId ? 'selected' : ''}>${c.userName}</option>`
+    )
+    .join('');
+
+  return `
+    <div class="pv-sep"></div>
+    <select id="pv-citizen" class="pv-select pv-citizen-select"
+            title="Filter by citizen capabilities">
+      <option value="">All citizens</option>
+      ${options}
+    </select>
+  `;
+}
+
+// ── Event wiring ──────────────────────────────────────────────────
+
+function wireEvents(container: HTMLElement, contentEl: HTMLElement): void {
+  // Tear down all listeners from previous render
+  wireAbort?.abort();
+  wireAbort = new AbortController();
+  const { signal } = wireAbort;
+
+  // -- Tier select --
+  container.querySelector('#pv-tier')?.addEventListener(
+    'change',
+    (e) => {
+      const tier = parseInt((e.target as HTMLSelectElement).value, 10);
+      const req = TIER_REQUIREMENTS[tier];
+      const count = req?.count || 20;
+      const countInput = container.querySelector('#pv-count') as HTMLInputElement;
+      if (countInput) countInput.value = String(count);
+      updateCodexInfo(container, tier, count);
+      cachedOnTierChange?.(tier, count);
+    },
+    { signal }
+  );
+
+  // -- Codex count --
+  container.querySelector('#pv-count')?.addEventListener(
+    'change',
+    (e) => {
+      const tier = parseInt(
+        (container.querySelector('#pv-tier') as HTMLSelectElement)?.value || '6',
+        10
+      );
+      const count = parseInt((e.target as HTMLInputElement).value, 10) || 1;
+      updateCodexInfo(container, tier, count);
+      cachedOnTierChange?.(tier, count);
+    },
+    { signal }
+  );
+
+  // -- Citizen picker --
+  container.querySelector('#pv-citizen')?.addEventListener(
+    'change',
+    (e) => {
+      const id = (e.target as HTMLSelectElement).value || null;
+      cachedOnPlayerChange?.(id);
+    },
+    { signal }
+  );
+
+  // Arrow-key nav for planner sub-tabs
+  const pvTabs = container.querySelector('.pv-tabs') as HTMLElement | null;
+  if (pvTabs) applyTabA11y(pvTabs, '.pv-tab');
+
+  // -- View tabs --
+  container.querySelectorAll<HTMLElement>('.pv-tab').forEach((tab) => {
+    tab.addEventListener(
+      'click',
+      () => {
+        const view = tab.dataset.view as ViewMode;
+        if (view === currentView) return;
+
+        // Stop monitor when leaving monitor tab
+        if (currentView === 'monitor') ProgressMonitor.stop();
+        viewPoller?.stop();
+
+        currentView = view;
+        container.querySelectorAll('.pv-tab').forEach((t) => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderContent(contentEl);
+        syncPoller();
+      },
+      { signal }
+    );
+  });
+
+  // -- Copy view (respects current view context) --
+  container.querySelector('#pv-copy-view')?.addEventListener(
+    'click',
+    () => {
+      let text: string;
+
+      if (currentView === 'flowchart') {
+        const allTabs = [...cachedResearches];
+        if (cachedStudyJournals) allTabs.push(cachedStudyJournals);
+        const branch = allTabs[activeResearchIndex];
+        text = branch
+          ? generateBranchExportText(cachedPlanItems, cachedTargetTier, branch)
+          : generatePlanExportText(cachedPlanItems, cachedTargetTier);
+      } else {
+        const dashText = PlannerDashboard.generateDashboardText();
+        text = dashText || generatePlanExportText(cachedPlanItems, cachedTargetTier);
+      }
+
+      copyWithFeedback(text, container.querySelector('#pv-copy-view') as HTMLElement);
+    },
+    { signal }
+  );
+
+  // -- Copy all (full plan, ignores filters) --
+  container.querySelector('#pv-copy-all')?.addEventListener(
+    'click',
+    () => {
+      const text =
+        currentView === 'dashboard'
+          ? PlannerDashboard.generateFullText() ||
+            generatePlanExportText(cachedPlanItems, cachedTargetTier)
+          : generatePlanExportText(cachedPlanItems, cachedTargetTier);
+      copyWithFeedback(text, container.querySelector('#pv-copy-all') as HTMLElement);
+    },
+    { signal }
+  );
+
+  // -- CSV export (full plan, all items) --
+  container.querySelector('#pv-export-csv')?.addEventListener(
+    'click',
+    () => {
+      const csv = generateTreeCSV(cachedResearches, cachedStudyJournals);
+      downloadCSV(csv, `planner-t${cachedTargetTier}-requirements.csv`);
+    },
+    { signal }
+  );
+
+  // -- Research tabs (delegated — tabs are rendered dynamically) --
+  container.addEventListener(
+    'click',
+    (e) => {
+      const tab = (e.target as HTMLElement).closest('.pv-rtab') as HTMLElement;
+      if (!tab) return;
+      const index = parseInt(tab.dataset.index || '0', 10);
+      if (index === activeResearchIndex) return;
+
+      activeResearchIndex = index;
+      container.querySelectorAll('.pv-rtab').forEach((t) => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderContent(contentEl);
+    },
+    { signal }
+  );
+
+  // -- Hide complete toggle --
+  container.querySelector('#pv-hide-complete')?.addEventListener(
+    'change',
+    (e) => {
+      hideComplete = (e.target as HTMLInputElement).checked;
+      renderContent(contentEl);
+    },
+    { signal }
+  );
+  wireFontSizeControl(container);
+}
+
+// ── Content rendering ─────────────────────────────────────────────
+
+function renderContent(container: HTMLElement): void {
+  const researchBar = document.getElementById('pv-research-bar');
+  if (researchBar) {
+    researchBar.classList.toggle('hidden', currentView !== 'flowchart');
+  }
+
+  document.body.classList.toggle('fc-expanded', currentView === 'flowchart');
+
+  if (currentView === 'dashboard') {
+    PlannerDashboard.render(container, cachedResearches, cachedStudyJournals, cachedTargetTier);
+  } else if (currentView === 'monitor') {
+    ProgressMonitor.start(container, cachedClaimId, cachedCityTier, cachedTargetTier);
+  } else {
+    Flowchart.render(container, {
+      researches: cachedResearches,
+      studyJournals: cachedStudyJournals,
+      activeResearchIndex,
+      hideComplete,
+    });
+  }
+}
+
+// ── Research tabs ─────────────────────────────────────────────────
+
+function renderResearchTabs(container: HTMLElement): void {
+  const tabsEl = container.querySelector('#pv-research-tabs');
+  if (!tabsEl || !cachedResearches.length) return;
+
+  const allTabs = [...cachedResearches];
+  if (cachedStudyJournals) {
+    allTabs.push({ ...cachedStudyJournals, name: 'Study Journals' });
+  }
+
+  tabsEl.innerHTML = allTabs
+    .map((r, i) => {
+      const name = formatTabName(r.name);
+      const isJournals = i >= cachedResearches.length;
+      return `
+      <button class="pv-rtab ${i === activeResearchIndex ? 'active' : ''} ${isJournals ? 'pv-rtab-journals' : ''}"
+              data-index="${i}">
+        <span class="fc-tab-status ${r.status || ''}"></span>
+        ${name}
+      </button>
+    `;
+    })
+    .join('');
+
+  const tabContainer = container.querySelector<HTMLElement>('.pv-research-tabs');
+  if (tabContainer) applyTabA11y(tabContainer, '.pv-rtab');
+}
+
+// ── Polling ───────────────────────────────────────────────────────
+
+function initPoller(onRefresh: PlannerViewConfig['onRefresh']): void {
+  viewPoller?.stop();
+
+  viewPoller = createPollTimer({
+    intervalMs: 60_000,
+    jitterMs: 10_000,
+    minMs: 15_000,
+    staleAfterMs: 30_000,
+    onPoll: async () => {
+      const updated = await onRefresh();
+
+      cachedPlanItems = updated.planItems;
+      cachedResearches = updated.researches;
+      cachedStudyJournals = updated.studyJournals;
+
+      patchProgress();
+
+      const contentEl = document.getElementById('pv-content');
+      if (contentEl) renderContent(contentEl);
+    },
+  });
+}
+
+function syncPoller(): void {
+  if (currentView === 'dashboard' || currentView === 'flowchart') {
+    viewPoller?.start();
+  } else {
+    viewPoller?.stop();
+  }
+}
+
+function patchProgress(): void {
+  const progress = calculatePlanProgress(cachedPlanItems);
+  const pctEl = document.querySelector('.pv-pct');
+  const fillEl = document.querySelector<HTMLElement>('.pv-progress-fill-mini');
+  const statsEl = document.querySelector('.pv-stats-mini');
+  if (pctEl) pctEl.textContent = `${progress.percent}%`;
+  if (fillEl) fillEl.style.width = `${progress.percent}%`;
+  if (statsEl) statsEl.textContent = `${progress.completeCount}/${progress.totalItems}`;
+}
+
+export function stopPolling(): void {
+  viewPoller?.stop();
+  ProgressMonitor.stop();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+
+function formatTabName(name: string): string {
+  return name
+    .replace(' Research', '')
+    .replace(' Codex', '')
+    .replace(/^(Novice|Apprentice|Journeyman|Expert|Master|Proficient) /, '');
+}
+
+function updateCodexInfo(container: HTMLElement, tier: number, count: number): void {
+  const infoEl = container.querySelector('.pv-codex-info');
+  if (!infoEl) return;
+  const req = TIER_REQUIREMENTS[tier];
+  if (!req) return;
+  const custom = count !== req.count ? ' (custom)' : '';
+  infoEl.textContent = `${count}\u00d7 T${req.codexTier} Codex${custom}`;
+}
+
+function copyWithFeedback(text: string, btn: HTMLElement): void {
+  navigator.clipboard.writeText(text).then(() => {
+    const original = btn.innerHTML;
+    btn.innerHTML = '&#10003;';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.innerHTML = original;
+      btn.classList.remove('copied');
+    }, 1500);
+  });
+}
+
+function downloadCSV(content: string, filename: string): void {
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}

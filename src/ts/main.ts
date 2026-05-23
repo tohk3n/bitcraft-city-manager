@@ -1,13 +1,13 @@
-import { createLogger } from './logger.js';
-import { UI } from './ui.js';
+import { createLogger } from './lib/logger.js';
+import { UI } from './shell/ui.js';
 import { API } from './api.js';
-import { processCraftingStations } from './inventory.js';
-import { CitizensUI } from './citizens/index.js';
-import { InventoryProcessor } from './inventory.js';
-import * as Planner from './planner/planner.js';
-import * as ClaimSearch from './claim-search.js';
-import { buildFilterContext } from './planner/player-context.js';
-import type { FilterContext } from './planner/player-filter.js';
+import { processCraftingStations } from './feature/inventory/inventory.js';
+import { CitizensUI } from './feature/citizens/index.js';
+import { InventoryProcessor } from './feature/inventory/inventory.js';
+import * as Planner from './feature/planner/planner.js';
+import * as ClaimSearch from './shell/claim-search.js';
+import { buildFilterContext } from './feature/planner/player-context.js';
+import type { FilterContext } from './feature/planner/player-filter.js';
 import type {
   PlannerState,
   CalculateOptions,
@@ -20,17 +20,17 @@ import type {
   Building,
   ApiItem,
 } from './types/index.js';
-import type { CitizensData } from './citizens/index.js';
-import * as Calculator from './calculator-view.js';
-import { applyTabA11y } from './aria.js';
-import * as MaterialsView from './material-breakdown-view.js';
-import { initHotkeys } from './hotkeys.js';
-import { initWalkthrough } from './walkthrough.js';
-import { applyAll as applyPreferences } from './user-prefs.js';
-import { init as initTravelerTimer } from './traveler-timer.js';
-import * as Overview from './overview.js';
-import * as ActiveCrafts from './active-crafts.js';
-import { initAeolith } from './aeolith.js';
+import type { CitizensData } from './feature/citizens/index.js';
+import * as Calculator from './feature/calculator/calculator-view.js';
+import { applyTabA11y } from './lib/aria.js';
+import * as MaterialsView from './feature/calculator/material-breakdown-view.js';
+import { initHotkeys } from './shell/hotkeys.js';
+import { initWalkthrough } from './shell/walkthrough.js';
+import { applyAll as applyPreferences } from './lib/user-prefs.js';
+import { init as initTravelerTimer } from './feature/traveler-timer/traveler-timer.js';
+import * as Overview from './feature/overview/overview.js';
+import * as ActiveCrafts from './feature/active-crafts/active-crafts.js';
+import { initAeolith } from './feature/aeolith/aeolith.js';
 
 const log = createLogger('Main');
 
@@ -505,8 +505,8 @@ function setupTabs(): void {
 // -- init --
 
 ClaimSearch.init({
-  onSelect: (claimId) => loadClaim(claimId),
-  onDirectLoad: (claimId) => loadClaim(claimId),
+  onSelect: (claimId: string) => loadClaim(claimId),
+  onDirectLoad: (claimId: string) => loadClaim(claimId),
 });
 
 loadBtn?.addEventListener('click', () => {
@@ -529,7 +529,7 @@ initAeolith({
   getPlanItems: () => plannerState.results?.planItems ?? null,
   getTargetTier: () => plannerState.targetTier,
   getCitizens: () => claimData.citizensData,
-  loadClaim: (id) => loadClaim(id),
+  loadClaim: (id: string) => loadClaim(id),
   loadCitizens: () => loadCitizens(),
 });
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DashboardUI } from '../dashboard.js';
+import { DashboardUI } from '../feature/dashboard/dashboard.js';
 import { FILTER_TYPE } from '../types/index.js';
 
 describe('filterFridge', () => {

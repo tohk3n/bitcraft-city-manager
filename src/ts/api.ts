@@ -1,5 +1,5 @@
 // API wrapper - all calls to bitjita go through proxy
-import { createLogger } from './logger.js';
+import { createLogger } from './lib/logger.js';
 import type {
   ClaimResponse,
   ClaimSearchResponse,
