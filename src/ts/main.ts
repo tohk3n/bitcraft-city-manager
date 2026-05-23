@@ -1,4 +1,4 @@
-\import { createLogger } from './logger.js';
+import { createLogger } from './logger.js';
 import { UI } from './ui.js';
 import { API } from './api.js';
 import { processCraftingStations } from './feature/inventory/inventory.js';
