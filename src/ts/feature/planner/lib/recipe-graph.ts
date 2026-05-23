@@ -12,7 +12,7 @@ import {
   isTrackable as dataIsTrackable,
 } from '../../../data/recipe-data.js';
 import type { RecipesFile, RecipeEntry, ItemCategory } from '../../../data/types.js';
-import type { CodexFile, CodexTier, MappingType } from '../../../types';
+import type { CodexFile, CodexTier, MappingType } from '../../../types/index.js';
 
 // =============================================================================
 // CODEX ACCESS (unchanged — codex.json is planner-specific)

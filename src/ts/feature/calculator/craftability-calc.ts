@@ -11,8 +11,8 @@
 
 import type { RecipesFile, RecipeEntry } from '../../data/types.js';
 import { getRecipeById } from '../../data/recipe-data.js';
-import type { InventoryLookup } from '../../types';
-import { DASHBOARD_CONFIG } from '../../configuration';
+import type { InventoryLookup } from '../../types/index.js';
+import { DASHBOARD_CONFIG } from '../../configuration/index.js';
 
 // ---- Results ----
 

@@ -1,14 +1,14 @@
 // Map link composer functionality
-import { CONFIG, MAP_CONFIG } from '../../configuration';
-import type { NamedMatrix } from '../../types';
-import { LINK_PARAM } from '../../types';
+import { CONFIG, MAP_CONFIG } from '../../configuration/index.js';
+import type { NamedMatrix } from '../../types/index.js';
+import { LINK_PARAM } from '../../types/index.js';
 import { createLogger } from '../../lib/logger.js';
 import type {
   DataMatrixHandle,
   MatrixColumn,
   MatrixConfig,
   MatrixRow,
-} from '../../components/data-matrix/data-matrix';
+} from '../../components/data-matrix/data-matrix.js';
 import { createDataMatrix } from '../../components/data-matrix/data-matrix.js';
 
 const log = createLogger('mapLink');

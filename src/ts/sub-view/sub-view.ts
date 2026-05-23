@@ -12,7 +12,7 @@ import type {
   CargoData,
   BottleneckSummary,
   ConsumableStatus,
-} from '../components/sub-view';
+} from '../components/sub-view/index.js';
 
 // Mount a sub-view into a container element.
 export function createSubView(container: HTMLElement, config: SubViewConfig): SubViewHandle {

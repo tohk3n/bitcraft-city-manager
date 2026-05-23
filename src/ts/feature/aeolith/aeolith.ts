@@ -8,7 +8,12 @@ import { getRecipeById, findRecipes } from '../../data/recipe-data.js';
 import { formatCompact } from '../planner/lib/progress-calc.js';
 import * as Planner from '../planner/planner.js';
 import { API } from '../../api.js';
-import type { PlanItem, ClaimResponse, InventoryLookup, ClaimSearchResult } from '../../types';
+import type {
+  PlanItem,
+  ClaimResponse,
+  InventoryLookup,
+  ClaimSearchResult,
+} from '../../types/index.js';
 import type { CitizensData, CitizenRecord } from '../citizens/index.js';
 import type { RecipesFile } from '../../data/types.js';
 
@@ -408,6 +413,7 @@ const commands: Record<string, Command> = {
         }
       }
 
+      if (!planItems) return ['no plan available.'];
       return formatPlan(planItems, targetTier, detail);
     },
   },

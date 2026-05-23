@@ -22,9 +22,9 @@ import type {
   Activity,
   PlanItem,
   PlanProgressSummary,
-} from '../../../types';
+} from '../../../types/index.js';
 import { createKey } from './inventory-matcher.js';
-import { CONFIG } from '../../../configuration';
+import { CONFIG } from '../../../configuration/index.js';
 
 /**
  * Activity categories for grouping items.

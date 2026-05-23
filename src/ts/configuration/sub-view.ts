@@ -2,7 +2,7 @@
 // Declarative definitions -- the transformer reads these to produce SubViewConfig.
 // Adding a profession = adding a ProfessionDef. No transformer changes needed.
 
-import type { RowSemantic } from '../components/sub-view';
+import type { RowSemantic } from '../components/sub-view/index.js';
 
 export interface RowDef {
   source: 'tag' | 'name'; // tag matches by inventory tag, name matches exact item name

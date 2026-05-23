@@ -14,7 +14,7 @@ import {
   CONCERN_COLORS,
 } from '../planner/lib/concern-items.js';
 import type { ConcernItem, Concern } from '../planner/lib/concern-items.js';
-import type { PlanItem, PlanProgressSummary, ProcessedNode } from '../../types';
+import type { PlanItem, PlanProgressSummary, ProcessedNode } from '../../types/index.js';
 
 const log = createLogger('Monitor');
 

@@ -14,8 +14,8 @@ import {
 import * as PlannerDashboard from './planner-dashboard.js';
 import * as Flowchart from './flowchart.js';
 import * as ProgressMonitor from '../../feature/planner/progress-monitor.js';
-import { TIER_REQUIREMENTS } from '../../configuration';
-import type { ProcessedNode, PlanItem } from '../../types';
+import { TIER_REQUIREMENTS } from '../../configuration/index.js';
+import type { ProcessedNode, PlanItem } from '../../types/index.js';
 import { applyTabA11y } from '../../lib/aria.js';
 import { generateTreeCSV } from '../../feature/planner/lib/tree-csv.js';
 import { renderFontSizeControl, wireFontSizeControl } from '../../shell/font-size-control.js';

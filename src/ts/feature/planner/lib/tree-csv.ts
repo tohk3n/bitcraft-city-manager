@@ -6,7 +6,7 @@
  * Depth and parent columns preserve hierarchy for pivot tables.
  */
 
-import type { ProcessedNode } from '../../../types';
+import type { ProcessedNode } from '../../../types/index.js';
 
 const HEADER = [
   'research',

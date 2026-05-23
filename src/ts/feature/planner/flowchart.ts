@@ -6,7 +6,7 @@
 
 import { formatCompact } from '../../feature/planner/lib/progress-calc.js';
 import { CONFIG } from '../../configuration/config.js';
-import type { ProcessedNode } from '../../types';
+import type { ProcessedNode } from '../../types/index.js';
 
 // Extended node type for tabs (includes optional isStudyJournals flag)
 interface TabNode extends ProcessedNode {

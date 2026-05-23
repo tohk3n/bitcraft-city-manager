@@ -15,9 +15,9 @@ import type {
   Tier,
   PlannerResults,
   PlanItem,
-} from '../../types';
+} from '../../types/index.js';
 import type { CraftableResult, SupplyRow } from '../../feature/calculator/craftability-calc.js';
-import { DASHBOARD_CONFIG } from '../../configuration';
+import { DASHBOARD_CONFIG } from '../../configuration/index.js';
 import { createLogger } from '../../lib/logger.js';
 import { calculatePlanProgress, collectBranchKeys } from '../planner/lib/progress-calc.js';
 import { activityClass, relativeTime } from '../citizens/data.js';

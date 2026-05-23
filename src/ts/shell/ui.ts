@@ -4,7 +4,7 @@ import { MAP_LINK } from '../feature/maplink/maplink.js';
 import { DashboardUI } from '../feature/dashboard/dashboard.js';
 import { IdsUI } from '../feature/ids/ids.js';
 import { createLogger } from '../lib/logger.js';
-import { KeyboardKey } from '../types';
+import { KeyboardKey } from '../types/index.js';
 
 const log = createLogger('UI');
 // Base UI utilities

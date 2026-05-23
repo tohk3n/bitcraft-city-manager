@@ -1,4 +1,4 @@
-import { KeyboardKey } from '../types';
+import { KeyboardKey } from '../types/index.js';
 
 /**
  * Layer ARIA tab roles + keyboard nav onto a tab group.

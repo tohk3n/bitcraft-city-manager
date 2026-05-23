@@ -1,7 +1,7 @@
 // ID Lookup view rendering
 // Handles: citizen and item ID lists with filtering
 
-import type { ApiItem, ClaimCitizensResponse, IdsTabType } from '../../types';
+import type { ApiItem, ClaimCitizensResponse, IdsTabType } from '../../types/index.js';
 
 export const IdsUI = {
   // Render ID list (citizens or items)

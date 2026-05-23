@@ -5,7 +5,12 @@
  * Pure function, no side effects. Phase 1 of the cascade algorithm.
  */
 
-import type { ExpandedCodex, ExpandedNode, CodexFile, CodexResearch } from '../../../types';
+import type {
+  ExpandedCodex,
+  ExpandedNode,
+  CodexFile,
+  CodexResearch,
+} from '../../../types/index.js';
 import type { RecipesFile, RecipeEntry } from '../../../data/types.js';
 import {
   getCodexTier,
