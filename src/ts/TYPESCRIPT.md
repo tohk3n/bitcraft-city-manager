@@ -21,7 +21,51 @@ IT IS GOOD that you already understand static typing. **HOWEVER!** TypeScript ha
 ## The **NEW** Project Structure
 
 ```bash
-src/ts/           # Source TypeScript
+src/ts/
+├── features/
+│   ├── citizens/          
+│   ├── planner/           
+│   ├── inventory/
+│   ├── dashboard/
+│   ├── overview/
+│   ├── calculator/
+│   ├── active-crafts/
+│   ├── maplink/
+│   ├── aeolith/
+│   └── traveler-timer/
+│
+├── components/            # genuinely reusable UI
+│   ├── data-matrix/       # already correct; KILL the duplicate scss/_data-matrix.scss
+│   └── sub-view/          # the REUSABLE one (ts/components/sub-view)
+│
+├── gamedata/             # was data/ — utilities for reading/shaping game data
+│   ├── *.ts (item-data, loader, package-data, recipe-data, station-data, types)
+│   ├── index.ts
+│   └── __tests__/
+│
+├── lib/                  # app-wide, feature-agnostic utilities
+│   ├── poll-timer.ts
+│   ├── logger.ts + LOGGER.md
+│   ├── aria.ts           # generic a11y helper, not feature-bound
+│   └── user-prefs.ts     # if app-wide
+│
+├── configuration/        # unchanged
+│   └── *.ts
+│
+├── types/                # unchanged (global/shared types only)
+│   └── *.ts
+│
+├── scss/                 # GLOBALS ONLY now
+│   ├── main.scss
+│   ├── _reset.scss
+│   ├── _variables.scss
+│   └── _common.scss
+│
+├── shell/                # the "what is UI really" answer — view switching, chrome
+│
+├── api.ts                # glue at root
+└── main.ts               # bootstrap at root
+
 public/js/        # Compiled output (gitignored, don't edit)
 ```
 
