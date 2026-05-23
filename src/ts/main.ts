@@ -1,5 +1,5 @@
-import { createLogger } from './logger.js';
-import { UI } from './ui.js';
+import { createLogger } from './lib/logger.js';
+import { UI } from './shell/ui.js';
 import { API } from './api.js';
 import { processCraftingStations } from './feature/inventory/inventory.js';
 import { CitizensUI } from './feature/citizens/index.js';
