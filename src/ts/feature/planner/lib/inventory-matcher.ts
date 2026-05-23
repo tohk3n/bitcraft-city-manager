@@ -6,7 +6,13 @@
  */
 
 import { getItemForPackage } from '../../../data/package-data.js';
-import type { ApiItem, ApiCargo, Building, InventoryLookup, MetaLookups } from '../../../types';
+import type {
+  ApiItem,
+  ApiCargo,
+  Building,
+  InventoryLookup,
+  MetaLookups,
+} from '../../../types/index.js';
 import type { PackagesFile } from '../../../data/types.js';
 
 export function normalizeName(name: string): string {

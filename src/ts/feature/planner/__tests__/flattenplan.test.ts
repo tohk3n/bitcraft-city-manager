@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { flattenPlan, calculatePlanProgress } from '../../../feature/planner/lib/progress-calc.js';
-import type { ProcessedCodex, ProcessedNode, PlanItem } from '../../../types';
+import type { ProcessedCodex, ProcessedNode, PlanItem } from '../../../types/index.js';
 
 // =============================================================================
 // TEST FIXTURES

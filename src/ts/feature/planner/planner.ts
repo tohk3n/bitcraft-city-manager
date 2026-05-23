@@ -19,7 +19,7 @@ import { expandRecipes } from '../../feature/planner/lib/recipe-expander.js';
 import { applyCascade } from '../../feature/planner/lib/cascade-calc.js';
 import { flattenPlan, formatCompact } from '../../feature/planner/lib/progress-calc.js';
 import * as PlannerView from '../../feature/planner/planner-view.js';
-import { TIER_REQUIREMENTS } from '../../configuration';
+import { TIER_REQUIREMENTS } from '../../configuration/index.js';
 import type {
   CodexFile,
   PlanItem,
@@ -28,7 +28,7 @@ import type {
   CalculateOptions,
   InventoryLookup,
   ClaimInventoriesResponse,
-} from '../../types';
+} from '../../types/index.js';
 import type { RecipesFile, PackagesFile } from '../../data/types.js';
 import type { FilterContext } from '../planner/player-filter.js';
 import type { PlannerViewConfig } from '../planner/planner-view.js';

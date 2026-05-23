@@ -16,9 +16,9 @@ import type {
   Package,
   NamedMatrix,
   ResourceMatrix,
-} from '../../types';
-import { FILTER_TYPE } from '../../types';
-import { CONFIG, DASHBOARD_CONFIG } from '../../configuration';
+} from '../../types/index.js';
+import { FILTER_TYPE } from '../../types/index.js';
+import { CONFIG, DASHBOARD_CONFIG } from '../../configuration/index.js';
 import { createLogger } from '../../lib/logger.js';
 import { applyTabA11y } from '../../lib/aria.js';
 import { loadRecipes } from '../../data/loader.js';
@@ -33,8 +33,8 @@ import {
   ALL_PROFESSIONS,
   calcProfessionBottlenecks,
   applyBottlenecks,
-} from '../../sub-view';
-import type { SubViewHandle } from '../../components/sub-view';
+} from '../../sub-view/index.js';
+import type { SubViewHandle } from '../../components/sub-view/index.js';
 import type {
   MatrixColumn,
   MatrixConfig,

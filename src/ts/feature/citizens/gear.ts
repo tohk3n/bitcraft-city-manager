@@ -10,7 +10,11 @@
 // Pickaxe (equipped) +1 stashed".
 
 import { CITIZEN_CONFIG } from '../../configuration/citizenconfig.js';
-import type { EquipmentSlot, VaultCollectible, PlayerInventoriesResponse } from '../../types';
+import type {
+  EquipmentSlot,
+  VaultCollectible,
+  PlayerInventoriesResponse,
+} from '../../types/index.js';
 import type { GearSlot, ToolItem } from '../../types/citizens.js';
 
 const SLOTS = CITIZEN_CONFIG.EQUIPMENT_SLOTS;

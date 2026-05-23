@@ -19,7 +19,7 @@ import type {
   InventorySlotContents,
   TagGroup,
   MaterialMatrix,
-} from '../../types';
+} from '../../types/index.js';
 
 // Helper to create fresh tier quantities object
 function createTierQuantities(): TierQuantities {

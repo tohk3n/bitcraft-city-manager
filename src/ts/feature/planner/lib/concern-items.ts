@@ -4,7 +4,7 @@
 // Both need to walk ProcessedNode trees, classify items by concern,
 // and render them in the same column vocabulary.
 
-import type { ProcessedNode, MappingType } from '../../../types';
+import type { ProcessedNode, MappingType } from '../../../types/index.js';
 
 // ── Types ─────────────────────────────────────────────────────────
 

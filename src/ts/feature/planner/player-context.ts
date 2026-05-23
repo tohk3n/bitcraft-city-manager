@@ -12,7 +12,7 @@ import { API } from '../../api.js';
 import { createLogger } from '../../lib/logger.js';
 import type { FilterContext, PlayerTools, ClaimStations } from '../planner/player-filter.js';
 import type { CitizenRecord, CitizensData } from '../citizens/index.js';
-import type { Building } from '../../types';
+import type { Building } from '../../types/index.js';
 
 const log = createLogger('PlayerCtx');
 

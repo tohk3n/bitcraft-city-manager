@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import * as PlannerView from '../planner-view.js';
 import type { PlannerViewConfig } from '../planner-view.js';
-import type { ProcessedNode, PlanItem } from '../../../types';
+import type { ProcessedNode, PlanItem } from '../../../types/index.js';
 
 // =============================================================================
 // FIXTURES — minimal but structurally complete

@@ -12,7 +12,7 @@
  * items with no recipe entry).
  */
 
-import type { PlanItem } from '../../types';
+import type { PlanItem } from '../../types/index.js';
 
 // ── Types ─────────────────────────────────────────────────────────
 

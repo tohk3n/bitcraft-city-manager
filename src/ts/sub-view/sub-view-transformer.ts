@@ -6,14 +6,14 @@
 // When async bottleneck calc finishes, call the transformer again and
 // update() the sub-view handle.
 
-import type { ProcessedInventory, Package, TagGroup } from '../types';
+import type { ProcessedInventory, Package, TagGroup } from '../types/index.js';
 import type {
   SubViewConfig,
   SubViewRow,
   SubViewSection,
   CargoData,
   ConsumableStatus,
-} from '../components/sub-view';
+} from '../components/sub-view/index.js';
 import type {
   ProfessionDef,
   SectionDef,

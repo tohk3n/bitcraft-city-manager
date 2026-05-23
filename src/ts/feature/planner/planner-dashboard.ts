@@ -8,7 +8,7 @@
 import { formatCompact } from '../../feature/planner/lib/progress-calc.js';
 import { collectItemsFromTree, CONCERN_ORDER } from '../../feature/planner/lib/concern-items.js';
 import type { ConcernItem, Concern } from '../../feature/planner/lib/concern-items.js';
-import type { ProcessedNode } from '../../types';
+import type { ProcessedNode } from '../../types/index.js';
 
 // ── Types ─────────────────────────────────────────────────────────
 

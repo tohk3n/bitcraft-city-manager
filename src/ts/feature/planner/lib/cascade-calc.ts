@@ -16,7 +16,7 @@ import type {
   TrackableItem,
   FirstTrackableItem,
   SecondLevelItem,
-} from '../../../types';
+} from '../../../types/index.js';
 
 const STUDY_JOURNAL_PATTERN = /Study Journal$/;
 

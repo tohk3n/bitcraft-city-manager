@@ -10,7 +10,7 @@
 import { API } from '../../api.js';
 import { createLogger } from '../../lib/logger.js';
 import { resolveGearGrid, filterVaultGear, parseTools } from './gear.js';
-import type { ClaimMember, ClaimCitizensResponse } from '../../types';
+import type { ClaimMember, ClaimCitizensResponse } from '../../types/index.js';
 import type { CitizenRecord, CitizensData, ViewState } from '../../types/citizens.js';
 
 const log = createLogger('Citizens');

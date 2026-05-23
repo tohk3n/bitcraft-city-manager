@@ -5,7 +5,7 @@
  */
 
 import { formatCompact } from '../planner/lib/progress-calc.js';
-import type { PlanItem } from '../../types';
+import type { PlanItem } from '../../types/index.js';
 
 // Sort options
 type SortOption = 'deficit' | 'deficit-asc' | 'tier' | 'tier-asc' | 'activity' | 'name';

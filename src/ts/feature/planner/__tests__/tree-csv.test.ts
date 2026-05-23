@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateTreeCSV } from '../lib/tree-csv.js';
-import type { ProcessedNode } from '../../../types';
+import type { ProcessedNode } from '../../../types/index.js';
 
 function node(
   overrides: Partial<ProcessedNode> & Pick<ProcessedNode, 'name' | 'tier'>
