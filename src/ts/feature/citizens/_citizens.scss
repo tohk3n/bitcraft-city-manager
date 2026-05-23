@@ -1,0 +1,565 @@
+@use '../../../scss/variables';
+@use 'sass:color';
+
+/* ═══ Citizens, master-detail roster ═══
+   Already the most terminal-like view.
+   Changes: radius 8→2, padding tightened, font token unified. */
+
+// Bright rarity colors for text-on-dark
+$rarity-fg: (
+  common: #4e5579,
+  uncommon: #9ece6a,
+  rare: #7aa2f7,
+  epic: #e0af68,
+  legendary: #f7768e,
+  mythic: #bb9af7,
+);
+
+@each $name, $clr in $rarity-fg {
+  .cz-r-#{$name} {
+    color: $clr;
+  }
+}
+.cz-r-none {
+  color: var(--text-muted);
+}
+
+/* ─── Loading ─── */
+
+.cz-loading {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+}
+
+/* ─── Toolbar ─── */
+
+.cz-toolbar {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.cz-toolbar-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.cz-search {
+  flex: 1;
+  min-width: 160px;
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  &::placeholder {
+    color: var(--text-muted);
+  }
+}
+
+.cz-select {
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  cursor: pointer;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+}
+
+.cz-toolbar-count {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+/* ─── Roster ─── */
+
+.cz-roster {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cz-member-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 8px;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  text-align: left;
+  font-size: 11px;
+  color: var(--text-primary);
+  transition:
+    background 0.1s,
+    border-color 0.1s;
+
+  &:hover {
+    background: var(--bg-quaternary);
+    border-color: var(--border);
+  }
+  &:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: -1px;
+  }
+}
+
+.cz-name {
+  flex: 1;
+  font-weight: 500;
+}
+
+.cz-meta {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.cz-login {
+  color: var(--text-muted);
+}
+
+.cz-level {
+  padding: 1px 6px;
+  background: var(--bg-primary);
+  border-radius: var(--radius);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Activity dot ─── */
+
+.cz-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+
+  &.cz-active {
+    background: var(--success);
+  }
+  &.cz-stale {
+    background: var(--warning);
+  }
+  &.cz-inactive {
+    background: var(--text-muted);
+  }
+}
+
+/* ─── Detail view ─── */
+
+.cz-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cz-detail-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cz-back {
+  padding: 3px 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  background: var(--bg-tertiary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--bg-quaternary);
+    color: var(--text-primary);
+  }
+}
+
+.cz-detail-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.cz-detail-name {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.cz-detail-meta {
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.cz-map-link {
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  opacity: 0.5;
+  transition: opacity 0.1s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+/* ─── Profile grid ─── */
+/* Seven columns. No decorative lines. Whitespace is the structure. */
+
+.cz-grid {
+  display: grid;
+  grid-template-columns:
+    [skill] auto
+    [bar] auto
+    [tool] auto
+    [gap] 16px
+    [slot] auto
+    [cloth] auto
+    [lthr] auto
+    [metal] auto;
+  column-gap: 6px;
+  align-items: baseline;
+  width: fit-content;
+  max-width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.cz-row {
+  display: contents;
+}
+
+.cz-row-hdr > span {
+  padding-bottom: 2px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+/* Left zone */
+.cz-c-skill {
+  grid-column: skill;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.cz-c-tool {
+  grid-column: tool;
+  white-space: nowrap;
+}
+
+.cz-stashed {
+  color: var(--text-muted);
+  font-size: 9px;
+}
+
+.cz-c-bar {
+  grid-column: bar;
+  white-space: nowrap;
+}
+
+.cz-bar-track {
+  display: inline-block;
+  width: 20ch;
+  height: 1.2em;
+  background: var(--bg-primary);
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+.cz-bar-fill {
+  display: inline-block;
+  height: 100%;
+  text-align: center;
+  min-width: 2ch;
+  font-weight: 700;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+
+  @each $name, $clr in $rarity-fg {
+    &.cz-r-#{$name} {
+      background: $clr;
+      color: color.adjust($clr, $lightness: -30%);
+    }
+  }
+  &.cz-r-none {
+    background: #4e5579;
+    color: #2f3349;
+  }
+}
+
+/* Right zone */
+.cz-g-gap {
+  grid-column: gap;
+}
+.cz-g-slot {
+  grid-column: slot;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  font-size: 10px;
+}
+.cz-g-hdr {
+  font-size: 9px;
+  color: var(--text-secondary);
+}
+
+.cz-g-cell {
+  font-weight: 600;
+
+  &.cz-g-empty {
+    color: var(--bg-tertiary);
+    font-weight: 400;
+  }
+
+  &.cz-vault {
+    font-style: italic;
+    border-bottom: 1px dashed currentColor;
+  }
+}
+
+.cz-spacer {
+  grid-column: 1 / -1;
+  height: 6px;
+}
+
+/* Legend */
+.cz-legend-content {
+  grid-column: slot / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.cz-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.cz-vault-sample {
+  font-style: italic;
+  border-bottom: 1px dashed var(--text-muted);
+}
+
+/* ═══ Matrix View, dense skill grid ═══ */
+
+.mx-wrap {
+  overflow-x: auto;
+  margin-top: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mx-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.mx-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bg-secondary);
+}
+
+.mx-table th {
+  padding: 3px 4px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 9px;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
+.mx-th-name {
+  text-align: left !important;
+  padding-left: 8px !important;
+  min-width: 100px;
+  position: sticky;
+  left: 0;
+  background: var(--bg-secondary);
+  z-index: 2;
+}
+
+.mx-th-skill {
+  cursor: pointer;
+  min-width: 32px;
+  transition: color 0.1s;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}
+
+.mx-th-active {
+  color: var(--accent) !important;
+}
+
+.mx-th-meta {
+  min-width: 28px;
+  color: var(--text-muted);
+}
+
+.mx-th-login {
+  text-align: right !important;
+  padding-right: 8px !important;
+  min-width: 48px;
+}
+
+.mx-row {
+  cursor: pointer;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--bg-quaternary);
+  }
+
+  &:nth-child(even) {
+    background: var(--bg-tertiary);
+
+    &:hover {
+      background: var(--bg-quaternary);
+    }
+  }
+}
+
+.mx-name {
+  padding: 3px 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+  position: sticky;
+  left: 0;
+  background: inherit;
+  z-index: 1;
+
+  .cz-dot {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 4px;
+  }
+
+  .mx-row:hover & {
+    background: var(--bg-quaternary);
+  }
+
+  .mx-row:nth-child(even) & {
+    background: var(--bg-tertiary);
+  }
+
+  .mx-row:nth-child(even):hover & {
+    background: var(--bg-quaternary);
+  }
+}
+
+.mx-cell {
+  padding: 2px 3px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  border-left: 1px solid var(--border);
+}
+
+// Level thresholds use hardcoded rgba, CSS custom properties don't work inside rgba().
+.mx-lvl-high {
+  color: #9ece6a;
+  background: rgba(158, 206, 106, 0.12);
+}
+
+.mx-lvl-mid {
+  color: #7aa2f7;
+  background: rgba(122, 162, 247, 0.1);
+}
+
+.mx-lvl-low {
+  color: var(--text-secondary);
+}
+
+.mx-lvl-min {
+  color: var(--text-muted);
+}
+
+.mx-lvl-none {
+  color: var(--bg-quaternary);
+}
+
+.mx-meta {
+  padding: 2px 4px;
+  text-align: center;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+// Highest skill in each row gets a subtle underline accent.
+// Visible enough to scan for, subtle enough to not overwhelm the grid.
+.mx-best {
+  border-bottom: 1px solid currentColor;
+  font-weight: 700;
+}
+
+.mx-login {
+  text-align: right;
+  padding-right: 8px;
+  font-size: 9px;
+}
+
+.cz-view-toggle {
+  padding: 2px 8px;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .mx-table {
+    font-size: 9px;
+  }
+
+  .mx-th-skill {
+    min-width: 26px;
+  }
+
+  .mx-th-login,
+  .mx-login {
+    display: none;
+  }
+}

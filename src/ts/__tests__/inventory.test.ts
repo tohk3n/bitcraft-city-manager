@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { InventoryProcessor } from '../inventory.js';
+import { InventoryProcessor } from '../feature/inventory/inventory.js';
 import type { ApiItem } from '../types/index.js';
 describe('buildEntry', () => {
   it('builds entry according to entered data', () => {

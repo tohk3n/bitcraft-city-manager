@@ -15,7 +15,7 @@ import type {
   SubViewConfig,
 } from '../components/sub-view/sub-view.types.js';
 import type { ProfessionDef } from '../configuration/sub-view.js';
-import { calcCraftable, normalizeInventory } from '../craftability-calc.js';
+import { calcCraftable, normalizeInventory } from '../feature/calculator/craftability-calc.js';
 
 // result for a single output recipe at one tier
 interface OutputCraft {

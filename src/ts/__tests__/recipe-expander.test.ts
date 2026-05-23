@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { expandRecipes } from '../planner/lib/recipe-expander.js';
+import { expandRecipes } from '../feature/planner/lib/recipe-expander.js';
 import type { CodexFile } from '../types/index.js';
 import type { RecipesFile } from '../data/types.js';
 

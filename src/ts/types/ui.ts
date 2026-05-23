@@ -10,7 +10,7 @@ import type {
   VaultCollectible,
 } from './api.js';
 import type { MaterialCategory } from './inventory.js';
-import type { CitizensData } from '../citizens/index.js';
+import type { CitizensData } from '../feature/citizens/index.js';
 
 // =============================================================================
 // VIEW STATE

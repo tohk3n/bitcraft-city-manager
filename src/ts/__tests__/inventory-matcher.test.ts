@@ -4,7 +4,7 @@ import {
   createKey,
   buildInventoryLookup,
   buildMetaLookups,
-} from '../../ts/planner/lib/inventory-matcher.js';
+} from '../../ts/feature/planner/lib/inventory-matcher.js';
 import type { ApiItem, ApiCargo, Building } from '../types/index.js';
 import type { PackagesFile } from '../data/types.js';
 
