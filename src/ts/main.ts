@@ -1,5 +1,6 @@
-import { createLogger } from './lib/logger.js';
-import { UI } from './shell/ui.js';
+import { inject } from '@vercel/analytics';
+import { createLogger } from './logger.js';
+import { UI } from './ui.js';
 import { API } from './api.js';
 import { processCraftingStations } from './feature/inventory/inventory.js';
 import { CitizensUI } from './feature/citizens/index.js';
@@ -31,6 +32,9 @@ import { init as initTravelerTimer } from './feature/traveler-timer/traveler-tim
 import * as Overview from './feature/overview/overview.js';
 import * as ActiveCrafts from './feature/active-crafts/active-crafts.js';
 import { initAeolith } from './feature/aeolith/aeolith.js';
+
+// Initialize Vercel Web Analytics
+inject();
 
 const log = createLogger('Main');
 
