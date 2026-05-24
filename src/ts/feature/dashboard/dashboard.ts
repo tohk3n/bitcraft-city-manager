@@ -528,10 +528,7 @@ export const DashboardUI = {
   },
 
   // Census: the whole-city stock, one page. Professions flow as newspaper
-  // columns -- down one column, then over to the next. Region grouping is gone:
-  // CENSUS_REGIONS now supplies only the order. tier sizes the column count
-  // (it's the city's capacity ceiling, so the layout reserves width for the
-  // widest matrix the city could ever hold, not just what's stocked today).
+  // columns -- down one column, then over to the next. 
   renderCensus(data: InventoryProcessResult, tier: number): void {
     const { inventory, packages } = data;
 
@@ -737,11 +734,6 @@ function censusColumnClass(tier: number): string {
   return 'census-cols-4';
 }
 
-// Build one profession tile: name, then the compact+shaded sub-view. No region
-// wrapper, no region label -- the tile is a flow item in the census column
-// container, and the profession name is the only landmark (it's real game
-// info, unlike the invented region labels we dropped). Handle keyed by
-// profession.id so async bottleneck updates land.
 function buildProfessionTile(
   profession: ProfessionDef,
   inventory: ProcessedInventory,

@@ -134,8 +134,6 @@ function findMaxPopulatedTier(config: SubViewConfig, census?: boolean): number {
 }
 
 // -- Status bar: bottlenecks + consumables + copy button --
-// census mode drops the bottleneck segment (that's Monitor's question, not the
-// census's) but keeps consumables -- "metalsmelting flux: 0" is real stock info.
 function buildStatusBar(config: SubViewConfig, census?: boolean): HTMLElement {
   const bar = el('div', 'sv-status-bar');
 

@@ -1,9 +1,4 @@
 // Per-row heat shading for the census matrix.
-//
-// Why ratio buckets and not a linear value->opacity ramp:
-// raw value would just light up whichever profession has big numbers, which
-// the label already tells you. Per-row ratio (cell / row max) answers the
-// scanning question instead -- "within this material, where is my stock?"
 
 const BUCKET_COUNT = 5;
 
