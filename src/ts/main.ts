@@ -175,7 +175,7 @@ async function loadClaim(claimId: string): Promise<void> {
   try {
     const data: ClaimInventoriesResponse = await API.getClaimInventories(claimId);
     claimData.claimId = claimId;
-    CitizensUI.reset();
+    claimData.citizensData = null;
     plannerState.results = null;
     claimData.inventories = data;
     claimData.playerFilter = null;
