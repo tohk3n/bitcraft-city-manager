@@ -528,7 +528,7 @@ export const DashboardUI = {
   },
 
   // Census: the whole-city stock, one page. Professions flow as newspaper
-  // columns -- down one column, then over to the next. 
+  // columns -- down one column, then over to the next.
   renderCensus(data: InventoryProcessResult, tier: number): void {
     const { inventory, packages } = data;
 
