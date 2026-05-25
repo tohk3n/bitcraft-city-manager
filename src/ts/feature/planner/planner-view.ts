@@ -435,6 +435,20 @@ export function stopPolling(): void {
   ProgressMonitor.stop();
 }
 
+// Leaving the planner (top-tab switch away). Stop pollers and drop the
+// flowchart's viewport breakout
+export function suspend(): void {
+  stopPolling();
+  document.body.classList.remove('fc-expanded');
+}
+
+// Returning to the planner (top-tab switch back). Reassert fc-expanded from
+// currentView and restart polling for the live views.
+export function resume(): void {
+  document.body.classList.toggle('fc-expanded', currentView === 'flowchart');
+  syncPoller();
+}
+
 // ── Helpers ───────────────────────────────────────────────────────
 
 function formatTabName(name: string): string {
