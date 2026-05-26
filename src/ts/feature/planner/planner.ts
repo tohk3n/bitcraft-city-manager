@@ -201,7 +201,7 @@ export function renderPlannerView(
   });
 }
 
-export { stopPolling } from '../planner/planner-view.js';
+export { stopPolling, suspend, resume } from '../planner/planner-view.js';
 
 export function renderLoading(container: HTMLElement): void {
   PlannerView.renderLoading(container);

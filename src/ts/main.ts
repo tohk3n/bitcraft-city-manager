@@ -446,8 +446,10 @@ function setupTabs(): void {
       const viewEl = document.getElementById(`view-${view}`);
       viewEl?.classList.remove('hidden');
 
-      if (view !== 'planner') {
-        Planner.stopPolling();
+      if (view === 'planner') {
+        Planner.resume();
+      } else {
+        Planner.suspend();
       }
 
       if (view === 'overview') {
