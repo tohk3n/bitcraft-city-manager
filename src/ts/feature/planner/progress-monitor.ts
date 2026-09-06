@@ -61,7 +61,19 @@ const TIER_COLORS: Record<number, string> = {
   9: '#ff007c',
   10: '#7dcfff',
 };
-
+// order of items in the monitor drill down
+const ITEM_ORDER = [
+  'Plant Fiber',
+  'Spool of Thread',
+  'Cloth Strip',
+  'Cloth',
+  'Textile',
+  'Wood Log',
+  'Unfired Rough Brick',
+  "Potter's Mix",
+  'Brick',
+  'Firesand',
+];
 // ── Module State ──────────────────────────────────────────────────
 
 let pollTimer: ReturnType<typeof setTimeout> | null = null;
@@ -267,7 +279,12 @@ function getConcernItems(branchLabel: string, tier: number | null): ConcernItem[
 
   const items = collectItemsFromTree(tree);
   const filtered = tier !== null ? items.filter((i) => i.tier === tier) : items;
-  return filtered.sort((a, b) => b.deficit - a.deficit);
+  return filtered.sort((a, b) => {
+    const aIndex = ITEM_ORDER.indexOf(a.name);
+    const bIndex = ITEM_ORDER.indexOf(b.name);
+
+    return (bIndex === -1 ? Infinity : bIndex) - (aIndex === -1 ? Infinity : aIndex);
+  });
 }
 
 // ── Rendering ─────────────────────────────────────────────────────
